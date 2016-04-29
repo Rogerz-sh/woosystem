@@ -4,9 +4,13 @@
 (function (window) {
     var app = window.RZ.app;
 
-    app.service('personModel', [function () {
+    app.service('model', ['$http', function ($http) {
         this.getNewPerson = function () {
             return {
+                real_id: '',
+                source: '',
+                web_id: '',
+                type: 'basic',
                 name: '',
                 sex: '男',
                 age: '',
@@ -14,7 +18,7 @@
                 email: '',
                 tel: '',
                 degree: '',
-                marry: '',
+                marry: '单身',
                 location: {
                     p: '上海',
                     c: '上海'
@@ -27,11 +31,36 @@
                 schools: [],
                 trainings: [],
                 keywords: '',
-                appraise: ''
+                appraise: '',
+                file_path: ''
             }
         };
 
-        this.getNewCompany = function () {
+        this.getPersonInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback(this.getNewPerson());
+            } else {
+                var person;
+                $http.get('/candidate/person-json-data/', {params: {id: id}}).success(function (p) {
+                    person = p;
+                    var location = p.location.split('-'), belong = p.belong.split('-');
+                    person.location = {p: location[0], c: location[1]};
+                    person.belong = {p: belong[0], c: belong[1]};
+                    $http.get('/candidate/company-json-data/', {params: {id: id}}).success(function (c) {
+                        person.companys = c;
+                        $http.get('/candidate/school-json-data/', {params: {id: id}}).success(function (s) {
+                            person.schools = s;
+                            $http.get('/candidate/training-json-data/', {params: {id: id}}).success(function (t) {
+                                person.trainings = t;
+                                callback(person);
+                            });
+                        });
+                    });
+                });
+            }
+        };
+
+        this.getNewPersonCompany = function () {
             return {
                 company_name: '',
                 start_time: '',
@@ -45,7 +74,7 @@
             }
         };
 
-        this.getNewSchool = function () {
+        this.getNewPersonSchool = function () {
             return {
                 school_name: '',
                 start_time: '',
@@ -56,7 +85,7 @@
             }
         };
 
-        this.getNewTraining = function () {
+        this.getNewPersonTraining = function () {
             return {
                 train_name: '',
                 start_time: '',
@@ -65,9 +94,7 @@
                 description: ''
             }
         };
-    }]);
 
-    app.service('companyModel', ['$http', function ($http) {
         this.getNewCompany = function () {
             return {
                 //id: '',
@@ -96,10 +123,8 @@
                     callback(res);
                 });
             }
-        }
-    }]);
+        };
 
-    app.service('jobModel', ['$http', function ($http) {
         this.getNewJob = function () {
             return {
                 company_id: 0,
@@ -151,5 +176,165 @@
                 });
             }
         };
+
+        this.getNewBd = function () {
+            return {
+                name: '',
+                company_id: '',
+                company_name: '',
+                user_ids: [],
+                user_names: [],
+                date: '',
+                type: '',
+                status: '',
+                description: ''
+            }
+        };
+
+        this.getBdInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback(this.getNewJob());
+            } else {
+                $http.get('/bd/bd-json-data/', {params: {id: id}}).success(function (res) {
+                    var data = res;
+                    data.user_ids = res.user_ids ? res.user_ids.split(',') : [];
+                    data.user_names = res.user_names ? res.user_names.split(',') : [];
+                    callback(data);
+                });
+            }
+        };
+
+        this.getNewHunt = function () {
+            return {
+                name: '',
+                job_id: '',
+                job_name: '',
+                company_id: '',
+                company_name: '',
+                person_id: '',
+                person_name: '',
+                date: '',
+                price: '',
+                status: '',
+                description: ''
+            }
+        };
+
+        this.getHuntInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback(this.getNewHunt());
+            } else {
+                $http.get('/hunt/hunt-json-data/', {params: {id: id}}).success(function (res) {
+                    var data = res;
+                    data.job_id = data.job_id + '';
+                    data.person_id = data.person_id + '';
+                    callback(data);
+                });
+            }
+        };
+
+        this.getNewHuntSelect = function () {
+            return {
+                job_id: '',
+                job_name: '',
+                user_ids: '',
+                user_names: '',
+                type: '',
+                status: ''
+            }
+        };
+
+        this.getHuntSelectInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback(this.getNewHuntSelect());
+            } else {
+                $http.get('/hunt/hunt-select-json-data/', {params: {id: id}}).success(function (res) {
+                    var data = res;
+                    data.user_ids = res.user_ids ? res.user_ids.split(',') : [];
+                    data.user_names = res.user_names ? res.user_names.split(',') : [];
+                    callback(data);
+                });
+            }
+        };
+
+        this.getUserSession = function () {
+            return {
+                id: angular.element('meta[name="_sessionId"]').attr('content'),
+                name: angular.element('meta[name="_sessionName"]').attr('content'),
+                nickname: angular.element('meta[name="_sessionNickname"]').attr('content'),
+                power: angular.element('meta[name="_sessionPower"]').attr('content')
+            }
+        };
+
+        this.getRandomId = function () {
+            var now = new Date(), timeStr = now.format() + ' 0000 ' + now.toTimeString();
+            var id = timeStr.match(/\d+/g).splice(0, 7).join('') + (('00000' + ~~(Math.random()*10)).substr(-5));
+            return id;
+        };
+
+        this.getRecordFile = function () {
+            return {
+                name: '',
+                coded: 0,
+                path: '',
+                desc: ''
+            };
+        };
+
+        this.getRecordReport = function () {
+            return {
+                type: 'report',
+                filename: '',
+                filecoded: 0,
+                filepath: '',
+                date: (new Date()).format(),
+                desc: ''
+            };
+        };
+
+        this.getRecordNewFace = function () {
+            return {
+                name: '',
+                date: (new Date()).format(),
+                desc: ''
+            }
+        };
+
+        this.getRecordOffer = function () {
+            return {
+                type: 'offer',
+                filename: '',
+                filecoded: 0,
+                filepath: '',
+                date: (new Date()).format(),
+                desc: ''
+            };
+        };
+
+        this.getHuntReportInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback({});
+            } else {
+                $http.get('/hunt/hunt-report-json-data/', {params: {hunt_id: id, type: 'report'}}).success(function (res) {
+                    callback(res);
+                });
+            }
+        };
+
+        this.getHuntOfferInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback({});
+            } else {
+                $http.get('/hunt/hunt-report-json-data/', {params: {hunt_id: id, type: 'offer'}}).success(function (res) {
+                    callback(res);
+                });
+            }
+        };
+    }]);
+
+    app.service('token', [function () {
+        this.getCsrfToken = function () {
+            return angular.element('meta[name="_token"]').attr('content')
+        }
     }])
 })(window);

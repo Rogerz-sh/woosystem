@@ -1,0 +1,126 @@
+<div class="wrap bg-white padding-15  margin-top-20 margin-bottom-50 bordered border-color-orange">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li><a href="#/bd/list">BD管理</a></li>
+                <li>BD详情</li>
+            </ul>
+        </div>
+        <div class="row">
+            <form name="form" class="form form-horizontal" onsubmit="return false" novalidate>
+                <blockquote>
+                    <p>基本信息</p>
+                </blockquote>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> BD编号</label>
+                    <div class="col-xs-10">
+                        <label class="form-control-static orange">{{bd.name}}</label>
+                        <input type="hidden" id="bd_id" value="{{bd.id}}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> 企业名称</label>
+                    <div class="col-xs-10">
+                        <label class="form-control-static">{{bd.company_name}} <i class="fa fa-search orange margin-left-10" ng-click="win2.open()"></i></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 顾问</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{bd.user}}</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 接入日期</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{bd.date}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4">业务意向</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{bd.type}}</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4">状态</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{bd.status}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">备注</label>
+                    <div class="col-xs-10">
+                        <pre>{{bd.description}}</pre>
+                    </div>
+                </div>
+            </form>
+            <blockquote>
+                <p>操作记录</p>
+            </blockquote>
+            <ul class="list-group">
+                <li class="list-group-item" ng-repeat="rcd in records track by $index">
+                    <p>
+                        <span ng-bind="rcd.user_name" class="bold orange"></span>
+                            <span class="pull-right" ng-if="rcd.user_id == user_id">
+                                <a ng-click="delRecord($index)" class="red underline"><small>删除这条记录</small></a>
+                            </span>
+                    </p>
+                    <pre ng-bind="rcd.text" class="padding-20"></pre>
+                    <div class="text-right">记录时间： <span ng-bind="rcd.created_at"></span></div>
+                </li>
+                <li class="list-group-item list-group-item-warning">
+                    <form action="" class="form" name="recForm">
+                        <textarea ng-model="record.text" cols="30" rows="5" class="form-control" required></textarea>
+                        <div class="text-right margin-top-10"><button class="btn btn-default" ng-disabled="recForm.$invalid" ng-click="addRecord()">添加记录</button></div>
+                    </form>
+                </li>
+            </ul>
+            <blockquote>
+                <p>附件列表</p>
+            </blockquote>
+            <div class="col-xs-12 bordered border-color-gray no-padding">
+                <div id="grid" kendo-grid k-options="config.grid"></div>
+            </div>
+        </div>
+    </div>
+    <div kendo-window="win1" k-title="'上传文件'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+         k-on-open="win1visible = true" k-on-close="win1visible = false">
+        <div class="container-fluid">
+            <div class="row">
+                <form name="dlgForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2"><span class="red">*</span> 上传附件</label>
+                        <div class="col-xs-10">
+                            <input kendo-upload k-options="config.file" type="file" class="form-control" id="file"><input type="hidden" id="filePath" ng-model="file.path" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2">文件备注</label>
+                        <div class="col-xs-10">
+                            <textarea id="fileDesc" rows="5" class="form-control" ng-model="file.desc"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-10 col-xs-offset-2">
+                            <button class="btn btn-success col-xs-2" ng-click="saveFile()" ng-disabled="dlgForm.$invalid">保存</button>
+                            <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win1.close()">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div kendo-window="win2" k-title="'企业信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+         k-on-open="win2visible = true" k-on-close="win2visible = false">
+        <div class="container-fluid">
+            <company-info id="{{bd.company_id}}"></company-info>
+        </div>
+    </div>
+
+</div>

@@ -24,7 +24,7 @@ class AccountController extends BaseController {
             Session::set('id', $user->id);
             Session::set('name', $user->name);
             Session::set('nickname', $user->nickname);
-            Session::set('navData', MenuData::jsonMenu());
+            Session::set('power', $user->power);
 
             return response(['status'=>1, 'err_code'=>'-1', 'err_msg'=>'']);
         } else {

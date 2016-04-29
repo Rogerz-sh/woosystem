@@ -3,15 +3,18 @@ use Illuminate\Support\Facades\Session;
 $sessionId = Session::get('id');
 $sessionName = Session::get('name');
 $sessionNickname = Session::get('nickname');
-$navData = Session::get('navData');
-$menus = $navData['menus'];
-$submenus = $navData['submenus'];
+$sessionPower = Session::get('power');
+
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <title>@yield('title')</title>
     <meta name="_token" content="{{csrf_token()}}">
+    <meta name="_sessionId" content="{{$sessionId}}">
+    <meta name="_sessionName" content="{{$sessionName}}">
+    <meta name="_sessionNickname" content="{{$sessionNickname}}">
+    <meta name="_sessionPower" content="{{$sessionPower}}">
     <link rel="stylesheet" href="/styles/bootstrap.min.css">
     <link rel="stylesheet" href="/styles/bootstrap.replace.css">
     <link rel="stylesheet" href="/styles/font-awesome.min.css">
@@ -26,7 +29,10 @@ $submenus = $navData['submenus'];
     <script src="/scripts/jquery.cookie.js"></script>
     <script src="/scripts/underscore.min.js"></script>
     <script src="/scripts/bootstrap.min.js"></script>
+    <script src="/scripts/vue.min.js"></script>
+    <script src="/scripts/vue.component.js"></script>
     <script src="/scripts/angular.min.js"></script>
+    <script src="/scripts/angular-route.min.js"></script>
     <script src="/scripts/angular-sanitize.min.js"></script>
     <script src="/scripts/kendo.all.min.js"></script>
     <script src="/scripts/kendo.culture.zh-CN.min.js"></script>
@@ -60,9 +66,9 @@ $submenus = $navData['submenus'];
     </div>
     <div id="nav">
         <div class="padding-left-50 padding-right-50">
-            <ul class="nav-list">
-                @foreach($menus as $menu)
-                    <li>
+            {{--<ul class="nav-list">--}}
+                {{--@foreach($menus as $menu)--}}
+                    {{--<li>--}}
                         {{--@if(count($submenus[$menu->id]) > 0)--}}
                         {{--<a>{{$menu->label}} <span class="caret"></span></a>--}}
                         {{--<ul class="sub-nav">--}}
@@ -71,22 +77,36 @@ $submenus = $navData['submenus'];
                         {{--@endforeach--}}
                         {{--</ul>--}}
                         {{--@else--}}
-                        <a href="{{$menu->url}}">{{$menu->label}}</a>
+                        {{--<a href="{{$menu->url}}">{{$menu->label}}</a>--}}
                         {{--@endif--}}
-                    </li>
-                @endforeach
-            </ul>
+                    {{--</li>--}}
+                {{--@endforeach--}}
+            {{--</ul>--}}
+            <nav-bar :nav-index="navIndex"></nav-bar>
         </div>
     </div>
-    @yield('content')
+    {{--@yield('content')--}}
+    <div ng-view></div>
 </div>
 <script src="/scripts/angular/ng-bootstrap.js"></script>
-<script src="/scripts/main.js"></script>
+<script src="/scripts/angular/ng-controller.js"></script>
+<script src="/scripts/angular/ng-route.js"></script>
+<script src="/scripts/angular/directives/common.js"></script>
+<script src="/scripts/angular/services/getModel.js"></script>
+
+{{--<script src="/scripts/main.js"></script>--}}
 @yield('body-script')
 <script>
     $(function () {
         var navIndex = {{$navIndex}};
         $('.nav-list>li').eq(navIndex).addClass('active');
+
+        {{--var vm = new Vue({--}}
+            {{--el: '#nav',--}}
+            {{--data: {--}}
+                {{--navIndex: {{$navIndex}}--}}
+            {{--}--}}
+        {{--});--}}
     });
 </script>
 </body>

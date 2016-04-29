@@ -1,0 +1,67 @@
+<div class="wrap bg-white padding-15  margin-top-20 margin-bottom-50 bordered border-color-orange">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li><a href="#/hunt/list">职位管理</a></li>
+                <li>职位分配</li>
+            </ul>
+        </div>
+        <div class="row">
+            <form name="hsForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                <blockquote>
+                    <p>基本信息</p>
+                </blockquote>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> 选择岗位</label>
+                    <div class="col-xs-10">
+                        <div class="col-xs-10 no-padding-left">
+                            <select kendo-drop-down-list k-options="config.jobs" name="job_id" ng-model="hs.job_id" class="form-control size-full" required></select>
+                        </div>
+                        <div class="col-xs-2 no-padding-right no-padding-left text-right"><a class="btn btn-success size-full" ng-click="win1.open()">录入新职位</a></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> 选择顾问</label>
+                    <div class="col-xs-10">
+                        <select kendo-multi-select multiple="multiple" k-options="config.users" name="user_ids" ng-model="hs.user_ids" class="form-control size-full" required></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 优先级</label>
+                        <div class="col-xs-8">
+                            <select kendo-drop-down-list ng-model="hs.type" class="form-control size-full" required>
+                                <option value="">请选择优先级...</option>
+                                <option ng-repeat="item in ['低','中','高']" value="{{item}}">{{item}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 状态</label>
+                        <div class="col-xs-8">
+                            <select kendo-drop-down-list ng-model="hs.status" class="form-control size-full" required>
+                                <option value="">请选择状态...</option>
+                                <option ng-repeat="item in ['进行中','已暂停','已停止']" value="{{item}}">{{item}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-10 col-xs-offset-2">
+                        <button class="btn btn-success col-xs-2" ng-click="saveInfo()" ng-disabled="hsForm.$invalid">保存</button>
+                        <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="quit()">取消</button>
+                    </div>
+                </div>
+            </form>
+            <div kendo-window="win1" k-title="'新增职位'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+                 k-on-open="win1visible = true" k-on-close="win1visible = false">
+                <div class="container-fluid">
+                    <div class="row">
+                        <job-form></job-form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -157,16 +157,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group hidden">
                         <label class="control-label col-xs-2">岗位职责</label>
                         <div class="col-xs-10">
                             <textarea ng-model="job.duty" rows="6" class="form-control"></textarea>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-2"><span class="red">*</span> 任职要求</label>
+                        <label class="control-label col-xs-2"><span class="red">*</span> 职责及要求</label>
                         <div class="col-xs-10">
-                            <textarea ng-model="job.request" rows="6" class="form-control" required></textarea>
+                            <textarea ng-model="job.request" rows="12" class="form-control" required></textarea>
                         </div>
                     </div>
                     <div class="form-group">

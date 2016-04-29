@@ -1,0 +1,19 @@
+<div class="wrap bg-white padding-15 margin-top-20 margin-bottom-50 bordered border-color-orange">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li><a href="#/company/list">企业管理</a></li>
+                <li>企业详情</li>
+            </ul>
+        </div>
+        <company-info id="{{company_id}}"></company-info>
+        <hr>
+        <blockquote>
+            <p>职位列表</p>
+        </blockquote>
+        <div class="row">
+            <div class="col-xs-3 text-center" ng-repeat="job in jobs"><a href="#/job/detail/{{job.id}}" ng-bind="job.name"></a></div>
+        </div>
+    </div>
+</div>

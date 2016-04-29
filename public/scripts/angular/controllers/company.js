@@ -51,10 +51,12 @@
             delete company.location;
             $http.post('/company/save-new', {company: company}).success(function (res) {
                 console.log(res);
-                if (res > 0) {
+                if (~~res) {
                     $.$modal.alert('保存成功！', function () {
                         location.href = '/company/list';
                     });
+                } else {
+                    $.$modal.alert(res);
                 }
             });
         }
@@ -118,10 +120,12 @@
             delete company.location;
             $http.post('/company/save-edit', {company: company}).success(function (res) {
                 console.log(res);
-                if (res > 0) {
+                if (~~res) {
                     $.$modal.alert('保存成功！', function () {
                         location.href = '/company/list';
                     });
+                } else {
+                    $.$modal.alert(res);
                 }
             });
         }

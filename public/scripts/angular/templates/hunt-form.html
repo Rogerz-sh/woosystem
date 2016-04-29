@@ -1,0 +1,79 @@
+<div>
+<form name="huntForm" class="form form-horizontal" onsubmit="return false" novalidate>
+    <blockquote>
+        <p>基本信息</p>
+    </blockquote>
+    <div class="form-group">
+        <label class="control-label col-xs-2"><span class="red">*</span> 业务编号</label>
+        <div class="col-xs-10">
+            <div class="input-group">
+                <input type="text" ng-model="hunt.name" readonly class="form-control" required />
+                <span class="input-group-btn"><button class="btn btn-default" ng-click="getId()" ng-disabled="hunt.name">生成ID</button></span>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-2"><span class="red">*</span> 选择岗位</label>
+        <div class="col-xs-10">
+            <div class="col-xs-10 no-padding-left">
+                <select kendo-drop-down-list k-options="config.company" name="job_id" ng-model="hunt.job_id" class="form-control size-full" required></select>
+            </div>
+            <div class="col-xs-2 no-padding-right no-padding-left text-right"><a class="btn btn-success size-full" ng-click="win1.open()">录入新职位</a></div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-2"><span class="red">*</span> 选择候选人</label>
+        <div class="col-xs-10">
+            <div class="col-xs-10 no-padding-left">
+                <select kendo-drop-down-list k-options="config.candidate" name="person_id" ng-model="hunt.person_id" class="form-control size-full" required></select>
+            </div>
+            <div class="col-xs-2 no-padding-right no-padding-left text-right"><a class="btn btn-success size-full" ng-click="win2.open()">录入新候选人</a></div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-xs-6 no-padding error-box">
+            <label class="control-label col-xs-4"><span class="red">*</span> 接入日期</label>
+            <div class="col-xs-8">
+                <input kendo-date-picker k-options="config.datepicker" ng-model="hunt.date" type="text" class="form-control size-full" required>
+            </div>
+        </div>
+        <div class="col-xs-6 no-padding error-box">
+            <label class="control-label col-xs-4"><span class="red">*</span> 状态</label>
+            <div class="col-xs-8">
+                <select kendo-drop-down-list ng-model="hunt.status" class="form-control size-full" required>
+                    <option value="">请选择状态...</option>
+                    <option ng-repeat="item in data.status" value="{{item}}">{{item}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-2">备注</label>
+        <div class="col-xs-10">
+            <textarea ng-model="hunt.description" rows="6" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-xs-10 col-xs-offset-2">
+            <button class="btn btn-success col-xs-2" ng-click="saveHuntInfo()" ng-disabled="huntForm.$invalid">保存</button>
+            <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="quit()">取消</button>
+        </div>
+    </div>
+</form>
+<div kendo-window="win1" k-title="'新增职位'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+     k-on-open="win1visible = true" k-on-close="win1visible = false">
+    <div class="container-fluid">
+        <div class="row">
+            <job-form></job-form>
+        </div>
+    </div>
+</div>
+<div kendo-window="win2" k-title="'新增候选人'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+     k-on-open="win2visible = true" k-on-close="win2visible = false">
+    <div class="container-fluid">
+        <div class="row">
+            <resume-form></resume-form>
+        </div>
+    </div>
+</div>
+</div>

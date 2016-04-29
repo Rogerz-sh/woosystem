@@ -1,0 +1,19 @@
+<div>
+    <div class="row">
+        <h3 class="padding-15">{{job.name}} <small class="dark-gray" ng-bind="job.company_name"></small></h3>
+    </div>
+    <div class="row">
+        <span class="padding-15"><span class="dark-gray">工作地点：</span>{{job.area}}</span>/
+        <span class="padding-15"><span class="dark-gray">工作年限：</span>{{job.year}}</span>/
+        <span class="padding-15"><span class="dark-gray">年龄要求：</span>{{job.age}}</span>/
+        <span class="padding-15"><span class="dark-gray">性别要求：</span>{{job.sex}}</span>/
+        <span class="padding-15"><span class="dark-gray">学历要求：</span>{{job.degree}}<span ng-if="job.degree_up">及以上</span></span><br><br>
+        <span class="padding-15"><span class="dark-gray">年薪：</span>{{job.salary}}</span>/
+        <span class="padding-15"><span class="dark-gray">招聘人数：</span>{{job.number}}人</span>/
+        <span class="padding-15"><span class="dark-gray">岗位类别：</span>{{job.type}}</span>
+    </div>
+    <hr>
+    <div class="row">
+        <p class="padding-15">岗位职责及要求：<br><br><span class="dark-gray" ng-bind="job.request"></span></p>
+    </div>
+</div>

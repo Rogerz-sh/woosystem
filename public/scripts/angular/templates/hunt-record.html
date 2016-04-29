@@ -1,0 +1,295 @@
+<div class="wrap bg-white padding-15  margin-top-20 margin-bottom-50 bordered border-color-orange">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li><a href="#/hunt/list">寻访管理</a></li>
+                <li>寻访详情</li>
+            </ul>
+        </div>
+        <div class="row">
+            <form name="form" class="form form-horizontal" onsubmit="return false" novalidate>
+                <blockquote>
+                    <p>基本信息</p>
+                </blockquote>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> 业务编号</label>
+                    <div class="col-xs-10">
+                        <label class="form-control-static orange">{{hunt.name}}</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> 候选人</label>
+                    <div class="col-xs-10">
+                        <label class="form-control-static">{{hunt.person_name}} <i class="fa fa-search orange margin-left-10" ng-click="win4.open()"></i> <a class="btn btn-sm bg-orange white margin-left-10" ng-click="showPersonHuntList()">查看所有推荐岗位</a></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> 岗位名称</label>
+                    <div class="col-xs-10">
+                        <label class="form-control-static">{{hunt.job_name}} <i class="fa fa-search orange margin-left-10" ng-click="win5.open()"></i> <a class="btn btn-sm bg-orange white margin-left-10" ng-click="showJobHuntList()">查看所有推荐候选人</a></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="red">*</span> 所属企业</label>
+                    <div class="col-xs-10">
+                        <label class="form-control-static">{{hunt.company_name}} <i class="fa fa-search orange margin-left-10" ng-click="win6.open()"></i></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 顾问</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{hunt.user}}</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 接入日期</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{hunt.date}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4">寻访费用</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{hunt.price}}</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 no-padding error-box">
+                        <label class="control-label col-xs-4">状态</label>
+                        <div class="col-xs-8">
+                            <label class="form-control-static">{{hunt.status}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">备注</label>
+                    <div class="col-xs-10">
+                        <label class="form-control-static">{{hunt.description}}</label>
+                    </div>
+                </div>
+            </form>
+            <blockquote>
+                <p>操作记录</p>
+            </blockquote>
+            <ul class="list-group">
+                <li class="list-group-item" ng-repeat="rcd in records track by $index">
+                    <p>
+                        <span ng-bind="rcd.user_name" class="bold orange"></span>
+                            <span class="pull-right" ng-if="rcd.user_id == user_id">
+                                <a ng-click="delRecord($index)" class="red underline"><small>删除这条记录</small></a>
+                            </span>
+                    </p>
+                    <pre ng-bind="rcd.text" class="padding-20"></pre>
+                    <div class="text-right">记录时间： <span ng-bind="rcd.created_at"></span></div>
+                </li>
+                <li class="list-group-item list-group-item-warning">
+                    <form action="" class="form" name="recForm" novalidate>
+                        <textarea ng-model="record.text" cols="30" rows="5" class="form-control" required></textarea>
+                        <div class="text-right margin-top-10">
+                            <div class="pull-left">
+                                <button class="btn btn-info" ng-click="makeReport()">推荐报告</button>
+                                <button class="btn btn-primary" ng-click="addFaceView()">面试通知</button>
+                                <button class="btn btn-success" ng-click="makeOffer()">Offer</button>
+                            </div>
+                            <button class="btn btn-default" ng-disabled="recForm.$invalid" ng-click="addRecord()">添加记录</button>
+                        </div>
+                    </form>
+                </li>
+            </ul>
+            <blockquote ng-if="reportInfo.id>0">
+                <p>推荐报告</p>
+            </blockquote>
+            <div class="col-xs-12" ng-if="reportInfo.id>0">
+                <p class="indent">文件名称： <a href="/file/download-file/?path={{reportInfo.filepath}}&name={{reportInfo.filename}}&coded={{reportInfo.filecoded}}">{{reportInfo.filename}}</a></p>
+                <p class="indent">备注信息： <span class="text-info">{{reportInfo.desc}}</span></p>
+            </div>
+            <div class="clearfix"></div>
+            <blockquote>
+                <p>面试记录</p>
+            </blockquote>
+            <div class="col-xs-12 bordered border-color-gray no-padding margin-bottom-10">
+                <div kendo-grid k-options="config.grid_face"></div>
+            </div>
+            <div class="clearfix"></div>
+            <blockquote ng-if="reportInfo.id>0">
+                <p>Offer</p>
+            </blockquote>
+            <div class="col-xs-12" ng-if="offerInfo.id>0">
+                <p class="indent">文件名称： <a href="/file/download-file/?path={{offerInfo.filepath}}&name={{offerInfo.filename}}&coded={{offerInfo.filecoded}}">{{offerInfo.filename}}</a></p>
+                <p class="indent">备注信息： <span class="text-info">{{offerInfo.desc}}</span></p>
+            </div>
+            <div class="clearfix"></div>
+            <blockquote>
+                <p>附件列表</p>
+            </blockquote>
+            <div class="col-xs-12 bordered border-color-gray no-padding">
+                <div kendo-grid k-options="config.grid" id="grid"></div>
+            </div>
+        </div>
+
+        <div kendo-window="win1" k-title="'上传文件'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win1visible = true" k-on-close="win1visible = false">
+            <div class="container-fluid">
+                <div class="row">
+                    <form name="dlgForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 上传附件</label>
+                            <div class="col-xs-10">
+                                <input kendo-upload k-options="config.file" type="file" class="form-control" id="file"><input type="hidden" id="filePath" ng-model="file.path" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2">文件备注</label>
+                            <div class="col-xs-10">
+                                <textarea id="fileDesc" rows="5" class="form-control" ng-model="file.desc"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-xs-10 col-xs-offset-2">
+                                <button class="btn btn-success col-xs-2" ng-click="saveFile()" ng-disabled="dlgForm.$invalid">保存</button>
+                                <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win1.close()">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div kendo-window="win2" k-title="'岗位推荐列表'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win2visible = true" k-on-close="win2visible = false">
+            <div class="container-fluid">
+                <div class="row">
+                    <div kendo-grid k-options="config.grid_person"></div>
+                </div>
+            </div>
+        </div>
+        <div kendo-window="win3" k-title="'推荐候选人列表'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win3visible = true" k-on-close="win3visible = false">
+            <div class="container-fluid">
+                <div class="row">
+                    <div kendo-grid k-options="config.grid_hunt"></div>
+                </div>
+            </div>
+        </div>
+        <div kendo-window="win4" k-title="'候选人信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win4visible = true" k-on-close="win4visible = false">
+            <div class="container-fluid">
+                <resume-info id="{{hunt.person_id}}"></resume-info>
+            </div>
+        </div>
+        <div kendo-window="win5" k-title="'岗位信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win5visible = true" k-on-close="win5visible = false">
+            <div class="container-fluid">
+                <job-info id="{{hunt.job_id}}"></job-info>
+            </div>
+        </div>
+        <div kendo-window="win6" k-title="'企业信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win6visible = true" k-on-close="win6visible = false">
+            <div class="container-fluid">
+                <company-info id="{{hunt.company_id}}"></company-info>
+            </div>
+        </div>
+        <div kendo-window="win7" k-title="'上传推荐报告'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win7visible = true" k-on-close="win7visible = false">
+            <div class="container-fluid">
+                <div class="row">
+                    <form name="rptForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 上传报告</label>
+                            <div class="col-xs-10">
+                                <input kendo-upload k-options="config.reportFile" type="file" class="form-control"><input type="hidden" ng-model="report.filepath" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 推荐日期</label>
+                            <div class="col-xs-10">
+                                <input kendo-date-picker k-options="config.reportDate" ng-model="report.date" type="text" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2">备注</label>
+                            <div class="col-xs-10">
+                                <textarea rows="5" class="form-control" ng-model="report.desc"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-xs-10 col-xs-offset-2">
+                                <button class="btn btn-success col-xs-2" ng-click="saveReport()" ng-disabled="rptForm.$invalid">保存</button>
+                                <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win7.close()">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div kendo-window="win8" k-title="'面试通知'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win8visible = true" k-on-close="win8visible = false">
+            <div class="container-fluid">
+                <div class="row">
+                    <form name="faceForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 面试名称</label>
+                            <div class="col-xs-10">
+                                <input type="text" class="form-control" placeholder="填写一面、二面或三面等" ng-model="face.name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 面试日期</label>
+                            <div class="col-xs-10">
+                                <input kendo-date-picker k-options="config.reportDate" ng-model="face.date" type="text" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2">备注</label>
+                            <div class="col-xs-10">
+                                <textarea rows="5" class="form-control" ng-model="face.desc"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-xs-10 col-xs-offset-2">
+                                <button class="btn btn-success col-xs-2" ng-click="saveFace()" ng-disabled="faceForm.$invalid">保存</button>
+                                <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win8.close()">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div kendo-window="win9" k-title="'上传Offer'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win9visible = true" k-on-close="win9visible = false">
+            <div class="container-fluid">
+                <div class="row">
+                    <form name="offerForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 上传Offer</label>
+                            <div class="col-xs-10">
+                                <input kendo-upload k-options="config.offerFile" type="file" class="form-control"><input type="hidden" ng-model="offer.filepath" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> Offer日期</label>
+                            <div class="col-xs-10">
+                                <input kendo-date-picker k-options="config.offerDate" ng-model="offer.date" type="text" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2">备注</label>
+                            <div class="col-xs-10">
+                                <textarea rows="5" class="form-control" ng-model="offer.desc"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-xs-10 col-xs-offset-2">
+                                <button class="btn btn-success col-xs-2" ng-click="saveOffer()" ng-disabled="offerForm.$invalid">保存</button>
+                                <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win9.close()">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

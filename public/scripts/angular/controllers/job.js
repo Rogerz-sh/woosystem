@@ -67,10 +67,12 @@
             //return;
             $http.post('/job/save-new', {job: job}).success(function (res) {
                 console.log(res);
-                if (res > 0) {
+                if (~~res > 0) {
                     $.$modal.alert('保存成功！', function () {
                         location.href = '/job/list';
                     });
+                } else {
+                    $.$modal.alert(res);
                 }
             });
         }
@@ -142,10 +144,12 @@
             //return;
             $http.post('/job/save-edit', {job: job}).success(function (res) {
                 console.log(res);
-                if (res > 0) {
+                if (~~res > 0) {
                     $.$modal.alert('保存成功！', function () {
                         location.href = '/job/list';
                     });
+                } else {
+                    $.$modal.alert(res);
                 }
             });
         }

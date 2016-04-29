@@ -3,7 +3,7 @@
  */
 (function (window, angular) {
     window.RZ = window.RZ || {};
-    window.RZ.app = angular.module('app', ['kendo.directives']);
+    window.RZ.app = angular.module('app', ['ngRoute', 'kendo.directives']);
 
     window.addEventListener('DOMContentLoaded', function () {
         angular.bootstrap(document, ['app']);

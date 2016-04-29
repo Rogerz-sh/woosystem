@@ -17,10 +17,40 @@ class FileController extends BaseController {
 
     public function postUpload() {
         $file = request()->file('file');
-        $name = $file->getClientOriginalName();
-        $path = 'upload/temp/'.date('Y');
-        $file->move($path, $name);
+        $filename = date('Y-m-d-H-i-s');
+        $extension = $file->getClientOriginalExtension();
+        $path = 'upload/temp/'.date('Y').'/'.date('m');
+        $saveName = $filename.'.'.$extension;
+        $file->move($path, $saveName);
 
-        return response('"/'.$path.'/'.$name.'"');
+        return response('"/'.$path.'/'.$saveName.'"');
+    }
+
+    public function postUploadResume() {
+        $file = request()->file('file');
+        $filename = date('Y-m-d-H-i-s');
+        $extension = $file->getClientOriginalExtension();
+        $saveName = $filename.'.'.$extension;
+
+        $user = Session::get('name');
+        if (!isset($user)) {
+            $user = 'guest';
+        }
+        $path = 'upload/resume/'.$user.'/'.date('Y').'/'.date('m');
+        $file->move($path, $saveName);
+
+        return response('"/'.$path.'/'.$saveName.'"');
+    }
+
+    public function getDownloadFile() {
+        $path = substr(request()->input('path'), 1);
+        $name = request()->input('name');
+        $coded = request()->input('coded');
+
+        if ($coded == 0) {
+            return response()->download($path);
+        } else {
+            return response()->download($path, $name);
+        }
     }
 }

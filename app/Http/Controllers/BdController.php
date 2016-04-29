@@ -9,6 +9,8 @@ namespace App\Http\Controllers;
 use App\Bd;
 use App\BdFile;
 use App\BdRecord;
+use App\Candidate;
+use App\User;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -26,7 +28,12 @@ class BdController extends BaseController {
     }
 
     public function getJsonBdListData() {
-        $bd = Bd::all();
+        $uid = request()->input('user_id');
+        if (isset($uid)) {
+            $bd = Bd::where('user_id', $uid)->orderBy('created_at', 'desc')->get();
+        } else {
+            $bd = Bd::orderBy('created_at', 'desc')->get();
+        }
         return response($bd);
     }
 
@@ -34,15 +41,27 @@ class BdController extends BaseController {
         return view('bd.create')->with('navIndex', 4);
     }
 
+    public function getUserList() {
+        $persons = User::where('id', '<>', Session::get('id'))->get();
+        return response($persons);
+    }
+
     public function postSaveInfo() {
         $newBd = request()->input('bd');
-        $bd = new Bd();
-        foreach ($newBd as $key=>$value) {
-            $bd->$key = $value;
+        $exist = Bd::where('company_id', $newBd['company_id'])->first();
+        if ($exist) {
+            return response('该企业已经在BD中，请不要重复操作');
+        } else {
+            $bd = new Bd();
+            foreach ($newBd as $key => $value) {
+                $bd->$key = $value;
+            }
+            $bd->user_id = Session::get('id');
+            $bd->user_name = Session::get('nickname');
+            $bd->created_by = Session::get('id');
+            $bd->save();
+            return response($bd->id);
         }
-        $bd->created_by = Session::get('id');
-        $bd->save();
-        return response($bd->id);
     }
 
     public function getEdit($id) {
@@ -50,15 +69,27 @@ class BdController extends BaseController {
         return view('bd.edit')->with('navIndex', 4)->with('bd', $bd);
     }
 
+    public function getBdJsonData () {
+        $id = request()->input('id');
+        $bd = Bd::find($id);
+        return response($bd);
+    }
+
     public function postSaveEdit() {
         $newBd = request()->input('bd');
-        $bd = Bd::find($newBd['id']);
-        foreach ($newBd as $key=>$value) {
-            $bd->$key = $value;
+        $exist = Bd::where('company_id', $newBd['company_id'])
+            ->where('id', '<>', $newBd['id'])->first();
+        if ($exist) {
+            return response('该企业已经在BD中，请不要重复操作');
+        } else {
+            $bd = Bd::find($newBd['id']);
+            foreach ($newBd as $key => $value) {
+                $bd->$key = $value;
+            }
+            $bd->updated_by = Session::get('id');
+            $bd->save();
+            return response($bd->id);
         }
-        $bd->updated_by = Session::get('id');
-        $bd->save();
-        return response($bd->id);
     }
 
     public function getRecord($id) {
@@ -89,33 +120,26 @@ class BdController extends BaseController {
     }
 
     public function postAddFile() {
-        $bd_id = request()->input('bd_id');
-        $filePath = request()->input('filePath');
-        $fileDesc = request()->input('fileDesc');
+        $file = request()->input('file');
+        $filePath = $file['path'];
         $newPath = str_replace('temp', 'real', $filePath);
         if (Storage::exists($filePath)) {
             Storage::move($filePath, $newPath);
-            $file = new BdFile();
-            $file->bd_id = $bd_id;
-            $file->path = $newPath;
-            $file->desc = $fileDesc;
-            $file->created_by = Session::get('id');
-            $file->save();
-            return response($file->id);
+            $bdFile = new BdFile();
+            foreach ($file as $key=>$value) {
+                $bdFile->$key = $value;
+            }
+            $bdFile->path = $newPath;
+            $bdFile->created_by = Session::get('id');
+            $bdFile->save();
+            return response($bdFile->id);
         } else {
             return response(0);
         }
     }
 
-    public function getDownloadFile() {
-        $path = request()->input('path');
-        $content = Storage::get($path);
-        $name = request()->input('name');
-
-//        header('Content-Type:image/gif'); //指定下载文件类型
-        header('Content-Disposition: attachment; filename="'.$name.'"'); //指定下载文件的描述
-        header('Content-Length:'.filesize($name)); //指定下载文件的大小
-
-        readfile($name);
+    public function postDelete($id) {
+        $bd = Bd::find($id);
+        $bd->delete();
     }
 }

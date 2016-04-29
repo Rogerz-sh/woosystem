@@ -1,0 +1,27 @@
+<div class="wrap bg-white padding-15 margin-top-20 margin-bottom-50 bordered border-color-orange">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li><a href="#/candidate/list">简历库</a></li>
+                <li>简历详情</li>
+            </ul>
+        </div>
+        <resume-info id="{{person_id}}"></resume-info>
+        <hr>
+        <blockquote>
+            <p>已推荐的职位</p>
+        </blockquote>
+        <div class="row">
+            <div class="col-xs-12" ng-repeat="hunt in hunts">
+                <a href="#/hunt/record/{{hunt.id}}">
+                    <span ng-bind="hunt.job_name"></span>
+                </a> /
+                <small class="dark-gray">
+                    <span ng-bind="hunt.company_name"></span>
+                    <span class="margin-left-5">[{{hunt.updated_at}}]</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

@@ -8,6 +8,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Routing\Controller as BaseController;
 use App\Company;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 
@@ -18,7 +19,7 @@ class CompanyController extends BaseController {
     }
 
     public function getJsonListData() {
-        $company = Company::all();
+        $company = Company::orderBy('created_at', 'desc')->get();
         return response($company);
     }
 
@@ -26,15 +27,31 @@ class CompanyController extends BaseController {
         return view('company.create')->with('navIndex', 1);
     }
 
+    public function getExistCompany() {
+        $filter = request()->input('filter');
+        $key = '%'.$filter['filters'][0]['value'].'%';
+        if (strlen($key) < 2) {
+            $suggest = array();
+        } else {
+            $suggest = DB::table('company')->where('deleted_at', null)->whereRaw('name like ?', [$key])->take(10)->get();
+        }
+        return response($suggest);
+    }
+
     public function postSaveNew() {
         $newCompany = request()->input('company');
-        $company = new Company();
-        foreach ($newCompany as $key=>$value) {
-            $company->$key = $value;
+        $exist = DB::table('company')->where('deleted_at', null)->where('name', $newCompany['name'])->first();
+        if ($exist) {
+            return response('该公司名称已经被录入了，<a href="/company/detail/'.$exist->id.'">点击查看</a>');
+        } else {
+            $company = new Company();
+            foreach ($newCompany as $key => $value) {
+                $company->$key = $value;
+            }
+            $company->created_by = Session::get('id');
+            $company->save();
+            return response($company->id);
         }
-        $company->created_by = Session::get('id');
-        $company->save();
-        return response($company->id);
     }
 
     public function getEdit($id) {
@@ -50,18 +67,29 @@ class CompanyController extends BaseController {
 
     public function postSaveEdit() {
         $editCompany = request()->input('company');
-        $company = Company::find($editCompany['id']);
-        foreach ($editCompany as $key=>$value) {
-            $company->$key = $value;
+        $exist = DB::table('company')->where('deleted_at', null)->where('name', $editCompany['name'])->where('id', '<>', $editCompany['id'])->first();
+        if ($exist) {
+            return response('该公司名称已经被录入了，<a href="/company/detail/'.$exist->id.'">点击查看</a>');
+        } else {
+            $company = Company::find($editCompany['id']);
+            foreach ($editCompany as $key => $value) {
+                $company->$key = $value;
+            }
+            $company->updated_by = Session::get('id');
+            $company->save();
+            return response($company->id);
         }
-        $company->updated_by = Session::get('id');
-        $company->save();
-        return response($company->id);
     }
 
     public function getDetail($id) {
         $company = Company::find($id);
         return view('company.detail')->with('navIndex', 1)->with('company', $company);
+    }
+
+    public function getJobList() {
+        $id = request()->input('id');
+        $job = DB::table('jobs')->select('id', 'name')->where('company_id', $id)->where('deleted_at', null)->get();
+        return response($job);
     }
 
     public function postDelete($id) {

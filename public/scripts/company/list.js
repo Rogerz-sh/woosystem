@@ -20,8 +20,8 @@ $(function () {
             {field: 'industry', title: '所属行业'},
             {field: 'contact', title: '联系人'},
             {field: 'tel', title: '联系电话'},
-            {title: '操作', template: '<a href="/company/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
-            '<a href="/company/detail/#:id#" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
+            {title: '操作', template: '<a href="\\#/company/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
+            '<a href="\\#/company/detail/#:id#" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
             '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
         ],
         scrollable: false,

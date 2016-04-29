@@ -1,0 +1,52 @@
+<div>
+    <div class="row">
+        <div class="col-xs-12">
+            ID: <span ng-bind="person.real_id"></span>
+        </div>
+    </div>
+    <div class="row">
+        <h3 class="padding-15">
+            <span ng-bind="person.name"></span>
+            <small>
+                <span class="dark-gray">{{person.sex == '男' ? '先生' : '女士'}}</span>
+                <span class="margin-left-10"><i class="orange fa fa-mobile"></i> <span ng-bind="person.tel"></span></span>
+                <span class="margin-left-10" ng-if="person.email"><i class="orange fa fa-envelope"></i> <span ng-bind="person.email"></span></span>
+                <span class="pull-right">简历编号: {{person.web_id}}</span>
+            </small>
+        </h3>
+    </div>
+    <div class="row">
+        <span class="padding-15"><span class="dark-gray">当前职位：</span>{{person.job}}</span>/
+        <span class="padding-15"><span class="dark-gray">所在公司：</span>{{person.company}}</span>/
+        <span class="padding-15"><span class="dark-gray">简历来源：</span>{{person.source}}</span>/
+        <br><br>
+        <span class="padding-15"><span class="dark-gray">学历：</span>{{person.degree}}</span>/
+        <span class="padding-15"><span class="dark-gray">年龄：</span>{{person.age}}人</span>/
+        <span class="padding-15"><span class="dark-gray">工作年限：</span>{{person.year}}</span>/
+        <span class="padding-15"><span class="dark-gray">婚姻状态：</span>{{person.marry}}</span>/
+        <span class="padding-15"><span class="dark-gray">居住地：</span>{{person.location}}</span>/
+        <span class="padding-15"><span class="dark-gray">户籍地：</span>{{person.belong}}</span>
+    </div>
+    <hr>
+    <div ng-if="person.type=='upload'">
+        <blockquote>
+            <p>简历附件</p>
+        </blockquote>
+        <div class="row">
+            <div class="col-xs-12">附件名称：
+                <a href="/file/download-file?path={{person.file_path}}&name={{person.file_name}}&coded={{person.file_coded}}">
+                    <span ng-if="person.file_coded==0">{{person.file_path.split('/').pop()}}</span>
+                    <span ng-if="person.file_coded==1">{{person.file_name}}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div ng-if="person.type=='basic'">
+        <div ng-if="person.companys.length > 0">
+            <blockquote>
+                <p>工作经历</p>
+            </blockquote>
+
+        </div>
+    </div>
+</div>
