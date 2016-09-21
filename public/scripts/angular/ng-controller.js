@@ -260,23 +260,35 @@
                         }},
                     ]
                 },
+                filterable: {mode: 'row'},
                 columns: [
-                    {field: 'id', title: 'ID', sortable: false},
-                    {field: 'job_name', title: '职位名称', template: '#:job_name# <a ng-click="viewJob(#:job_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
+                    {field: 'id', title: 'ID', sortable: false, filterable: false},
+                    {
+                        field: 'job_name',
+                        title: '职位名称',
+                        template: '#:job_name# <a ng-click="viewJob(#:job_id#)"><i class="fa fa-search pointer"></i></a>',
+                        sortable: false,
+                        filterable: {
+                            cell: {
+                                operator: 'contains'
+                            }
+                        }
+                    },
                     {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
-                    {field: 'user_names', title: '顾问', sortable: false},
+                    {field: 'user_names', title: '顾问', sortable: false, filterable: false},
                     {field: 'type', title: '重要程度', template: getType, sortable: {
                         compare: function (a, b) {
                             var type = {'低': 1, '中': 2, '高': 3};
                             return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
                         }
-                    }},
-                    {field: 'status', title: '当前状态', sortable: true, template: getStatus},
+                    }, filterable: false},
+                    {field: 'status', title: '当前状态', sortable: true, template: getStatus, filterable: false},
                     {
                         title: '操作',
-                        template: '<a href="\\#/hunt/select/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>',
+                        template: '<a href="\\#/hunt/select/#:id#" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-pencil"></i></a>',
                         width: 140,
-                        sortable: false
+                        sortable: false,
+                        filterable: false
                     }
                 ],
                 scrollable: false,
@@ -306,7 +318,7 @@
                         {field: 'date', title: '接入日期', template: getDate},
                         {field: 'status', title: '状态'},
                         {title: '操作', template: '<a href="\\#/hunt/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
-                        '<a href="\\#/hunt/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
+                        '<a href="\\#/hunt/record/#:id#" class="btn btn-info btn-sm" target="_blank"><i class="fa fa-list"></i></a> ' +
                         '<a ng-click="deleteHunt(#:id#)" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
                     ],
                     scrollable: false,

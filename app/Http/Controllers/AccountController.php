@@ -18,7 +18,7 @@ class AccountController extends BaseController {
         $name = request()->input('name');
         $password = request()->input('password');
 
-        $user = DB::table('users')->where('name', $name)->where('password', md5($password))->first();
+        $user = User::where('name', $name)->where('password', md5($password))->where('status', 1)->first();
 
         if ($user) {
             Session::set('id', $user->id);
