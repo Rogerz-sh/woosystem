@@ -11,16 +11,19 @@
         </div>
         <div class="row">
             <div class="col-xs-12">
-                <div id="tab">
+                <div kendo-tab-strip id="tab">
                     <ul>
                         <li class="k-state-active">我的客户</li>
                         <li>所有客户</li>
                     </ul>
-                    <div><div id="grid"></div></div>
-                    <div><div id="grid2"></div></div>
+                    <div>
+                        <div kendo-grid k-options="config.grid"></div>
+                    </div>
+                    <div>
+                        <div kendo-grid k-options="config.grid2"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<script src="/scripts/bd/list.js"></script>

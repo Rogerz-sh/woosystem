@@ -96,6 +96,96 @@
         });
     }]);
 
+    app.controller('bdListController', ['$scope', '$http', 'model', 'token', function ($scope, $http, model, token) {
+        var session = model.getUserSession();
+
+        $scope.config = {
+            grid: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/bd/json-bd-list-data',
+                            data: {user_id: session.id},
+                            dataType: 'json'
+                        }
+                    },
+                    pageSize: 10,
+                    schema: {
+                        model: {
+                            id: 'id'
+                        }
+                    },
+                    filter: {field: 'deleted', operator: 'neq', value: true}
+                },
+                columns: [
+                    {field: 'name', title: 'ID'},
+                    {field: 'company_name', title: '企业名称'},
+                    {field: 'user_name', title: '顾问'},
+                    {field: 'user_names', title: '合作顾问'},
+                    {field: 'date', title: '接入日期', template: getDate},
+                    {field: 'status', title: '状态'},
+                    {title: '操作', template: '<a href="\\#/bd/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
+                    '<a href="\\#/bd/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
+                    '<a data-id="#:id#" class="btn btn-danger btn-sm" ng-click="bdDelete(#:id#)"><i class="fa fa-trash-o"></i></a>', width: 140}
+                ],
+                scrollable: false,
+                pageable: true,
+
+            },
+            grid2: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/bd/json-bd-list-data',
+                            dataType: 'json'
+                        }
+                    },
+                    pageSize: 10,
+                    schema: {
+                        model: {
+                            id: 'id'
+                        }
+                    },
+                    filter: {field: 'deleted', operator: 'neq', value: true}
+                },
+                columns: [
+                    {field: 'name', title: 'ID'},
+                    {field: 'company_name', title: '企业名称'},
+                    {field: 'user_name', title: '顾问'},
+                    {field: 'user_names', title: '合作顾问'},
+                    {field: 'date', title: '接入日期', template: getDate},
+                    {field: 'status', title: '状态'},
+                    {title: '操作', template: '<a href="\\#/bd/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
+                    '<a href="\\#/bd/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
+                    '<a data-id="#:id#" class="btn btn-danger btn-sm" ng-click="bdDelete(#:id#)"><i class="fa fa-trash-o"></i></a>', width: 140}
+                ],
+                scrollable: false,
+                pageable: true,
+
+            }
+        }
+
+        $('#grid').kendoGrid();
+
+        $('#grid2').kendoGrid();
+
+        $scope.bdDelete = function (id) {
+            $.$modal.confirm('确定要删除吗?', function (isOk) {
+                if (!isOk) return;
+                $.$ajax.post('/bd/delete/'+id, function (res) {
+                    $.$modal.alert('删除成功', function () {
+                        $('#grid').data('kendoGrid').dataSource.read()
+                        $('#grid2').data('kendoGrid').dataSource.read();
+                    });
+                })
+            })
+        }
+
+        function getDate(item) {
+            return new Date(item.date.replace(/-/g, '/')).format();
+        }
+    }]);
+
     app.controller('bdRecordController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
         var session = model.getUserSession();
 
@@ -275,14 +365,14 @@
                         }
                     },
                     {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
-                    {field: 'user_names', title: '顾问', sortable: false, filterable: false},
+                    {field: 'user_names', title: '顾问', sortable: false},
                     {field: 'type', title: '重要程度', template: getType, sortable: {
                         compare: function (a, b) {
                             var type = {'低': 1, '中': 2, '高': 3};
                             return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
                         }
-                    }, filterable: false},
-                    {field: 'status', title: '当前状态', sortable: true, template: getStatus, filterable: false},
+                    }},
+                    {field: 'status', title: '当前状态', sortable: true, template: getStatus},
                     {
                         title: '操作',
                         template: '<a href="\\#/hunt/select/#:id#" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-pencil"></i></a>',
@@ -313,8 +403,13 @@
                         filter: {field: 'deleted', operator: 'neq', value: true}
                     },
                     columns: [
-                        {field: 'name', title: 'ID'},
-                        {field: 'person_name', title: '候选人', template: '#:person_name# <a ng-click="viewPerson(#:person_id#)"><i class="fa fa-search pointer"></i></a>'},
+                        {field: 'name', title: '候选人', template: '#:name# <a ng-click="viewPerson(#:person_id#)"><i class="fa fa-search pointer"></i></a>'},
+                        {field: 'company', title: '所在公司'},
+                        {field: 'job', title: '现任职位'},
+                        {field: 'sex', title: '性别'},
+                        {field: 'age', title: '年龄'},
+                        {field: 'degree', title: '学历'},
+                        {field: 'tel', title: '联系电话'},
                         {field: 'date', title: '接入日期', template: getDate},
                         {field: 'status', title: '状态'},
                         {title: '操作', template: '<a href="\\#/hunt/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +

@@ -56,9 +56,9 @@
                 </div>
             </div>
             <div class="col-xs-6 no-padding error-box">
-                <label class="control-label col-xs-4"><span class="red">*</span> 学历</label>
+                <label class="control-label col-xs-4">学历</label>
                 <div class="col-xs-8">
-                    <select kendo-drop-down-list ng-model="person.degree" class="form-control size-full" required>
+                    <select kendo-drop-down-list ng-model="person.degree" class="form-control size-full">
                         <option value="">请选择学历...</option>
                         <option ng-repeat="item in data.degree" value="{{item}}">{{item}}</option>
                     </select>
@@ -67,15 +67,15 @@
         </div>
         <div class="form-group">
             <div class="col-xs-6 no-padding error-box">
-                <label class="control-label col-xs-4"><span class="red">*</span> 当前职位</label>
+                <label class="control-label col-xs-4">当前职位</label>
                 <div class="col-xs-8">
-                    <input type="text" ng-model="person.job" class="form-control" required />
+                    <input type="text" ng-model="person.job" class="form-control" />
                 </div>
             </div>
             <div class="col-xs-6 no-padding error-box">
-                <label class="control-label col-xs-4"><span class="red">*</span> 所在公司</label>
+                <label class="control-label col-xs-4">所在公司</label>
                 <div class="col-xs-8">
-                    <input type="text" ng-model="person.company" class="form-control" required />
+                    <input type="text" ng-model="person.company" class="form-control" />
                 </div>
             </div>
         </div>
@@ -136,14 +136,20 @@
                 <div class="col-xs-8">
                     <div class="col-xs-4 no-padding">
                         <label class="form-control-static">
-                            <input type="radio" ng-model="person.marry" value="单身">
-                            <span class="text">单身</span>
+                            <input type="radio" ng-model="person.marry" value="未婚">
+                            <span class="text">未婚</span>
                         </label>
                     </div>
                     <div class="col-xs-4 no-padding">
                         <label class="form-control-static">
                             <input type="radio" ng-model="person.marry" value="已婚">
                             <span class="text">已婚</span>
+                        </label>
+                    </div>
+                    <div class="col-xs-4 no-padding">
+                        <label class="form-control-static">
+                            <input type="radio" ng-model="person.marry" value="保密">
+                            <span class="text">保密</span>
                         </label>
                     </div>
                 </div>
@@ -225,15 +231,15 @@
                 </div>
                 <div class="form-group">
                     <div class="col-xs-6 no-padding error-box">
-                        <label class="control-label col-xs-4"><span class="red">*</span> 职位名称</label>
+                        <label class="control-label col-xs-4">职位名称</label>
                         <div class="col-xs-8">
-                            <input type="text" ng-model="company.job" class="form-control" value="" required/>
+                            <input type="text" ng-model="company.job" class="form-control" value=""/>
                         </div>
                     </div>
                     <div class="col-xs-6 no-padding error-box">
-                        <label class="control-label col-xs-4"><span class="red">*</span> 所属部门</label>
+                        <label class="control-label col-xs-4">所属部门</label>
                         <div class="col-xs-8">
-                            <input type="text" ng-model="company.depart" class="form-control" value="" required />
+                            <input type="text" ng-model="company.depart" class="form-control" value="" />
                         </div>
                     </div>
                 </div>
@@ -264,7 +270,7 @@
             <div class="clearfix"></div>
         </div>
         <blockquote>
-            <p>教育经历 <small class="red inline-block">(必填)</small></p>
+            <p>教育经历</p>
         </blockquote>
         <div id="schoolContainer">
             <div class="school-group pos-rel" ng-repeat="school in person.schools track by $index">
@@ -363,7 +369,7 @@
                     <div class="col-xs-6 no-padding error-box">
                         <label class="control-label col-xs-4"><span class="red">*</span> 所在公司</label>
                         <div class="col-xs-8">
-                            <input type="text" ng-model="training.company_name" class="form-control" required>
+                            <input type="text" ng-model="training.company_name" class="form-control">
                         </div>
                     </div>
                 </div>
@@ -417,7 +423,7 @@
     </div>
     <div class="form-group">
         <div class="col-xs-10 col-xs-offset-2">
-            <button ng-show="person.type=='basic'" class="btn btn-success col-xs-2" ng-disabled="personForm.$invalid || person.companys.length==0 || person.schools.length==0" ng-click="operator.savePersonData()">保存</button>
+            <button ng-show="person.type=='basic'" class="btn btn-success col-xs-2" ng-disabled="personForm.$invalid || person.companys.length==0" ng-click="operator.savePersonData()">保存</button>
             <button ng-show="person.type=='upload'" class="btn btn-success col-xs-2" ng-disabled="personForm.$invalid || person.file_path==''" ng-click="operator.savePersonData()">保存</button>
             <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="operator.quit()">取消</button>
         </div>

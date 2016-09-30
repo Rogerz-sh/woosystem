@@ -670,7 +670,8 @@
                             url: '/hunt/json-job-list-data',
                             dataType: 'json'
                         }
-                    }
+                    },
+                    //serverFiltering: true
                 });
                 var dsPerson = new kendo.data.DataSource({
                     transport: {
@@ -691,7 +692,7 @@
                     company: {
                         dataSource: dsJob,
                         optionLabel: '请选择要操作的岗位...',
-                        filter: 'startswith',
+                        filter: 'contains',
                         delay: 500,
                         dataTextField: 'name',
                         dataValueField: 'id',
@@ -704,6 +705,21 @@
                             $scope.hunt.company_name = item.company_name;
                             $scope.$apply();
                         },
+                        filtering: function (e) {
+                            var key = e.filter.value.trim();
+                            if (!key) {
+                                dsJob.filter([]);
+                            } else {
+                                dsJob.filter({
+                                    logic: 'or',
+                                    filters: [
+                                        {field: 'name', operator: 'contains', value: key},
+                                        {field: 'company_name', operator: 'contains', value: key}
+                                    ]
+                                });
+                            }
+                            e.preventDefault();
+                        },
                         dataBound: function () {
                             $scope.hunt.job_id = $scope.debug.job_id;
                         }
@@ -711,7 +727,7 @@
                     candidate: {
                         dataSource: dsPerson,
                         optionLabel: '请选择候选人...',
-                        filter: 'startswith',
+                        filter: 'contains',
                         delay: 500,
                         dataTextField: 'name',
                         dataValueField: 'id',

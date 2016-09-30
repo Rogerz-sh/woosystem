@@ -42,7 +42,10 @@ class HuntController extends BaseController {
     }
 
     public function getJsonJobListData() {
+//        $filter = request()->input('filter');
+//        $key = $filter['filters'][0]['value'];
         $job = DB::table('jobs')->select('id', 'name', 'company_id', 'company_name')->where('deleted_at', null)
+//            ->orWhereRaw('name like ? or company_name like ?', ['%'.$key.'%', '%'.$key.'%'])
             ->orderBy('created_at', 'desc')->get();
         return response($job);
     }
@@ -186,6 +189,7 @@ class HuntController extends BaseController {
             foreach ($rpt as $key => $value) {
                 $oldRpt->$key = $value;
             }
+            $oldRpt->updated_by = Session::get('id');
             $oldRpt->save();
             return response($oldRpt->id);
         } else {
@@ -193,6 +197,7 @@ class HuntController extends BaseController {
             foreach ($rpt as $key => $value) {
                 $newRpt->$key = $value;
             }
+            $newRpt->created_by = Session::get('id');
             $newRpt->save();
             return response($newRpt->id);
         }
@@ -211,6 +216,7 @@ class HuntController extends BaseController {
         foreach ($face as $key => $value) {
             $newFace->$key = $value;
         }
+        $newFace->created_by = Session::get('id');
         $newFace->save();
         return response($newFace->id);
     }
@@ -233,7 +239,10 @@ class HuntController extends BaseController {
 
     public function getJsonHuntSelectJobData() {
         $job_id = request()->input('job_id');
-        $hunt = Hunt::where('job_id', $job_id)->get();
+        $hunt = DB::table('hunt')
+            ->join('person', 'hunt.person_id', '=', 'person.id')
+            ->select('hunt.id', 'person.id as person_id', 'person.name', 'person.company', 'person.job', 'person.sex', 'person.age', 'person.degree', 'person.tel', 'hunt.date', 'hunt.status')
+            ->where('hunt.job_id', $job_id)->get();
         return response($hunt);
     }
 

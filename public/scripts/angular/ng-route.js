@@ -60,7 +60,7 @@
             })
             .when('/bd/list', {
                 templateUrl: '/scripts/angular/templates/bd-list.html',
-                controller: 'routeTempController'
+                controller: 'bdListController'
             })
             .when('/bd/create', {
                 templateUrl: '/scripts/angular/templates/bd-create.html',
