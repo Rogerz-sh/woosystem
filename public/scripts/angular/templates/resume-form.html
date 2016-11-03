@@ -67,15 +67,15 @@
         </div>
         <div class="form-group">
             <div class="col-xs-6 no-padding error-box">
-                <label class="control-label col-xs-4">当前职位</label>
+                <label class="control-label col-xs-4"><span class="red">*</span> 当前职位</label>
                 <div class="col-xs-8">
-                    <input type="text" ng-model="person.job" class="form-control" />
+                    <input type="text" ng-model="person.job" class="form-control" required />
                 </div>
             </div>
             <div class="col-xs-6 no-padding error-box">
-                <label class="control-label col-xs-4">所在公司</label>
+                <label class="control-label col-xs-4"><span class="red">*</span> 所在公司</label>
                 <div class="col-xs-8">
-                    <input type="text" ng-model="person.company" class="form-control" />
+                    <input type="text" ng-model="person.company" class="form-control" required />
                 </div>
             </div>
         </div>
@@ -87,9 +87,9 @@
                 </div>
             </div>
             <div class="col-xs-6 no-padding error-box">
-                <label class="control-label col-xs-4">电子邮箱</label>
+                <label class="control-label col-xs-4"><span class="red">*</span> 电子邮箱</label>
                 <div class="col-xs-8">
-                    <input type="text" ng-model="person.email" class="form-control" value="" />
+                    <input type="text" ng-model="person.email" class="form-control" value="" required />
                 </div>
             </div>
         </div>

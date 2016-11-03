@@ -8,7 +8,7 @@
         $routeProvider
             .when('/', {
                 templateUrl: '/scripts/angular/templates/dashboard.html',
-                controller: 'routeTempController'
+                controller: 'dashboardController'
             })
             .when('/company/list', {
                 templateUrl: '/scripts/angular/templates/company-list.html',

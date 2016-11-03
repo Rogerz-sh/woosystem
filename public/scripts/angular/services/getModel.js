@@ -46,16 +46,7 @@
                     var location = p.location.split('-'), belong = p.belong.split('-');
                     person.location = {p: location[0], c: location[1]};
                     person.belong = {p: belong[0], c: belong[1]};
-                    $http.get('/candidate/company-json-data/', {params: {id: id}}).success(function (c) {
-                        person.companys = c;
-                        $http.get('/candidate/school-json-data/', {params: {id: id}}).success(function (s) {
-                            person.schools = s;
-                            $http.get('/candidate/training-json-data/', {params: {id: id}}).success(function (t) {
-                                person.trainings = t;
-                                callback(person);
-                            });
-                        });
-                    });
+                    callback(person);
                 });
             }
         };
@@ -294,11 +285,31 @@
 
         this.getRecordNewFace = function () {
             return {
-                name: '',
+                type: '一面',
+                person_id: '',
+                person_name: '',
                 date: (new Date()).format(),
+                time: '00:00',
+                job_id: '',
+                job_name: '',
+                tel: '',
+                num: '',
                 desc: ''
             }
         };
+
+        this.getRecordSuccess = function () {
+            return {
+                date: '',
+                protected: '',
+                job_id: '',
+                job_name: '',
+                company_id: '',
+                company_name: '',
+                person_id: '',
+                person_name: '',
+            }
+        }
 
         this.getRecordOffer = function () {
             return {

@@ -40,7 +40,7 @@
                     <div class="col-xs-6 no-padding error-box">
                         <label class="control-label col-xs-4"><span class="red">*</span> 顾问</label>
                         <div class="col-xs-8">
-                            <label class="form-control-static">{{hunt.user}}</label>
+                            <label class="form-control-static">{{hunt.user_name}}</label>
                         </div>
                     </div>
                     <div class="col-xs-6 no-padding error-box">
@@ -93,6 +93,7 @@
                                 <button class="btn btn-info" ng-click="makeReport()">推荐报告</button>
                                 <button class="btn btn-primary" ng-click="addFaceView()">面试通知</button>
                                 <button class="btn btn-success" ng-click="makeOffer()">Offer</button>
+                                <button class="btn btn-warning" ng-click="makeSuccess()">上岗</button>
                             </div>
                             <button class="btn btn-default" ng-disabled="recForm.$invalid" ng-click="addRecord()">添加记录</button>
                         </div>
@@ -192,7 +193,7 @@
             </div>
         </div>
         <div kendo-window="win7" k-title="'上传推荐报告'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
-             k-on-open="win7visible = true" k-on-close="win7visible = false">
+             k-options="config.rptWin">
             <div class="container-fluid">
                 <div class="row">
                     <form name="rptForm" class="form form-horizontal" onsubmit="return false" novalidate>
@@ -215,6 +216,16 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label class="control-label col-xs-2">相关信息</label>
+                            <div class="col-xs-10">
+                                <p>已上传推荐报告数： <span class="red" ng-bind="rptInfo.total"></span> 份</p>
+                                <p>最近上传的5份推荐报告信息：</p>
+                                <ul>
+                                    <li class="dark-orange" ng-repeat="list in rptInfo.list">[{{list.created_at}}] {{list.filename}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <div class="col-xs-10 col-xs-offset-2">
                                 <button class="btn btn-success col-xs-2" ng-click="saveReport()" ng-disabled="rptForm.$invalid">保存</button>
                                 <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win7.close()">取消</button>
@@ -226,25 +237,62 @@
         </div>
         <div kendo-window="win8" k-title="'面试通知'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
              k-on-open="win8visible = true" k-on-close="win8visible = false">
-            <div class="container-fluid">
+            <div class="container-fluid" style="width:90%;">
                 <div class="row">
                     <form name="faceForm" class="form form-horizontal" onsubmit="return false" novalidate>
                         <div class="form-group">
-                            <label class="control-label col-xs-2"><span class="red">*</span> 面试名称</label>
-                            <div class="col-xs-10">
-                                <input type="text" class="form-control" placeholder="填写一面、二面或三面等" ng-model="face.name">
+                            <div class="col-xs-6 no-padding-left no-padding-right">
+                                <label class="control-label col-xs-4"><span class="red">*</span> 面试名称</label>
+                                <div class="col-xs-8">
+                                    <select kendo-drop-down-list ng-model="face.type" class="full-width">
+                                        <option value="一面">一面</option>
+                                        <option value="二面">二面</option>
+                                        <option value="三面">三面</option>
+                                        <option value="四面">四面</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 no-padding-left no-padding-right">
+                                <label class="control-label col-xs-4"><span class="red">*</span> 编号</label>
+                                <div class="col-xs-8">
+                                    <input kendo-numeric-text-box k-options="config.faceNum" ng-model="face.num" type="num" class="full-width" required>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="control-label col-xs-2"><span class="red">*</span> 面试日期</label>
-                            <div class="col-xs-10">
-                                <input kendo-date-picker k-options="config.reportDate" ng-model="face.date" type="text" class="form-control" required>
+                            <div class="col-xs-6 no-padding-left no-padding-right">
+                                <label class="control-label col-xs-4"><span class="red">*</span> 面试人</label>
+                                <div class="col-xs-8">
+                                    <input ng-model="face.person_id" type="hidden" class="form-control" readonly>
+                                    <input ng-model="face.person_name" type="text" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 no-padding-left no-padding-right">
+                                <label class="control-label col-xs-4"><span class="red">*</span> 面试岗位</label>
+                                <div class="col-xs-8">
+                                    <input ng-model="face.job_id" type="hidden" class="form-control" readonly>
+                                    <input ng-model="face.job_name" type="text" class="form-control" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-xs-6 no-padding-left no-padding-right">
+                                <label class="control-label col-xs-4"><span class="red">*</span> 面试日期</label>
+                                <div class="col-xs-8">
+                                    <input kendo-date-picker k-options="config.faceDate" ng-model="face.date" type="text" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 no-padding-left no-padding-right">
+                                <label class="control-label col-xs-4"><span class="red">*</span> 面试时间</label>
+                                <div class="col-xs-8">
+                                    <input kendo-time-picker k-options="config.faceTime" ng-model="face.time" type="text" class="form-control" required>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="control-label col-xs-2">备注</label>
                             <div class="col-xs-10">
-                                <textarea rows="5" class="form-control" ng-model="face.desc"></textarea>
+                                <textarea rows="5" class="form-control" ng-model="face.desc" style="width:90%;"></textarea>
                             </div>
                         </div>
                         <div class="form-group">
@@ -290,6 +338,32 @@
                 </div>
             </div>
         </div>
-
+        <div kendo-window="win10" k-title="'人选上岗'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+             k-on-open="win10visible = true" k-on-close="win10visible = false">
+            <div class="container-fluid">
+                <div class="row">
+                    <form name="successForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 上岗日期</label>
+                            <div class="col-xs-10">
+                                <input kendo-date-picker k-options="config.successDate" ng-model="success.date" type="file" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2"><span class="red">*</span> 保证期</label>
+                            <div class="col-xs-10">
+                                <input ng-model="success.protected" type="text" class="form-control input-size-normal" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-xs-10 col-xs-offset-2">
+                                <button class="btn btn-success col-xs-2" ng-click="saveSuccess()" ng-disabled="successForm.$invalid">保存</button>
+                                <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win10.close()">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

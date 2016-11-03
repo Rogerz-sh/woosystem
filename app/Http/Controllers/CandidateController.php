@@ -113,6 +113,18 @@ class CandidateController extends BaseController {
     public function getPersonJsonData () {
         $id = request()->input('id');
         $person = Candidate::find($id);
+        if ($person->type == 'basic') {
+            $company = PersonCompany::where('person_id', $id)->get();
+            $school = PersonSchool::where('person_id', $id)->get();
+            $training = PersonTraining::where('person_id', $id)->get();
+            $person->companys = $company;
+            $person->schools = $school;
+            $person->trainings = $training;
+        } else {
+            $person->companys = [];
+            $person->schools = [];
+            $person->trainings = [];
+        }
         return response($person);
     }
 

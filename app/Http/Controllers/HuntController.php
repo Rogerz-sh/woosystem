@@ -10,6 +10,7 @@ use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
 use App\HuntSelect;
+use App\HuntSuccess;
 use App\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controller as BaseController;
@@ -30,7 +31,9 @@ class HuntController extends BaseController {
 
     public function getJsonHuntListData() {
         if (Session::get('power') == 9) {
-            $hunt = Hunt::orderBy('created_at', 'desc')->get();
+            $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
+                ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'hunt.date', 'hunt.status')
+                ->orderBy('hunt.created_at', 'desc')->get();
         } else {
             $hunt = Hunt::where('user_id', Session::get('id'))->get();
         }
@@ -180,6 +183,7 @@ class HuntController extends BaseController {
     public function postDelete($id) {
         $hunt = Hunt::find($id);
         $hunt->delete();
+        return response($id);
     }
 
     public function postSaveReport() {
@@ -200,6 +204,27 @@ class HuntController extends BaseController {
             $newRpt->created_by = Session::get('id');
             $newRpt->save();
             return response($newRpt->id);
+        }
+    }
+
+    public function postSaveSuccess() {
+        $rst = request()->input('success');
+        $oldRst = HuntSuccess::where('hunt_id', $rst['hunt_id'])->first();
+        if ($oldRst) {
+            foreach ($rst as $key => $value) {
+                $oldRst->$key = $value;
+            }
+            $oldRst->updated_by = Session::get('id');
+            $oldRst->save();
+            return response($oldRst->id);
+        } else {
+            $newRst = new HuntSuccess();
+            foreach ($rst as $key => $value) {
+                $newRst->$key = $value;
+            }
+            $newRst->created_by = Session::get('id');
+            $newRst->save();
+            return response($newRst->id);
         }
     }
 
@@ -230,19 +255,20 @@ class HuntController extends BaseController {
     //职位分配相关操作
     public function getJsonHuntSelectListData() {
         if (Session::get('power') == 9) {
-            $hs = HuntSelect::all();
+            $hs = DB::table('hunt_count')->orderBy('updated_at', 'desc')->get();
         } else {
-            $hs = HuntSelect::whereRaw('locate(? + ",", concat(user_ids, ",")) > 0', [Session::get('id')])->get();
+            $hs = DB::table('hunt_count')->whereRaw('locate(concat(",", ?, ","), concat(",", user_ids, ",")) > 0', [Session::get('id')])->orderBy('updated_at', 'desc')->get();
         }
         return response($hs);
     }
 
     public function getJsonHuntSelectJobData() {
         $job_id = request()->input('job_id');
-        $hunt = DB::table('hunt')
-            ->join('person', 'hunt.person_id', '=', 'person.id')
-            ->select('hunt.id', 'person.id as person_id', 'person.name', 'person.company', 'person.job', 'person.sex', 'person.age', 'person.degree', 'person.tel', 'hunt.date', 'hunt.status')
-            ->where('hunt.job_id', $job_id)->get();
+        $hunt = DB::table('hunt_person_status')
+            ->join('person', 'hunt_person_status.person_id', '=', 'person.id')
+            ->select('hunt_person_status.id', 'person.id as person_id', 'person.type', 'person.name', 'person.company', 'person.job', 'person.sex', 'person.age', 'person.degree', 'person.tel', 'hunt_person_status.user_name', 'hunt_person_status.date', 'hunt_person_status.reported', 'hunt_person_status.faced', 'hunt_person_status.offered', 'hunt_person_status.succeed')
+            ->where('hunt_person_status.deleted_at', null)
+            ->where('hunt_person_status.job_id', $job_id)->get();
         return response($hunt);
     }
 
@@ -288,5 +314,13 @@ class HuntController extends BaseController {
             $hs->save();
             return response($hs->id);
         }
+    }
+
+    public function getReportInfo() {
+        $hid = request()->input('hunt_id');
+        $hunt = Hunt::find($hid);
+        $companyId = $hunt->company_id;
+        $hRpt = HuntReport::where('company_id', $companyId)->where('type', 'report')->orderBy('created_at', 'desc')->get();
+        return response($hRpt);
     }
 }

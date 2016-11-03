@@ -9,6 +9,219 @@
 
     });
 
+    //controller for dashboard
+    app.controller('dashboardController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
+        $scope.config = {
+            grid: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/dashboard/recent-hunt-list',
+                            dataType: 'json'
+                        }
+                    },
+                    pageSize: 5,
+                    schema: {
+                        model: {
+                            id: 'id'
+                        }
+                    },
+                    filter: {field: 'deleted', operator: 'neq', value: true},
+                    sort: [
+                        {field: 'updated_at', dir: 'desc'},
+                        {field: 'status', dir: 'desc', compare: function (a, b) {
+                            var status = {'进行中': 3, '已暂停': 2, '已停止': 1};
+                            return status[a.status] < status[b.status] ? -1 : status[a.status] === status[b.status] ? 0 : 1;
+                        }},
+                        {field: 'type', dir: 'desc', compare: function (a, b) {
+                            var type = {'低': 1, '中': 2, '高': 3};
+                            return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
+                        }},
+                    ]
+                },
+                filterable: {mode: 'row'},
+                columns: [
+                    {field: 'id', title: 'ID', sortable: false, filterable: false},
+                    {
+                        field: 'job_name',
+                        title: '职位名称',
+                        template: '#:job_name# <a ng-click="viewJob(#:job_id#)"><i class="fa fa-search pointer"></i></a>',
+                        sortable: false,
+                        filterable: {
+                            cell: {
+                                operator: 'contains'
+                            }
+                        }
+                    },
+                    {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
+                    {field: 'user_names', title: '顾问', sortable: false},
+                    {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person_count')},
+                    {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report_count')},
+                    {field: 'view_count', title: '面试', filterable: false, template: getCountColor('view_count')},
+                    {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer_count')},
+                    {field: 'type', title: '重要程度', template: getType, sortable: {
+                        compare: function (a, b) {
+                            var type = {'低': 1, '中': 2, '高': 3};
+                            return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
+                        }
+                    }, filterable: {multi:true}},
+                    {field: 'status', title: '状态', template: getStatus},
+                    {field: 'updated_at', title: '更新日期', template: '#: new Date(updated_at).format()#', filterable: false},
+                    {
+                        title: '操作',
+                        template: '<a href="\\#/hunt/select/#:id#" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-pencil"></i></a>',
+                        width: 140,
+                        sortable: false,
+                        filterable: {multi:true}
+                    }
+                ],
+                sortable: true,
+                scrollable: false,
+                pageable: true,
+            },
+            gridDetail: function (item) {
+                return {
+                    dataSource: {
+                        transport: {
+                            read: {
+                                url: '/hunt/json-hunt-select-job-data',
+                                data: {job_id: item.job_id},
+                                dataType: 'json'
+                            }
+                        },
+                        pageSize: 5,
+                        schema: {
+                            model: {
+                                id: 'id'
+                            }
+                        },
+                        filter: {field: 'deleted', operator: 'neq', value: true}
+                    },
+                    columns: [
+                        {field: 'name', title: '候选人', template: '#:name# <a ng-click="viewPerson(#:person_id#)"><i class="fa fa-search pointer"></i></a>'},
+                        {field: 'company', title: '所在公司'},
+                        {field: 'job', title: '现任职位'},
+                        {field: 'sex', title: '性别'},
+                        {field: 'age', title: '年龄'},
+                        {field: 'degree', title: '学历'},
+                        {field: 'tel', title: '联系电话'},
+                        {field: 'date', title: '接入日期', template: getDate},
+                        {title: '<div class=\'text-center\'>当前状态</div>', columns: [
+                            {filed: 'reported', title: '推荐', template: getPersonStatus('reported')},
+                            {filed: 'faced', title: '面试', template: getPersonStatus('faced')},
+                            {filed: 'offered', title: 'Offer', template: getPersonStatus('offered')},
+                            {filed: 'succeed', title: '上岗', template: getPersonStatus('succeed')},
+                        ]},
+                        {field: 'user_name', title: '顾问'},
+                        {title: '操作', template: '<a href="\\#/hunt/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
+                        '<a href="\\#/hunt/record/#:id#" class="btn btn-info btn-sm" target="_blank"><i class="fa fa-list"></i></a> ' +
+                        '<a ng-click="deleteHunt(#:id#)" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
+                    ],
+                    scrollable: false,
+                    pageable: true,
+                }
+            },
+            gridPerson: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/dashboard/recent-hunt-person',
+                            dataType: 'json'
+                        }
+                    },
+                    pageSize: 5,
+                    schema: {
+                        model: {
+                            id: 'id'
+                        }
+                    },
+                    filter: {field: 'deleted', operator: 'neq', value: true}
+                },
+                columns: [
+                    {field: 'name', title: '候选人', template: '#:name# <a ng-click="viewPerson(#:person_id#)"><i class="fa fa-search pointer"></i></a>'},
+                    {field: 'company_name', title: '推荐公司'},
+                    {field: 'job_name', title: '推荐职位'},
+                    {field: 'sex', title: '性别'},
+                    {field: 'age', title: '年龄'},
+                    {field: 'degree', title: '学历'},
+                    {field: 'tel', title: '联系电话'},
+                    {title: '<div class=\'text-center\'>当前状态</div>', columns: [
+                        {filed: 'reported', title: '推荐', template: getPersonStatus('reported')},
+                        {filed: 'faced', title: '面试', template: getPersonStatus('faced')},
+                        {filed: 'offered', title: 'Offer', template: getPersonStatus('offered')},
+                        {filed: 'succeed', title: '上岗', template: getPersonStatus('succeed')},
+                    ]},
+                    {field: 'user_name', title: '顾问'},
+                    {field: 'updated_at', title: '更新日期', template: getUpdatedDate},
+                    {title: '操作', template: '<a href="\\#/hunt/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
+                    '<a href="\\#/hunt/record/#:id#" class="btn btn-info btn-sm" target="_blank"><i class="fa fa-list"></i></a> ' +
+                    '<a ng-click="deleteHunt(#:id#)" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
+                ],
+                scrollable: false,
+                pageable: true,
+            }
+        };
+
+        $scope.deleteHunt = function (id) {
+            $.$modal.confirm('确定要删除吗?', function (isOk) {
+                if (!isOk) return;
+                $.$ajax.post('/hunt/delete/'+id, function (res) {
+                    $.$modal.alert('删除成功', function () {
+                        location.reload();
+                    });
+                });
+            })
+        };
+
+        function getPersonStatus(name) {
+            return function (item) {
+                return item[name] == '0' ? '<span class="bold red"><i class="fa fa-times"></i></span>' : '<span class="bold green"><i class="fa fa-check"></i></span>';
+            }
+        }
+
+        function getCountColor(name) {
+            return function (item) {
+                return item[name] == '0' ? '<span class="bold red">'+item[name]+'</span>' : '<span class="bold green">'+item[name]+'</span>';
+            }
+        }
+
+        function getDate(item) {
+            return new Date(item.date.replace(/-/g, '/')).format();
+        }
+
+        function getUpdatedDate(item) {
+            return new Date(item.updated_at.replace(/-/g, '/')).format();
+        }
+
+        function getType(item) {
+            var color = {'低': 'dark-gray', '中': 'yellow', '高': 'red'};
+            return '<span class="{0}">{1}</span>'.format(color[item.type], item.type);
+        }
+
+        function getStatus(item) {
+            var color = {'已停止': 'dark-gray', '已暂停': 'yellow', '进行中': 'green'};
+            return '<span class="{0}">{1}</span>'.format(color[item.status], item.status);
+        }
+
+        $scope.viewCompany = function (cid) {
+            $scope.$broadcast('refresh.company-info', cid, function () {
+                $scope.win6.center().open();
+            });
+        };
+
+        $scope.viewJob = function (jid) {
+            $scope.$broadcast('refresh.job-info', jid, function () {
+                $scope.win5.center().open();
+            });
+        };
+
+        $scope.viewPerson = function (pid) {
+            $scope.$broadcast('refresh.person-info', pid, function () {
+                $scope.win4.center().open();
+            });
+        };
+    }]);
+
     //controllers for company
     app.controller('companyController', ['$scope', '$http', '$routeParams', '$location', function ($scope, $http, $routeParams, $location) {
         $scope.$on('saved.company', function (e, res) {
@@ -366,21 +579,26 @@
                     },
                     {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
                     {field: 'user_names', title: '顾问', sortable: false},
+                    {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person_count')},
+                    {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report_count')},
+                    {field: 'view_count', title: '面试', filterable: false, template: getCountColor('view_count')},
+                    {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer_count')},
                     {field: 'type', title: '重要程度', template: getType, sortable: {
                         compare: function (a, b) {
                             var type = {'低': 1, '中': 2, '高': 3};
                             return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
                         }
-                    }},
-                    {field: 'status', title: '当前状态', sortable: true, template: getStatus},
+                    }, filterable: {multi:true}},
+                    {field: 'status', title: '状态', template: getStatus},
                     {
                         title: '操作',
                         template: '<a href="\\#/hunt/select/#:id#" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-pencil"></i></a>',
                         width: 140,
                         sortable: false,
-                        filterable: false
+                        filterable: {multi:true}
                     }
                 ],
+                sortable: true,
                 scrollable: false,
                 pageable: true,
             },
@@ -403,15 +621,21 @@
                         filter: {field: 'deleted', operator: 'neq', value: true}
                     },
                     columns: [
-                        {field: 'name', title: '候选人', template: '#:name# <a ng-click="viewPerson(#:person_id#)"><i class="fa fa-search pointer"></i></a>'},
+                        {field: 'name', title: '候选人', template: getName},
                         {field: 'company', title: '所在公司'},
                         {field: 'job', title: '现任职位'},
-                        {field: 'sex', title: '性别'},
+                        //{field: 'sex', title: '性别'},
                         {field: 'age', title: '年龄'},
                         {field: 'degree', title: '学历'},
                         {field: 'tel', title: '联系电话'},
                         {field: 'date', title: '接入日期', template: getDate},
-                        {field: 'status', title: '状态'},
+                        {title: '<div class=\'text-center\'>当前状态</div>', columns: [
+                            {filed: 'reported', title: '推荐', template: getPersonStatus('reported')},
+                            {filed: 'faced', title: '面试', template: getPersonStatus('faced')},
+                            {filed: 'offered', title: 'Offer', template: getPersonStatus('offered')},
+                            {filed: 'succeed', title: '上岗', template: getPersonStatus('succeed')},
+                        ]},
+                        {field: 'user_name', title: '顾问'},
                         {title: '操作', template: '<a href="\\#/hunt/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
                         '<a href="\\#/hunt/record/#:id#" class="btn btn-info btn-sm" target="_blank"><i class="fa fa-list"></i></a> ' +
                         '<a ng-click="deleteHunt(#:id#)" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
@@ -437,8 +661,10 @@
                     filter: {field: 'deleted', operator: 'neq', value: true}
                 },
                 columns: [
-                    {field: 'name', title: 'ID'},
-                    {field: 'person_name', title: '候选人'},
+                    {field: 'HID', title: 'ID'},
+                    {field: 'person_name', title: '候选人', template: getName},
+                    {field: 'tel', title: '联系电话'},
+                    {field: 'email', title: '邮箱'},
                     {field: 'job_name', title: '岗位名称'},
                     {field: 'company_name', title: '企业名称'},
                     {field: 'date', title: '接入日期', template: getDate},
@@ -462,6 +688,22 @@
                 });
             })
         };
+
+        function getName(item) {
+            return '<span class="person-{0}">{1} <small class="dark-gray">{2}</small> <a ng-click="viewPerson({3})"><i class="fa fa-search pointer"></i></a></span>'.format(item.type, item.name, item.sex=="男"?"先生":"女士", item.person_id);
+        }
+
+        function getPersonStatus(name) {
+            return function (item) {
+                return item[name] == '0' ? '<span class="bold red"><i class="fa fa-times"></i></span>' : '<span class="bold green"><i class="fa fa-check"></i></span>';
+            }
+        }
+
+        function getCountColor(name) {
+            return function (item) {
+                return item[name] == '0' ? '<span class="bold red">'+item[name]+'</span>' : '<span class="bold green">'+item[name]+'</span>';
+            }
+        }
 
         function getDate(item) {
             return new Date(item.date.replace(/-/g, '/')).format();
@@ -676,6 +918,11 @@
         $scope.report = model.getRecordReport();
         $scope.face = model.getRecordNewFace();
         $scope.offer = model.getRecordOffer();
+        $scope.success = model.getRecordSuccess();
+        $scope.rptInfo = {
+            total: '',
+            list: []
+        }
 
         $scope.config = {
             grid: {
@@ -725,11 +972,12 @@
             grid_face: {
                 dataSource: dsFace,
                 columns: [
-                    {field: 'id', title: 'ID'},
-                    {field: 'name', title: '面试名称'},
-                    {field: 'date', title: '面试日期', template: function (item) {
-                        return new Date(item.date.replace(/-/g, '/')).format();
-                    }},
+                    {field: 'num', title: '编号'},
+                    {field: 'person_name', title: '面试人'},
+                    {field: 'job_name', title: '面试岗位'},
+                    {field: 'type', title: '面试名称'},
+                    {field: 'date', title: '面试日期'},
+                    {field: 'tel', title: '手机号'},
                     {field: 'desc', title: '备注'}
                 ],
                 scrollable: false,
@@ -767,6 +1015,16 @@
                     console.log('complete');
                 }
             },
+            rptWin: {
+                open: function () {
+                    console.log('open report');
+                    $http.get('/hunt/report-info?hunt_id=' + ~~$routeParams.hunt_id).success(function (res) {
+                        $scope.rptInfo.total = res.length;
+                        $scope.rptInfo.list = res.splice(0,5);
+                        //$scope.$apply();
+                    });
+                }
+            },
             offerFile: {
                 async: {
                     saveUrl: '/file/upload?_token='+token.getCsrfToken(),
@@ -787,6 +1045,27 @@
                 culture: 'zh-CN',
                 value: new Date(),
                 format: 'yyyy-MM-dd'
+            },
+            faceNum: {
+                spinners: false,
+                format: ''
+            },
+            faceDate: {
+                culture: 'zh-CN',
+                value: new Date(),
+                format: 'yyyy-MM-dd'
+            },
+            faceTime: {
+                culture: 'zh-CN',
+                format: 'HH:mm',
+                interval: 30,
+                min: '00:00',
+                max: '23:30'
+            },
+            successDate: {
+                culture: 'zh-CN',
+                value: new Date(),
+                format: 'yyyy-MM-dd'
             }
         };
 
@@ -800,6 +1079,21 @@
 
         model.getHuntInfo(~~$routeParams.hunt_id, function (data) {
             $scope.hunt = data;
+
+            $scope.face.hunt_id = $routeParams.hunt_id;
+            $scope.face.person_id = data.person_id;
+            $scope.face.person_name = data.person_name;
+            $scope.face.job_id = data.job_id;
+            $scope.face.job_name = data.job_name;
+
+            $scope.success.hunt_id = $routeParams.hunt_id;
+            $scope.success.person_id = data.person_id;
+            $scope.success.person_name = data.person_name;
+            $scope.success.job_id = data.job_id;
+            $scope.success.job_name = data.job_name;
+            $scope.success.company_id = data.company_id;
+            $scope.success.company_name = data.company_name;
+
             $scope.$broadcast('refresh.company-info', $scope.hunt.company_id);
             $scope.$broadcast('refresh.job-info', $scope.hunt.job_id);
             $scope.$broadcast('refresh.person-info', $scope.hunt.person_id);
@@ -889,7 +1183,8 @@
 
         $scope.saveFace = function () {
             var face = $scope.face;
-            face.hunt_id = $routeParams.hunt_id;
+            face.date = face.date + ' ' + face.time;
+            delete face.time;
 
             $http.post('/hunt/save-face', {face: face}).success(function (res) {
                 if (~~res) {
@@ -921,6 +1216,29 @@
                     $scope.offerInfo = offer;
                     $scope.win9.close();
                     $.$modal.alert('上传Offer成功');
+                }
+            });
+        };
+
+        $scope.makeSuccess = function () {
+            $scope.win10.open();
+        };
+
+        $scope.saveSuccess = function () {
+            var success = $scope.success;
+            success.hunt_id = $routeParams.hunt_id;
+            success.job_id = $scope.hunt.job_id;
+            success.job_name = $scope.hunt.job_name;
+            success.company_id = $scope.hunt.company_id;
+            success.company_name = $scope.hunt.company_name;
+            success.person_id = $scope.hunt.person_id;
+            success.person_name = $scope.hunt.person_name;
+
+            $http.post('/hunt/save-success', {success: success}).success(function (res) {
+                if (~~res) {
+                    success.id = res;
+                    $scope.win10.close();
+                    $.$modal.alert('候选人已成功上岗！');
                 }
             });
         };

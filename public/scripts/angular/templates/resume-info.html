@@ -46,7 +46,55 @@
             <blockquote>
                 <p>工作经历</p>
             </blockquote>
-
+            <div class="panel panel-default" ng-repeat="company in person.companys">
+                <div class="panel-heading">
+                    <div class="panel-title"><span class="margin-right-10">{{company.start_time}} ~ {{company.end_time}}</span><span>{{company.company_name}}</span></div>
+                </div>
+                <div class="panel-body">
+                    <p class="row">
+                    <div class="col-xs-6">目前职位： {{company.job}}</div>
+                    <div class="col-xs-6">所属部门： {{company.depart}}</div>
+                    </p>
+                    <p class="row">
+                    <div class="col-xs-6">汇报对象： {{company.master}}</div>
+                    <div class="col-xs-6">下属人数： {{company.slave}}</div>
+                    </p>
+                    <p class="row"><div class="col-xs-12">{{company.description}}</div></p>
+                </div>
+            </div>
+        </div>
+        <div ng-if="person.trainings.length > 0">
+            <blockquote>
+                <p>项目经历</p>
+            </blockquote>
+            <div class="panel panel-default" ng-repeat="training in person.trainings">
+                <div class="panel-heading">
+                    <div class="panel-title"><span class="margin-right-10">{{training.start_time}} ~ {{training.end_time}}</span><span>{{training.company_name}}</span></div>
+                </div>
+                <div class="panel-body">
+                    <p class="row">
+                    <div class="col-xs-12">项目名称： {{training.train_name}}</div>
+                    </p>
+                    <p class="row"><div class="col-xs-12">{{training.description}}</div></p>
+                </div>
+            </div>
+        </div>
+        <div ng-if="person.schools.length > 0">
+            <blockquote>
+                <p>教育经历</p>
+            </blockquote>
+            <div class="panel panel-default" ng-repeat="school in person.schools">
+                <div class="panel-heading">
+                    <div class="panel-title"><span class="margin-right-10">{{school.start_time}} ~ {{school.end_time}}</span><span>{{school.school_name}}</span></div>
+                </div>
+                <div class="panel-body">
+                    <p class="row">
+                    <div class="col-xs-4">学历： {{school.degree}}</div>
+                    <div class="col-xs-4">专业： {{school.profession}}</div>
+                    <div class="col-xs-4">是否统招： {{school.is_usual}}</div>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

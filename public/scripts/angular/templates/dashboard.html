@@ -4,8 +4,12 @@
             <div class="col-xs-12">
                 <div class="panel bordered border-color-orange">
                     <div class="panel-heading bg-orange white"><h5 class="panel-title">最近操作过的职位</h5></div>
-                    <div class="panel-body">
-                        <div class="text-center">功能正在开发...</div>
+                    <div class="panel-body no-padding">
+                        <div kendo-grid k-options="config.grid">
+                            <div k-detail-template>
+                                <div class="bordered border-color-gray"><div kendo-grid k-options="config.gridDetail(dataItem)"></div></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -14,8 +18,8 @@
             <div class="col-xs-12">
                 <div class="panel bordered border-color-orange">
                     <div class="panel-heading bg-orange white"><h5 class="panel-title">最近联系过的候选人</h5></div>
-                    <div class="panel-body">
-                        <div class="text-center">功能正在开发...</div>
+                    <div class="panel-body no-padding">
+                        <div kendo-grid k-options="config.gridPerson"></div>
                     </div>
                 </div>
             </div>

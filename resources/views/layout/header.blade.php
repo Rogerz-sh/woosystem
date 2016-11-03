@@ -54,6 +54,7 @@ $sessionPower = Session::get('power');
     <div id="header" class="bg-white">
         <div class="padding-left-50 padding-right-50">
             <div class="float-left orange"><h2 class="float-left"><i class="fa fa-cog"></i> 即沃客户申报管理系统</h2></div>
+            <div class="float-left blue margin-left-50 margin-top-20"><h4 class="float-left bold"><i class="fa fa-info-circle"></i> 即沃，中国领先的猎头服务机构，一站式招聘解决方案的提供商。</h4></div>
             <div class="float-right">
                 <div id="user">
                     <p class="orange bold">{{ $sessionNickname }}</p>
