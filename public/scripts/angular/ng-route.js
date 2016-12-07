@@ -94,6 +94,18 @@
                 templateUrl: '/scripts/angular/templates/hunt-record.html',
                 controller: 'huntRecordController'
             })
+            .when('/performance/list', {
+                templateUrl: '/scripts/angular/templates/performance-list.html',
+                controller: 'performanceListController'
+            })
+            .when('/target/list', {
+                templateUrl: '/scripts/angular/templates/target-list.html',
+                controller: 'targetListController'
+            })
+            .when('/user/info', {
+                templateUrl: '/scripts/angular/templates/user-info.html',
+                controller: 'userInfoController'
+            })
             .otherwise({
                 redirectTo: '/'
             });

@@ -49,5 +49,11 @@
             <company-info id="{{hunt.company_id}}"></company-info>
         </div>
     </div>
+    <div kendo-window="win7" k-title="'编辑候选人'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+         k-on-open="win7visible = true" k-on-close="win7visible = false">
+        <div class="container-fluid">
+            <resume-form></resume-form>
+        </div>
+    </div>
 </div>
 <!--<script src="/scripts/hunt/list.js"></script>-->

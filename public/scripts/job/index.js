@@ -24,6 +24,7 @@ $(function () {
             '<a href="\\#/job/detail/#:id#" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
             '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
         ],
+        filterable: {mode: 'row'},
         scrollable: false,
         pageable: true,
 

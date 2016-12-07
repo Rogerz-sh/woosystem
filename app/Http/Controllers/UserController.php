@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
+use App\User;
 use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller {
@@ -24,5 +25,37 @@ class UserController extends Controller {
 
     public function anyForget () {
         return redirect('/user/login');
+    }
+
+    public function getJsonUserInfo() {
+        $id = Session::get('id');
+        $user = User::find($id);
+        return response($user);
+    }
+
+    public function postSaveInfo() {
+        $info = request()->input('user');
+        $user = User::find(Session::get('id'));
+        if ($user) {
+            $user->date = $info['date'];
+            $user->group = $info['group'];
+            $user->job = $info['job'];
+            $user->save();
+            return response(1);
+        } else {
+            return response(0);
+        }
+    }
+
+    public function postSavePassword() {
+        $password = request()->input('password');
+        $user = User::find(Session::get('id'));
+        if ($user->password == md5($password['old'])) {
+            $user->password = md5($password['new']);
+            $user->save();
+            return response(1);
+        } else {
+            return response(0);
+        }
     }
 }

@@ -30,9 +30,14 @@ class BdController extends BaseController {
     public function getJsonBdListData() {
         $uid = request()->input('user_id');
         if (isset($uid)) {
-            $bd = Bd::where('user_id', $uid)->orderBy('created_at', 'desc')->get();
+            $bd = Bd::where('bd.user_id', $uid)
+                ->select('bd.id', 'bd.name', 'bd.company_id', 'bd.company_name', 'bd.user_id', 'bd.user_name', 'bd.user_ids', 'bd.user_names', 'bd.date', 'bd.status', 'bd.type', 'bd.source', 'company.contact', 'company.tel')
+                ->join('company', 'bd.company_id', '=', 'company.id')
+                ->orderBy('bd.created_at', 'desc')->get();
         } else {
-            $bd = Bd::orderBy('created_at', 'desc')->get();
+            $bd = Bd::select('bd.id', 'bd.name', 'bd.company_id', 'bd.company_name', 'bd.user_id', 'bd.user_name', 'bd.user_ids', 'bd.user_names', 'bd.date', 'bd.status', 'bd.type', 'bd.source', 'company.contact', 'company.tel')
+                ->join('company', 'bd.company_id', '=', 'company.id')
+                ->orderBy('bd.created_at', 'desc')->get();
         }
         return response($bd);
     }

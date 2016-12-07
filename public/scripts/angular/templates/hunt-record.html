@@ -65,14 +65,14 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-xs-2">备注</label>
+                    <label class="control-label col-xs-2">寻访纪录</label>
                     <div class="col-xs-10">
                         <label class="form-control-static">{{hunt.description}}</label>
                     </div>
                 </div>
             </form>
             <blockquote>
-                <p>操作记录</p>
+                <p>面试跟进记录</p>
             </blockquote>
             <ul class="list-group">
                 <li class="list-group-item" ng-repeat="rcd in records track by $index">
@@ -104,7 +104,8 @@
                 <p>推荐报告</p>
             </blockquote>
             <div class="col-xs-12" ng-if="reportInfo.id>0">
-                <p class="indent">文件名称： <a href="/file/download-file/?path={{reportInfo.filepath}}&name={{reportInfo.filename}}&coded={{reportInfo.filecoded}}">{{reportInfo.filename}}</a></p>
+                <p class="indent">文件名称： <a href="/file/download-file/?path={{reportInfo.filepath}}&name={{reportInfo.filename}}&coded={{reportInfo.filecoded}}">{{reportInfo.filename}}</a>
+                    <a ng-click="deleteReport(reportInfo.id)" class="red"><i class="fa fa-times"></i> 删除</a></p>
                 <p class="indent">备注信息： <span class="text-info">{{reportInfo.desc}}</span></p>
             </div>
             <div class="clearfix"></div>

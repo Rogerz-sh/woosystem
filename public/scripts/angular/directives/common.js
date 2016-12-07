@@ -21,8 +21,12 @@
                         {url: '/job/list', label: '职位库', power: 9},
                         {url: '/candidate/list', label: '简历库', power: 9},
                     ]},
-                    {url: '/bd/list', label: 'BD管理', power: 9},
-                    {url: '/hunt/list', label: '职位管理', power: 1}
+                    {url: '/bd/list', label: '客户管理', power: 9},
+                    {url: '/hunt/list', label: '项目管理', power: 1},
+                    {url: '/performance/list', label: '绩效管理', power: 9, items: [
+                        {url: '/performance/list', label: '绩效管理', power: 1},
+                        {url: '/target/list', label: '目标管理', power: 1},
+                    ]}
                 ];
                 $scope.changeSubNav = function (idx) {
                     $scope.navIndex = idx;
@@ -272,6 +276,8 @@
                     ]
                 };
 
+                $scope.person_id = $routeParams.person_id;
+
                 $scope.locationData = {
                     p: new kendo.data.DataSource(),
                     c: new kendo.data.DataSource(),
@@ -301,15 +307,21 @@
                     $scope.belongData.c.data(citys);
                 });
 
-                if ($routeParams.person_id) {
-                    model.getPersonInfo(~~$routeParams.person_id, function (data) {
+                if ($scope.person_id) {
+                    model.getPersonInfo(~~$scope.person_id, function (data) {
                         $scope.person = data;
                     });
                 } else {
                     $scope.person = model.getNewPerson();
                 }
 
-
+                $scope.$on('load.resume', function (e, person_id, callback) {
+                    $scope.person_id = person_id;
+                    model.getPersonInfo(~~$scope.person_id, function (data) {
+                        $scope.person = data;
+                        if (typeof callback === 'function') callback();
+                    });
+                });
 
                 $scope.operator = {
                     getId: function () {
@@ -346,7 +358,7 @@
                         person.location = location;
                         person.belong = belong;
                         console.log(person, company, school, training);
-                        var url = !$routeParams.person_id ? '/candidate/save-new' : '/candidate/save-edit';
+                        var url = !$scope.person_id ? '/candidate/save-new' : '/candidate/save-edit';
                         $http.post(url, {person: person, company: company, school: school, training: training}).success(function (res) {
                             $scope.$emit('saved.resume', res, $scope.person);
                             $scope.person = model.getNewPerson();
@@ -818,5 +830,36 @@
             }]
         }
     });
+
+    app.directive('monthTarget', function () {
+        return {
+            restrict: 'AE',
+            replace: true,
+            scope: {
+                'selMonth': '='
+            },
+            templateUrl: '/scripts/angular/templates/month-target.html',
+            controller: ['$scope', '$http', 'model', function ($scope, $http, model) {
+                var date = new Date($scope.selMonth+'-01'), year = date.getFullYear(), month = date.getMonth(), firstDay = new Date(year, month, 1).getDay();
+                $scope.month = month + 1;
+                $scope.days = new Date(year, month + 1, 0).getDate();
+                var dayList = [];
+                for (i = 0; i < firstDay; i++) {
+                    dayList.push('-');
+                }
+                for (var i = 0; i < $scope.days; i++) {
+                    dayList.push(i+1);
+                }
+                for (var i = 0, l = 7 - dayList.length % 7; i < l; i++) {
+                    dayList.push('-');
+                }
+                console.log(dayList);
+                $scope.dayList = dayList;
+            }],
+            link: function (scope, element, attr) {
+
+            }
+        }
+    })
 
 })(window, angular);

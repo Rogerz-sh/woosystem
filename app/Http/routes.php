@@ -40,4 +40,6 @@ Route::group(['middleware' => 'login'], function () {
 
     Route::controller('file', 'FileController');
 
+    Route::controller('performance', 'PerformanceController');
+
 });

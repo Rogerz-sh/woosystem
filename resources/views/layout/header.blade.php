@@ -56,10 +56,11 @@ $sessionPower = Session::get('power');
             <div class="float-left orange"><h2 class="float-left"><i class="fa fa-cog"></i> 即沃客户申报管理系统</h2></div>
             <div class="float-left blue margin-left-50 margin-top-20"><h4 class="float-left bold"><i class="fa fa-info-circle"></i> 即沃，中国领先的猎头服务机构，一站式招聘解决方案的提供商。</h4></div>
             <div class="float-right">
-                <div id="user">
+                <div id="user" ng-controller="userInfoController">
                     <p class="orange bold">{{ $sessionNickname }}</p>
-                    <img src="/images/logo.jpg" alt="照片" />
-                    <a href="/account/logout">退出</a>
+                    <img ng-show="pic_path" ng-src="@{{pic_path}}" alt="照片" />
+                    <a class="btn btn-info btn-xs margin-left-10" href="#/user/info"><i class="fa fa-user"></i> 个人资料</a>
+                    <a class="btn btn-danger btn-xs margin-left-10" href="/account/logout"><i class="fa fa-sign-out"></i> 退出</a>
                 </div>
             </div>
             <div class="clear"></div>

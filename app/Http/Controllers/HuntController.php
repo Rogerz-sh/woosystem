@@ -32,10 +32,13 @@ class HuntController extends BaseController {
     public function getJsonHuntListData() {
         if (Session::get('power') == 9) {
             $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
-                ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'hunt.date', 'hunt.status')
-                ->orderBy('hunt.created_at', 'desc')->get();
+                ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.salary_month', 'hunt.salary_year', 'hunt.description')
+                ->orderBy('hunt.updated_at', 'desc')->get();
         } else {
-            $hunt = Hunt::where('user_id', Session::get('id'))->get();
+            $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
+                ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.salary_month', 'hunt.salary_year', 'hunt.description')
+                ->where('hunt.user_id', Session::get('id'))
+                ->orderBy('hunt.updated_at', 'desc')->get();
         }
         return response($hunt);
     }
@@ -49,7 +52,7 @@ class HuntController extends BaseController {
 //        $key = $filter['filters'][0]['value'];
         $job = DB::table('jobs')->select('id', 'name', 'company_id', 'company_name')->where('deleted_at', null)
 //            ->orWhereRaw('name like ? or company_name like ?', ['%'.$key.'%', '%'.$key.'%'])
-            ->orderBy('created_at', 'desc')->get();
+            ->orderBy('updated_at', 'desc')->get();
         return response($job);
     }
 
@@ -61,11 +64,11 @@ class HuntController extends BaseController {
                 ->select('id', 'name', 'real_id', 'job', 'company', 'sex', 'age')
                 ->orWhereRaw('name like ? or job like ? or company like ?', ['%'.$key.'%', '%'.$key.'%', '%'.$key.'%'])
                 ->where('deleted_at', null)
-                ->orderBy('created_at', 'desc')->get();
+                ->orderBy('updated_at', 'desc')->get();
             return response($job);
         } else {
             $job = DB::table('person')->select('id', 'name', 'real_id', 'job', 'company', 'sex',
-                'age')->where('deleted_at', null)->orderBy('created_at', 'desc')->get();
+                'age')->where('deleted_at', null)->orderBy('updated_at', 'desc')->get();
             return response($job);
         }
     }
@@ -84,6 +87,7 @@ class HuntController extends BaseController {
             $hunt->user_name = Session::get('nickname');
             $hunt->created_by = Session::get('id');
             $hunt->save();
+            $this->updateHuntTime($hunt->job_id);
             return response($hunt->id);
         }
     }
@@ -186,6 +190,13 @@ class HuntController extends BaseController {
         return response($id);
     }
 
+    private function updateHuntTime($id) {
+        $hs = HuntSelect::where('job_id', $id)->first();
+        if ($hs) {
+            $hs->save();
+        }
+    }
+
     public function postSaveReport() {
         $rpt = request()->input('report');
         $oldRpt = HuntReport::where('hunt_id', $rpt['hunt_id'])->where('type', $rpt['type'])->first();
@@ -195,6 +206,7 @@ class HuntController extends BaseController {
             }
             $oldRpt->updated_by = Session::get('id');
             $oldRpt->save();
+            $this->updateHuntTime($oldRpt->job_id);
             return response($oldRpt->id);
         } else {
             $newRpt = new HuntReport();
@@ -203,7 +215,20 @@ class HuntController extends BaseController {
             }
             $newRpt->created_by = Session::get('id');
             $newRpt->save();
+            $this->updateHuntTime($newRpt->job_id);
             return response($newRpt->id);
+        }
+    }
+
+    public function postDeleteReport($id) {
+        $oldRpt = HuntReport::find($id);
+        if ($oldRpt) {
+            $oldRpt->deleted_by = Session::get('id');
+            $oldRpt->save();
+            $oldRpt->delete();
+            return response($oldRpt->id);
+        } else {
+            return response(-1);
         }
     }
 
@@ -214,8 +239,10 @@ class HuntController extends BaseController {
             foreach ($rst as $key => $value) {
                 $oldRst->$key = $value;
             }
+            $oldRst->deleted_at = null;
             $oldRst->updated_by = Session::get('id');
             $oldRst->save();
+            $this->updateHuntTime($oldRst->job_id);
             return response($oldRst->id);
         } else {
             $newRst = new HuntSuccess();
@@ -224,6 +251,7 @@ class HuntController extends BaseController {
             }
             $newRst->created_by = Session::get('id');
             $newRst->save();
+            $this->updateHuntTime($newRst->job_id);
             return response($newRst->id);
         }
     }
@@ -231,7 +259,7 @@ class HuntController extends BaseController {
     public function getHuntReportJsonData() {
         $hunt_id = request()->input('hunt_id');
         $type = request()->input('type');
-        $rpt = HuntReport::where('hunt_id', $hunt_id)->where('type', $type)->orderBy('created_at', 'desc')->first();
+        $rpt = HuntReport::where('hunt_id', $hunt_id)->where('type', $type)->orderBy('updated_at', 'desc')->first();
         return response($rpt);
     }
 
@@ -243,6 +271,7 @@ class HuntController extends BaseController {
         }
         $newFace->created_by = Session::get('id');
         $newFace->save();
+        $this->updateHuntTime($newFace->job_id);
         return response($newFace->id);
     }
 
@@ -266,9 +295,11 @@ class HuntController extends BaseController {
         $job_id = request()->input('job_id');
         $hunt = DB::table('hunt_person_status')
             ->join('person', 'hunt_person_status.person_id', '=', 'person.id')
-            ->select('hunt_person_status.id', 'person.id as person_id', 'person.type', 'person.name', 'person.company', 'person.job', 'person.sex', 'person.age', 'person.degree', 'person.tel', 'hunt_person_status.user_name', 'hunt_person_status.date', 'hunt_person_status.reported', 'hunt_person_status.faced', 'hunt_person_status.offered', 'hunt_person_status.succeed')
+            ->select('hunt_person_status.id', 'person.id as person_id', 'person.type', 'person.name', 'person.company', 'person.job', 'person.sex', 'person.age', 'person.degree', 'person.tel', 'hunt_person_status.user_name', 'hunt_person_status.date', 'hunt_person_status.salary_month', 'hunt_person_status.salary_year', 'hunt_person_status.reported', 'hunt_person_status.faced', 'hunt_person_status.offered', 'hunt_person_status.succeed')
             ->where('hunt_person_status.deleted_at', null)
-            ->where('hunt_person_status.job_id', $job_id)->get();
+            ->where('hunt_person_status.job_id', $job_id)
+            ->orderBy('hunt_person_status.updated_at', 'desc')
+            ->orderBy('hunt_person_status.reported', 'desc')->get();
         return response($hunt);
     }
 
@@ -320,7 +351,7 @@ class HuntController extends BaseController {
         $hid = request()->input('hunt_id');
         $hunt = Hunt::find($hid);
         $companyId = $hunt->company_id;
-        $hRpt = HuntReport::where('company_id', $companyId)->where('type', 'report')->orderBy('created_at', 'desc')->get();
+        $hRpt = HuntReport::where('company_id', $companyId)->where('type', 'report')->orderBy('updated_at', 'desc')->get();
         return response($hRpt);
     }
 }

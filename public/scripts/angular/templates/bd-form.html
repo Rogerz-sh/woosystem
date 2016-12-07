@@ -37,11 +37,12 @@
     </div>
     <div class="form-group">
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">业务意向</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 客户来源</label>
             <div class="col-xs-8">
-                <select kendo-drop-down-list ng-model="bd.type" class="form-control size-full">
-                    <option value="猎头服务" selected>猎头服务</option>
-                    <option value="极速猎车">极速猎车</option>
+                <select kendo-drop-down-list ng-model="bd.source" class="form-control size-full" required>
+                    <option value="主动BD" selected>主动BD</option>
+                    <option value="客户CallIn">客户CallIn</option>
+                    <option value="人脉推荐">人脉推荐</option>
                 </select>
             </div>
         </div>
@@ -51,6 +52,17 @@
                 <select kendo-drop-down-list ng-model="bd.status" class="size-full">
                     <option value="">请选择状态...</option>
                     <option ng-repeat="item in data.status" value="{{item}}">{{item}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-xs-6 no-padding error-box">
+            <label class="control-label col-xs-4">业务意向</label>
+            <div class="col-xs-8">
+                <select kendo-drop-down-list ng-model="bd.type" class="form-control size-full">
+                    <option value="猎头服务" selected>猎头服务</option>
+                    <option value="极速猎车">极速猎车</option>
                 </select>
             </div>
         </div>

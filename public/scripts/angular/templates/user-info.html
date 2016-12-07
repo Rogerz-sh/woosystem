@@ -1,0 +1,156 @@
+<div class="wrapper bg-white padding-15 margin-top-20 margin-bottom-50 box-shadow">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li>个人资料</li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="col-xs-6" ng-show="operation == 'view'">
+                <form class="form form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">用户名：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="red bold" ng-bind="view.name"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">昵称：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="red bold" ng-bind="view.nickname"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">入职日期：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="text-info bold" ng-bind="view.date"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">所属部门：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="text-info bold" ng-bind="view.group"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">职位：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="text-info bold" ng-bind="view.job"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-8 col-xs-offset-3">
+                            <button class="btn btn-primary btn-sm margin-left-10" ng-click="editInfo()">编辑资料</button>
+                            <button class="btn btn-warning btn-sm margin-left-10" ng-click="editPassword()">修改密码</button>
+                            <button class="btn btn-default btn-sm margin-left-10" ng-click="operation = 'pic'">上传头像</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-xs-6" ng-show="operation == 'edit'">
+                <form class="form form-horizontal" name="formEdit" novalidate>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">用户名：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="red bold" ng-bind="user.name"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">昵称：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="red bold" ng-bind="user.nickname"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 入职日期：</label>
+                        <div class="col-xs-8">
+                            <input type="text" name="date" ng-model="user.date" class="form-control" kendo-date-picker k-options="config.date" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 所属部门：</label>
+                        <div class="col-xs-8">
+                            <select name="group" ng-model="user.group" kendo-drop-down-list k-options="config.select" required>
+                                <option value="" selected>请选择所属部门</option>
+                                <option value="项目一部">项目一部</option>
+                                <option value="项目二部">项目二部</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 职位：</label>
+                        <div class="col-xs-8">
+                            <select name="job" ng-model="user.job" kendo-drop-down-list k-options="config.select" required>
+                                <option value="" selected>请选择所属职位</option>
+                                <option value="项目经理">项目经理</option>
+                                <option value="助理顾问">助理顾问</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-8 col-xs-offset-3">
+                            <button class="btn btn-primary btn-sm margin-left-10" ng-disabled="formEdit.$invalid" ng-click="saveInfo()">保存</button>
+                            <button class="btn btn-warning btn-sm margin-left-10" ng-click="quitInfo()">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-xs-6" ng-show="operation == 'password'">
+                <form class="form form-horizontal" name="formPassword" novalidate>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 旧的密码：</label>
+                        <div class="col-xs-8">
+                            <input type="password" name="password1" ng-model="password.old" class="form-control" required />
+                            <span class="help-block red" ng-show="formPassword.password1.$dirty && formPassword.password1.$invalid">请输入旧的密码</span>
+                            <span class="help-block red" ng-show="formPassword.password1.$dirty && password.old.length < 6">密码长度不能小于6位</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 新的密码：</label>
+                        <div class="col-xs-8">
+                            <input type="password" name="password2" ng-model="password.new" class="form-control" required />
+                            <span class="help-block red" ng-show="formPassword.password2.$dirty && formPassword.password2.$invalid">请输入新的密码</span>
+                            <span class="help-block red" ng-show="formPassword.password2.$dirty && password.new.length < 6">密码长度不能小于6位</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 再次输入：</label>
+                        <div class="col-xs-8">
+                            <input type="password" name="password3" ng-model="password.repeat" class="form-control" required />
+                            <span class="help-block red" ng-show="formPassword.password3.$dirty && password.new != password.repeat">两次输入的密码必须一致</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-8 col-xs-offset-3">
+                            <button class="btn btn-primary btn-sm margin-left-10" ng-disabled="formPassword.$invalid && password.new.length < 6 && password.new == password.repeat" ng-click="savePassword()">保存</button>
+                            <button class="btn btn-warning btn-sm margin-left-10" ng-click="quitPassword()">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-xs-6" ng-show="operation == 'pic'">
+                <form class="form form-horizontal" name="formPassword" novalidate>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">当前照片：</label>
+                        <div class="col-xs-8">
+                            <img ng-src="{{pic_path}}" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 上传头像：</label>
+                        <div class="col-xs-8">
+                            <div class="alert alert-warning">请上传图片类型的文件（jpg/gif/png），推荐像素为100px * 100px</div>
+                            <input type="file" name="pic" class="form-control" kendo-upload k-options="config.upload"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-8 col-xs-offset-3">
+                            <button class="btn btn-warning btn-sm margin-left-10" ng-click="operation = 'view'">返回</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

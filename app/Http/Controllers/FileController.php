@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 use App\Http\Requests\Request;
+use App\User;
 use Illuminate\Routing\Controller as BaseController;
 use App\Message;
 use Illuminate\Support\Facades\Session;
@@ -39,6 +40,20 @@ class FileController extends BaseController {
         $path = 'upload/resume/'.$user.'/'.date('Y').'/'.date('m');
         $file->move($path, $saveName);
 
+        return response('"/'.$path.'/'.$saveName.'"');
+    }
+
+    public function postUploadUserSnap() {
+        $file = request()->file('file');
+        $sid = Session::get('id');
+        $filename = 'head_pic_'.$sid;
+        $extension = $file->getClientOriginalExtension();
+        $saveName = $filename.'.'.$extension;
+        $path = 'upload/user_snap';
+        $file->move($path, $saveName);
+        $user = User::find($sid);
+        $user->picpath = '/'.$path.'/'.$saveName;
+        $user->save();
         return response('"/'.$path.'/'.$saveName.'"');
     }
 

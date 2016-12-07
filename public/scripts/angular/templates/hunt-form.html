@@ -38,19 +38,31 @@
             </div>
         </div>
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4"><span class="red">*</span> 状态</label>
+            <label class="control-label col-xs-4">目前薪资</label>
             <div class="col-xs-8">
-                <select kendo-drop-down-list ng-model="hunt.status" class="form-control size-full" required>
-                    <option value="">请选择状态...</option>
-                    <option ng-repeat="item in data.status" value="{{item}}">{{item}}</option>
-                </select>
+                <!--<select kendo-drop-down-list ng-model="hunt.status" class="form-control size-full" required>-->
+                    <!--<option value="">请选择状态...</option>-->
+                    <!--<option ng-repeat="item in data.status" value="{{item}}">{{item}}</option>-->
+                <!--</select>-->
+                <div class="col-xs-6 no-padding-left">
+                    <div class="input-group">
+                        <input type="text" class="form-control" ng-model="hunt.salary_month" placeholder="月薪"/>
+                        <span class="input-group-addon">万元</span>
+                    </div>
+                </div>
+                <div class="col-xs-6 no-padding-right">
+                    <div class="input-group">
+                        <input type="text" class="form-control" ng-model="hunt.salary_year" placeholder="年薪"/>
+                        <span class="input-group-addon">万元</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-2">备注</label>
+        <label class="control-label col-xs-2"><span class="red">*</span> 寻访记录</label>
         <div class="col-xs-10">
-            <textarea ng-model="hunt.description" rows="6" class="form-control"></textarea>
+            <textarea ng-model="hunt.description" rows="6" class="form-control" required placeholder="可填写薪资详细构成、人选上下级组织架构、人选意向性、人选匹配度、人选目前状态、人选考虑换工作原因等等"></textarea>
         </div>
     </div>
     <div class="form-group">

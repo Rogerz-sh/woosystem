@@ -14,6 +14,7 @@
                 name: '',
                 sex: '男',
                 age: '',
+                birthday: '',
                 year: '',
                 email: '',
                 tel: '',
@@ -178,6 +179,7 @@
                 date: '',
                 type: '',
                 status: '',
+                source: '',
                 description: ''
             }
         };
@@ -205,7 +207,8 @@
                 person_id: '',
                 person_name: '',
                 date: '',
-                price: '',
+                salary_month: '',
+                salary_year: '',
                 status: '',
                 description: ''
             }
@@ -341,6 +344,12 @@
                 });
             }
         };
+
+        this.getUserInfo = function (callback) {
+            $http.get('/user/json-user-info/').success(function (res) {
+                callback(res);
+            });
+        }
     }]);
 
     app.service('token', [function () {

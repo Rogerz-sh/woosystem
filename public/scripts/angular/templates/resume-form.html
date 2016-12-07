@@ -97,9 +97,14 @@
             <div class="col-xs-6 no-padding error-box">
                 <label class="control-label col-xs-4">年龄</label>
                 <div class="col-xs-8">
-                    <div class="input-group">
-                        <input kendo-numeric-text-box k-options="kendoConfig.numericTextBox" type="text" ng-model="person.age" class="form-control" numeric>
-                        <span class="input-group-addon">岁</span>
+                    <div class="col-xs-6 no-padding-left">
+                        <div class="input-group">
+                            <input kendo-numeric-text-box k-options="kendoConfig.numericTextBox" type="text" ng-model="person.age" class="form-control" numeric>
+                            <span class="input-group-addon">岁</span>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 no-padding-right no-padding-left">
+                        <input kendo-date-picker k-options="kendoConfig.monthPicker" class="form-control full-width" ng-model="person.birthday" placeholder="出生年月"/>
                     </div>
                 </div>
             </div>
@@ -355,19 +360,19 @@
                 </div>
                 <div class="form-group">
                     <div class="col-xs-6 no-padding error-box">
-                        <label class="control-label col-xs-4"><span class="red">*</span> 项目时间</label>
+                        <label class="control-label col-xs-4">项目时间</label>
                         <div class="col-xs-8">
                             <div class="col-xs-5 no-padding">
-                                <input kendo-date-picker k-options="kendoConfig.monthPicker" type="text" ng-model="training.start_time" class="form-control size-full date" required>
+                                <input kendo-date-picker k-options="kendoConfig.monthPicker" type="text" ng-model="training.start_time" class="form-control size-full date">
                             </div>
                             <div class="col-xs-2 text-center form-control-static">至</div>
                             <div class="col-xs-5 no-padding">
-                                <input kendo-date-picker k-options="kendoConfig.monthPicker" type="text" ng-model="training.end_time" class="form-control size-full date" required>
+                                <input kendo-date-picker k-options="kendoConfig.monthPicker" type="text" ng-model="training.end_time" class="form-control size-full date">
                             </div>
                         </div>
                     </div>
                     <div class="col-xs-6 no-padding error-box">
-                        <label class="control-label col-xs-4"><span class="red">*</span> 所在公司</label>
+                        <label class="control-label col-xs-4">所在公司</label>
                         <div class="col-xs-8">
                             <input type="text" ng-model="training.company_name" class="form-control">
                         </div>
