@@ -1025,7 +1025,8 @@
                     {field: 'type', title: '面试名称'},
                     {field: 'date', title: '面试日期'},
                     {field: 'tel', title: '手机号'},
-                    {field: 'desc', title: '备注'}
+                    {field: 'desc', title: '备注'},
+                    {title: '操作', template: '<a ng-click="editFace(#:id#)"><i class="fa fa-pencil"></i></a>'}
                 ],
                 scrollable: false,
                 pageable: true,
@@ -1127,11 +1128,11 @@
         model.getHuntInfo(~~$routeParams.hunt_id, function (data) {
             $scope.hunt = data;
 
-            $scope.face.hunt_id = $routeParams.hunt_id;
-            $scope.face.person_id = data.person_id;
-            $scope.face.person_name = data.person_name;
-            $scope.face.job_id = data.job_id;
-            $scope.face.job_name = data.job_name;
+            //$scope.face.hunt_id = $routeParams.hunt_id;
+            //$scope.face.person_id = data.person_id;
+            //$scope.face.person_name = data.person_name;
+            //$scope.face.job_id = data.job_id;
+            //$scope.face.job_name = data.job_name;
 
             $scope.success.hunt_id = $routeParams.hunt_id;
             $scope.success.person_id = data.person_id;
@@ -1221,7 +1222,7 @@
                 if (isOk) {
                     $http.post('/hunt/delete-report', {id: id}).success(function (res) {
                         if (~~res) {
-                            $scope.offerInfo = {};
+                            $scope.reportInfo = {};
                             $.$modal.alert('推荐报告已删除！');
                         }
                     });
@@ -1238,6 +1239,12 @@
         });
 
         $scope.addFaceView = function () {
+            $scope.face = model.getRecordNewFace();
+            $scope.face.hunt_id = $routeParams.hunt_id;
+            $scope.face.person_id = $scope.hunt.person_id;
+            $scope.face.person_name = $scope.hunt.person_name;
+            $scope.face.job_id = $scope.hunt.job_id;
+            $scope.face.job_name = $scope.hunt.job_name;
             $scope.win8.open();
         };
 
@@ -1248,13 +1255,26 @@
 
             $http.post('/hunt/save-face', {face: face}).success(function (res) {
                 if (~~res) {
-                    $scope.face = model.getRecordNewFace();
                     $scope.win8.close();
                     dsFace.read();
                     $.$modal.alert('面试通知保存成功');
                 }
             });
         };
+
+        $scope.editFace = function (id) {
+            var face = dsFace.get(id).toJSON();
+            $scope.face = angular.extend({}, face);
+            $scope.face.date = face.date.split(' ')[0];
+            $scope.face.time = face.date.split(' ')[1];
+            $scope.face.hunt_id = $routeParams.hunt_id;
+            $scope.face.person_id = $scope.hunt.person_id;
+            $scope.face.person_name = $scope.hunt.person_name;
+            $scope.face.job_id = $scope.hunt.job_id;
+            $scope.face.job_name = $scope.hunt.job_name;
+            console.log($scope.face);
+            $scope.win8.open();
+        }
 
         $scope.makeOffer = function () {
             $scope.win9.open();
@@ -1518,7 +1538,101 @@
     }]);
 
     app.controller('targetListController', ['$scope', '$http', function ($scope, $http) {
-        $scope.selMonth = '2016-11';
+        $scope.selMonth = '';
+        $scope.days = [];
+
+        $scope.isValidMonth = function () {
+            return Date.compute(new Date($scope.selMonth + '-01'), new Date().format()) > 0;
+        };
+
+        //getMonthTargetInfo($scope.selMonth);
+
+        var dsGrid = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '/performance/json-target-list',
+                    dataType: 'json'
+                }
+            },
+            pageSize: 10,
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            }
+        });
+
+        $scope.config = {
+            grid: {
+                dataSource: dsGrid,
+                scrollable: false,
+                pageable: true,
+                sortable: true,
+                columns: [
+                    {field: 'nickname', title: '顾问'},
+                    {field: 'month', title: '月份'},
+                    {title: '<div class=\'text-center\'>目标设定</div>', columns: [
+                        {field: 'person_target', title: '人选录入'},
+                        {field: 'report_target', title: '推荐报告'},
+                        {field: 'face_target', title: '面试'},
+                        {field: 'offer_target', title: 'Offer'},
+                        {field: 'success_target', title: '成功上岗'}
+                    ]}
+                ]
+            },
+            date: {
+                culture: 'zh-CN',
+                format: 'yyyy-MM',
+                depth: 'year',
+                start: 'year',
+                change: function () {
+                    getMonthTargetInfo(this.value().format('yyyy-mm'));
+                }
+            }
+        };
+
+        function getMonthTargetInfo(month) {
+            $http.get('/performance/json-month-target?month='+month).success(function (res) {
+                var res = res[0];
+                if (res) {
+                    $scope.target = {
+                        person: res.person_target || 0,
+                        report: res.report_target || 0,
+                        face: res.face_target || 0,
+                        offer: res.offer_target || 0,
+                        success: res.success_target || 0,
+                    };
+                } else {
+                    $scope.target = {
+                        person: 0,
+                        report: 0,
+                        face: 0,
+                        offer: 0,
+                        success: 0
+                    };
+                }
+            });
+        }
+
+        $scope.target = {
+            person: 0,
+            report: 0,
+            face: 0,
+            offer: 0,
+            success: 0
+        };
+
+        $scope.$on('weeksData', function (res, days) {
+            $scope.days = days;
+        });
+
+        $scope.saveTarget = function () {
+            var target = angular.extend({}, $scope.target);
+            target.month = $scope.selMonth;
+            $http.post('/performance/save-target', {month: target, days: $scope.days}).success(function (res) {
+                console.log(res);
+            });
+        }
     }]);
 
     //controllers for user

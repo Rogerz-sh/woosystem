@@ -840,26 +840,194 @@
             },
             templateUrl: '/scripts/angular/templates/month-target.html',
             controller: ['$scope', '$http', 'model', function ($scope, $http, model) {
-                var date = new Date($scope.selMonth+'-01'), year = date.getFullYear(), month = date.getMonth(), firstDay = new Date(year, month, 1).getDay();
-                $scope.month = month + 1;
-                $scope.days = new Date(year, month + 1, 0).getDate();
-                var dayList = [];
-                for (i = 0; i < firstDay; i++) {
-                    dayList.push('-');
-                }
-                for (var i = 0; i < $scope.days; i++) {
-                    dayList.push(i+1);
-                }
-                for (var i = 0, l = 7 - dayList.length % 7; i < l; i++) {
-                    dayList.push('-');
-                }
-                console.log(dayList);
-                $scope.dayList = dayList;
+                //var date = new Date($scope.selMonth+'-01'), year = date.getFullYear(), month = date.getMonth(), firstDay = new Date(year, month, 1).getDay();
+                //
+                //$scope.month = month + 1;
+                //$scope.days = new Date(year, month + 1, 0).getDate();
+                //var dayList = [];
+                //for (i = 0; i < firstDay; i++) {
+                //    dayList.push('-');
+                //}
+                //for (var i = 0; i < $scope.days; i++) {
+                //    dayList.push(i+1);
+                //}
+                //for (var i = 0, l = 7 - dayList.length % 7; i < l; i++) {
+                //    dayList.push('-');
+                //}
+                //$scope.dayList = dayList;
+
+                $scope.$watch('selMonth', function (n, o) {
+                    var date = new Date(n+'-01'), year = date.getFullYear(), month = date.getMonth(), firstDay = new Date(year, month, 1).getDay();
+
+                    $scope.month = month + 1;
+                    $scope.days = new Date(year, month + 1, 0).getDate();
+                    var dayList = [];
+                    for (i = 0; i < firstDay; i++) {
+                        dayList.push('-');
+                    }
+                    for (var i = 0; i < $scope.days; i++) {
+                        dayList.push(i+1);
+                    }
+                    for (var i = 0, l = 7 - dayList.length % 7; i < l; i++) {
+                        dayList.push('-');
+                    }
+
+                    $scope.weeks = [];
+                    for (var i = 0; i < Math.ceil(dayList.length / 7); i++) {
+                        var week = {id: month+'-'+i, days: []};
+                    }
+
+                    $scope.dayList = dayList;
+                });
+
             }],
             link: function (scope, element, attr) {
 
             }
         }
-    })
+    });
+
+    app.directive('month', function () {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                'month': '=',
+                'tp': '=',
+                'tr': '=',
+                'tf': '=',
+                'to': '=',
+                'ts': '='
+            },
+            template: '<div class="panel panel-primary">' +
+            '<div class="panel-heading"><h5 class="panel-title" ng-bind="month"></h5></div>' +
+            '<div class="panel-body">' +
+            '<div class="flex flex-row">' +
+            '<span class="flex-1 text-center"></span>' +
+            '<span class="flex-1 text-center" ng-repeat="w in [\'日\',\'一\',\'二\',\'三\',\'四\',\'五\',\'六\']" ng-bind="w"></span>' +
+            '</div>' +
+            '<div>' +
+            '<week ng-repeat="week in weeks track by $index" week="week"></week>' +
+            '</div>' +
+            '</div>' +
+            '</div>',
+            controller: ['$scope', '$http', 'model', function ($scope, $http, model) {
+
+                $scope.watchTarget = function () {
+                    return $scope.month + $scope.tp + $scope.tr + $scope.tf + $scope.to + $scope.ts;
+                };
+
+                $scope.$watch($scope.watchTarget, function (nVal, oVal) {
+                    //$scope.month = $scope.value;
+                    var date = new Date($scope.month + '-01'), year = date.getFullYear(), month = date.getMonth(), day = date.getDate();
+                    var firstDay = new Date(year, month, 1).getDay(), lastDay = new Date(year, month + 1, 0).getDay(), totalDates = new Date(year, month + 1, 0).getDate(), firstDate = new Date(year, month, 1), lastDate = new Date(year, month, totalDates);
+                    var prevDays = ~~!firstDay * 7 + firstDay, nextDays = 42 - totalDates - prevDays, startWeek = prevDays == 7 ? 1 : 0;
+                    var weekCount = Math.ceil((prevDays + totalDates + nextDays) / 7), startDate = date.translate('now-' + prevDays), endDate = lastDate.translate('now+' + nextDays);
+
+                    var workCount = 20, p = 28, tmpDate = firstDate.translate('now+'+p);
+                    while(tmpDate.getMonth() == month && tmpDate.getDate() <= totalDates) {
+                        if (tmpDate.getDay() > 0 && tmpDate.getDay() < 6) workCount++;
+                        p++;
+                        tmpDate = firstDate.translate('now+'+p);
+                    }
+
+                    var Counter = function (total, split) {
+                        this.total = Number(total);
+                        this.split = Number(split);
+                        this.rest = 0;
+                        this.avg = this.total.divs(this.split);
+                        this.empty = false;
+                        this.count = 1;
+                    }
+                    Counter.prototype.next = function () {
+                        if (this.empty) return 0;
+                        if (this.total <= this.avg || this.count == this.split) {
+                            this.empty = true;
+                            return this.total;
+                        }
+                        var part_int = parseInt(this.avg), part_float = this.avg - part_int, rtnVal = 0;
+                        this.rest = this.rest.plus(part_float);
+                        if (this.rest >= 1) {
+                            this.rest = this.rest.minus(1);
+                            rtnVal = part_int + 1;
+                        } else {
+                            rtnVal = part_int;
+                        }
+                        this.total = this.total.minus(rtnVal);
+                        this.count++;
+                        return rtnVal;
+                    }
+
+                    var tp = new Counter($scope.tp, workCount), tr = new Counter($scope.tr, workCount), tf = new Counter($scope.tf, workCount), to = new Counter($scope.to, workCount), ts = new Counter($scope.ts, workCount);
+
+                    var weeks = [], dayCount = 0, sdate = new Date(startDate), startWeek = prevDays == 7 ? 1 : 0, endWeek = nextDays >= 7 ? 4 : 5, w = 1, days = [];
+                    for (var i = 0; i < weekCount; i++) {
+                        var week = {'index': i, 'name': '', 'days': [], 'tp': 0, 'tr': 0, 'tf': 0, 'to': 0, 'ts': 0};
+                        if (i >= startWeek && i <= endWeek) week.name = '第{0}周'.format(['', '一', '二', '三', '四', '五', '六'][w++]);
+                        for (var j = 0; j < 7; j++, dayCount++) {
+                            var d = startDate.translate('now+' + dayCount);
+                            var day = {
+                                'date': d.format(),
+                                'day': d.getDate(),
+                                'workable': d.getDay() > 0 && d.getDay() < 6,
+                                'active': d.getMonth() == month,
+                                'tp': d.getMonth() == month && d.getDay() > 0 && d.getDay() < 6 ? tp.next() : 0,
+                                'tr': d.getMonth() == month && d.getDay() > 0 && d.getDay() < 6 ? tr.next() : 0,
+                                'tf': d.getMonth() == month && d.getDay() > 0 && d.getDay() < 6 ? tf.next() : 0,
+                                'to': d.getMonth() == month && d.getDay() > 0 && d.getDay() < 6 ? to.next() : 0,
+                                'ts': d.getMonth() == month && d.getDay() > 0 && d.getDay() < 6 ? ts.next() : 0
+                            };
+                            if (day.active && day.workable) days.push(day);
+                            week.days.push(day);
+                            week.tp = week.tp.plus(day.tp);
+                            week.tr = week.tr.plus(day.tr);
+                            week.tf = week.tf.plus(day.tf);
+                            week.to = week.to.plus(day.to);
+                            week.ts = week.ts.plus(day.ts);
+                        }
+                        weeks.push(week);
+                    }
+                    $scope.weeks = weeks;
+
+                    $scope.$emit('weeksData', days);
+
+                    console.log('firstDay:%s, lastDay:%s, totalDays:%s, startDate:%s, endDate:%s, weeks:%s, workdays:%s', firstDay, lastDay, totalDates, startDate.format(), endDate.format(), weekCount, workCount);
+                });
+            }],
+            link: function (scope, element, attr) {
+
+            }
+        }
+    });
+
+    app.directive('week', function () {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                'week': '='
+            },
+            template: '<div class="flex flex-row margin-top-10 margin-bottom-10 border-top border-width-1 border-color-gray">' +
+            '<div class="flex-1 text-center">' +
+            '<span ng-bind="week.name" class="bold margin-5 inline-block"></span><br>' +
+            '<span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50" ng-if="week.name"><i class="fa fa-user" title="人选"></i> {{week.tp}}</span><span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50 margin-left-20" ng-if="week.name"><i class="fa fa-file" title="报告"></i> {{week.tr}}</span><br>' +
+            '<span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50" ng-if="week.name"><i class="fa fa-comments" title="面试"></i> {{week.tf}}</span><span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50 margin-left-20" ng-if="week.name"><i class="fa fa-print" title="Offer"></i> {{week.to}}</span><br>' +
+            '<span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50" ng-if="week.name"><i class="fa fa-comments" title="上岗"></i> {{week.ts}}</span><br>' +
+            '</div>' +
+            '<div class="flex-1 text-center" ng-repeat="day in week.days">' +
+            '<span ng-bind="day.day" class="margin-5 inline-block" ng-class="{\'gray\':!day.active, \'blue\':day.active, \'bold\':day.workable}"></span><br>' +
+            '<span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50" ng-if="day.active && day.workable"><i class="fa fa-user" title="人选"></i> {{day.tp}}</span><span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50 margin-left-20" ng-if="day.active && day.workable"><i class="fa fa-file" title="报告"></i> {{day.tr}}</span><br>' +
+            '<span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50" ng-if="day.active && day.workable"><i class="fa fa-comments" title="面试"></i> {{day.tf}}</span><span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50 margin-left-20" ng-if="day.active && day.workable"><i class="fa fa-print" title="Offer"></i> {{day.to}}</span><br>' +
+            '<span class="btn btn-xs btn-default dark-orange margin-bottom-5 width-50" ng-if="day.active && day.workable"><i class="fa fa-trophy" title="上岗"></i> {{day.ts}}</span><br>' +
+            '</div>' +
+            '</div>',
+            controller: ['$scope', '$http', 'model', function ($scope, $http, model) {
+
+            }],
+            link: function (scope, element, attr) {
+
+            }
+        }
+    });
 
 })(window, angular);

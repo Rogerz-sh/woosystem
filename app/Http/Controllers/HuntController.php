@@ -199,13 +199,14 @@ class HuntController extends BaseController {
 
     public function postSaveReport() {
         $rpt = request()->input('report');
-        $oldRpt = HuntReport::where('hunt_id', $rpt['hunt_id'])->where('type', $rpt['type'])->first();
+        $oldRpt = HuntReport::withTrashed()->where('hunt_id', $rpt['hunt_id'])->where('type', $rpt['type'])->first();
         if ($oldRpt) {
             foreach ($rpt as $key => $value) {
                 $oldRpt->$key = $value;
             }
             $oldRpt->updated_by = Session::get('id');
             $oldRpt->save();
+            $oldRpt->restore();
             $this->updateHuntTime($oldRpt->job_id);
             return response($oldRpt->id);
         } else {
@@ -220,7 +221,8 @@ class HuntController extends BaseController {
         }
     }
 
-    public function postDeleteReport($id) {
+    public function postDeleteReport() {
+        $id = request()->input('id');
         $oldRpt = HuntReport::find($id);
         if ($oldRpt) {
             $oldRpt->deleted_by = Session::get('id');
@@ -265,14 +267,30 @@ class HuntController extends BaseController {
 
     public function postSaveFace() {
         $face = request()->input('face');
-        $newFace = new HuntFace();
-        foreach ($face as $key => $value) {
-            $newFace->$key = $value;
+//        return response(isset($face['id']) ? '1' : '0');
+        if (isset($face['id'])) {
+            $oldFace = HuntFace::where('id', $face['id'])->where('created_by', Session::get('id'))->where('hunt_id', $face['hunt_id'])->first();
+            foreach ($face as $key => $value) {
+                if ($key != 'id') {
+                    $oldFace->$key = $value;
+                }
+            }
+            $oldFace->updated_by = Session::get('id');
+            $oldFace->save();
+            $this->updateHuntTime($oldFace->job_id);
+            return response($oldFace->id);
+        } else {
+            $newFace = new HuntFace();
+            foreach ($face as $key => $value) {
+                if ($key != 'id') {
+                    $newFace->$key = $value;
+                }
+            }
+            $newFace->created_by = Session::get('id');
+            $newFace->save();
+            $this->updateHuntTime($newFace->job_id);
+            return response($newFace->id);
         }
-        $newFace->created_by = Session::get('id');
-        $newFace->save();
-        $this->updateHuntTime($newFace->job_id);
-        return response($newFace->id);
     }
 
     public function getFaceList() {
