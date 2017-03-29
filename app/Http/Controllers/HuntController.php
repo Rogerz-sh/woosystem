@@ -6,9 +6,11 @@
  * Time: 下午4:08
  */
 namespace App\Http\Controllers;
+use App\Candidate;
 use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
+use App\HuntResult;
 use App\HuntSelect;
 use App\HuntSuccess;
 use App\User;
@@ -258,11 +260,54 @@ class HuntController extends BaseController {
         }
     }
 
+    public function postSaveResult() {
+        $rst = request()->input('result');
+        $oldRst = HuntResult::where('hunt_id', $rst['hunt_id'])->first();
+        if ($oldRst) {
+            foreach ($rst as $key => $value) {
+                $oldRst->$key = $value;
+            }
+            $oldRst->deleted_at = null;
+            $oldRst->updated_by = Session::get('id');
+            $oldRst->save();
+            $this->updateHuntTime($oldRst->job_id);
+            return response($oldRst->id);
+        } else {
+            $newRst = new HuntResult();
+            foreach ($rst as $key => $value) {
+                $newRst->$key = $value;
+            }
+            $newRst->created_by = Session::get('id');
+            $newRst->save();
+            $this->updateHuntTime($newRst->job_id);
+            return response($newRst->id);
+        }
+    }
+
+    public function postDeleteResult() {
+        $id = request()->input('id');
+        $oldRst = HuntResult::find($id);
+        if ($oldRst) {
+            $oldRst->deleted_by = Session::get('id');
+            $oldRst->save();
+            $oldRst->delete();
+            return response($oldRst->id);
+        } else {
+            return response(-1);
+        }
+    }
+
     public function getHuntReportJsonData() {
         $hunt_id = request()->input('hunt_id');
         $type = request()->input('type');
         $rpt = HuntReport::where('hunt_id', $hunt_id)->where('type', $type)->orderBy('updated_at', 'desc')->first();
         return response($rpt);
+    }
+
+    public function getHuntResultJsonData() {
+        $hunt_id = request()->input('hunt_id');
+        $rst = HuntResult::where('hunt_id', $hunt_id)->orderBy('updated_at', 'desc')->first();
+        return response($rst);
     }
 
     public function postSaveFace() {
@@ -293,10 +338,29 @@ class HuntController extends BaseController {
         }
     }
 
+    public function postDeleteFace() {
+        $id = request()->input('id');
+        $oldFace = HuntFace::find($id);
+        if ($oldFace) {
+            $oldFace->deleted_by = Session::get('id');
+            $oldFace->save();
+            $oldFace->delete();
+            return response($oldFace->id);
+        } else {
+            return response(-1);
+        }
+    }
+
     public function getFaceList() {
         $hunt_id = request()->input('hunt_id');
         $face = HuntFace::where('hunt_id', $hunt_id)->get();
         return response($face);
+    }
+
+    public function getPersonBasicInfo() {
+        $id = request()->input('person_id');
+        $person = Candidate::find($id);
+        return response($person);
     }
 
     //职位分配相关操作

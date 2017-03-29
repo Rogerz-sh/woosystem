@@ -314,6 +314,19 @@
             }
         }
 
+        this.getRecordResult = function () {
+            return {
+                date: '',
+                amount: 0,
+                job_id: '',
+                job_name: '',
+                company_id: '',
+                company_name: '',
+                person_id: '',
+                person_name: '',
+            }
+        }
+
         this.getRecordOffer = function () {
             return {
                 type: 'offer',
@@ -321,6 +334,7 @@
                 filecoded: 0,
                 filepath: '',
                 date: (new Date()).format(),
+                success_date: '',
                 desc: ''
             };
         };
@@ -340,6 +354,16 @@
                 callback({});
             } else {
                 $http.get('/hunt/hunt-report-json-data/', {params: {hunt_id: id, type: 'offer'}}).success(function (res) {
+                    callback(res);
+                });
+            }
+        };
+
+        this.getHuntResultInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback({});
+            } else {
+                $http.get('/hunt/hunt-result-json-data/', {params: {hunt_id: id}}).success(function (res) {
                     callback(res);
                 });
             }

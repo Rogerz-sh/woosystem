@@ -7,6 +7,9 @@
  */
 namespace App\Http\Controllers;
 
+use App\HuntFace;
+use App\HuntReport;
+use App\HuntSuccess;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -15,6 +18,25 @@ class DashboardController extends BaseController {
 
     public function getIndex() {
         return view('user.dashboard')->with('navIndex', 0);
+    }
+
+    public function getRecentFaceList() {
+        $face = HuntFace::where('created_by', Session::get('id'))
+            ->whereRaw('datediff(now(), updated_at) < 30')->get();
+        return response($face);
+    }
+
+    public function getRecentOfferList() {
+        $offer = HuntReport::where('created_by', Session::get('id'))
+            ->where('type', 'offer')
+            ->whereRaw('datediff(now(), updated_at) < 30')->get();
+        return response($offer);
+    }
+
+    public function getRecentSuccessList() {
+        $offer = HuntSuccess::where('created_by', Session::get('id'))
+            ->whereRaw('datediff(now(), updated_at) < 30')->get();
+        return response($offer);
     }
 
     public function getRecentHuntList() {

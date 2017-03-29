@@ -45,13 +45,44 @@ class PerformanceController extends BaseController {
             (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
             (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as report_count,
             (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as offer_count,
-            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.updated_at >= "'.$sdate.'" and hunt_success.updated_at <= "'.$edate.'" and deleted_at is null) as success_count
+            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.updated_at >= "'.$sdate.'" and hunt_success.updated_at <= "'.$edate.'" and deleted_at is null) as success_count,
+            (select sum(person_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as person_target,
+            (select sum(report_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as report_target,
+            (select sum(face_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as face_target,
+            (select sum(offer_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as offer_target,
+            (select sum(success_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as success_target
             '))
             ->where('users.deleted_at', null)
             ->where('users.status', '1')
 //            ->where('id', Session::get('id'))
             ->get();
 
+        return response($result);
+    }
+
+    public function getJsonPerformanceData() {
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        $result = DB::table('users')
+            ->select(DB::raw('users.id, users.name, users.nickname,
+            (select count(id) from person where person.created_by = users.id and person.created_at >= "'.$sdate.'" and person.created_at <= "'.$edate.'" and deleted_at is null) as person_count,
+            (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
+            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as report_count,
+            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as offer_count,
+            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.updated_at >= "'.$sdate.'" and hunt_success.updated_at <= "'.$edate.'" and deleted_at is null) as success_count
+            '))
+            ->where('users.id', Session::get('id'))
+            ->where('users.deleted_at', null)
+            ->where('users.status', '1')
+//            ->where('id', Session::get('id'))
+            ->get();
+
+        return response($result);
+    }
+
+    public function getJsonTargetData() {
+        $month = request()->input('month');
+        $result = DB::table('month_target')->where('user_id', Session::get('id'))->where('month', $month)->get();
         return response($result);
     }
 

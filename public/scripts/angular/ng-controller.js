@@ -11,6 +11,7 @@
 
     //controller for dashboard
     app.controller('dashboardController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
+
         $scope.config = {
             grid: {
                 dataSource: {
@@ -159,8 +160,130 @@
                 ],
                 scrollable: false,
                 pageable: true,
-            }
+            },
+            progress: {
+                min: 0,
+                max: 100,
+                type: 'percent'
+            },
+            gridFace: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/dashboard/recent-face-list',
+                            data: {}
+                        }
+                    },
+                    pageSize: 5
+                },
+                columns: [
+                    //{field: 'num', title: '编号'},
+                    {field: 'person_name', title: '面试人'},
+                    {field: 'job_name', title: '面试岗位'},
+                    {field: 'type', title: '面试名称'},
+                    {field: 'date', title: '面试日期'},
+                    {field: 'tel', title: '手机号'},
+                    {field: 'desc', title: '备注'},
+                    //{title: '操作', template: '<a ng-click="editFace(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteFace(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+            gridOffer: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/dashboard/recent-offer-list',
+                            data: {}
+                        }
+                    },
+                    pageSize: 5
+                },
+                columns: [
+                    //{field: 'num', title: '编号'},
+                    {field: 'person_name', title: '姓名'},
+                    {field: 'job_name', title: '岗位'},
+                    {field: 'company_name', title: '公司'},
+                    {field: 'date', title: '日期', template: '#:new Date(date).format()#'},
+                    {field: 'desc', title: '备注'},
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+            gridSuccess: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/dashboard/recent-success-list',
+                            data: {}
+                        }
+                    },
+                    pageSize: 5
+                },
+                columns: [
+                    //{field: 'num', title: '编号'},
+                    {field: 'person_name', title: '姓名'},
+                    {field: 'job_name', title: '岗位'},
+                    {field: 'company_name', title: '公司'},
+                    {field: 'date', title: '日期', template: '#:new Date(date).format()#'},
+                    {field: 'protected', title: '保证期'},
+                    {field: 'desc', title: '备注'},
+                ],
+                scrollable: false,
+                pageable: true,
+            },
         };
+
+        $scope.target = {
+            person: {
+                target: 0,
+                value: 0,
+                progress: 0
+            },
+            report: {
+                target: 0,
+                value: 0,
+                progress: 0
+            },
+            face: {
+                target: 0,
+                value: 0,
+                progress: 0
+            },
+            offer: {
+                target: 0,
+                value: 0,
+                progress: 0
+            },
+            success: {
+                target: 0,
+                value: 0,
+                progress: 0
+            },
+            kpi: 0
+        };
+
+        var now = new Date(), startDate = new Date(now.getFullYear(), now.getMonth(), 1).format(), endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).format();
+
+        $http.get('/performance/json-target-data', {params: {month: now.format('yyyy-mm')}}).success(function (res) {
+            console.log(res);
+            for (var t in $scope.target) {
+                $scope.target[t].target = res[0][t + '_target'];
+            }
+            $http.get('/performance/json-performance-data', {params: {sdate: startDate, edate: endDate}}).success(function (res) {
+                console.log(res);
+                for (var t in $scope.target) {
+                    $scope.target[t].value = res[0][t + '_count'];
+                    $scope.target[t].progress = kendo.toString($scope.target[t].value / $scope.target[t].target, 'p0');
+                }
+                var kpi = { person: 0, report: 0, face: 0, offer: 0 };
+                kpi.person = $scope.target.person.value > 100 ? 20 : $scope.target.person.value * 0.2;
+                kpi.report = $scope.target.report.value > 40 ? 40 : $scope.target.report.value * 1;
+                kpi.face = $scope.target.face.value > 18 ? 36 : $scope.target.face.value * 2;
+                kpi.offer = $scope.target.offer.value * 5;
+                $scope.target.kpi = kpi.person.plus(kpi.report).plus(kpi.face).plus(kpi.offer);
+            });
+        });
 
         $scope.deleteHunt = function (id) {
             $.$modal.confirm('确定要删除吗?', function (isOk) {
@@ -966,10 +1089,14 @@
         $scope.face = model.getRecordNewFace();
         $scope.offer = model.getRecordOffer();
         $scope.success = model.getRecordSuccess();
+        $scope.result = model.getRecordResult();
         $scope.rptInfo = {
             total: '',
             list: []
-        }
+        };
+        $scope.personInfo = {
+            tel: ''
+        };
 
         $scope.config = {
             grid: {
@@ -1026,7 +1153,7 @@
                     {field: 'date', title: '面试日期'},
                     {field: 'tel', title: '手机号'},
                     {field: 'desc', title: '备注'},
-                    {title: '操作', template: '<a ng-click="editFace(#:id#)"><i class="fa fa-pencil"></i></a>'}
+                    {title: '操作', template: '<a ng-click="editFace(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteFace(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
                 ],
                 scrollable: false,
                 pageable: true,
@@ -1114,6 +1241,16 @@
                 culture: 'zh-CN',
                 value: new Date(),
                 format: 'yyyy-MM-dd'
+            },
+            date: {
+                culture: 'zh-CN',
+                value: new Date(),
+                format: 'yyyy-MM-dd'
+            },
+            numeric: {
+                spinners: false,
+                decimals: 0,
+                min: 0
             }
         };
 
@@ -1145,6 +1282,10 @@
             $scope.$broadcast('refresh.company-info', $scope.hunt.company_id);
             $scope.$broadcast('refresh.job-info', $scope.hunt.job_id);
             $scope.$broadcast('refresh.person-info', $scope.hunt.person_id);
+
+            $http.get('/hunt/person-basic-info?person_id='+$scope.hunt.person_id).success(function (res) {
+                $scope.personInfo = res;
+            });
         });
 
         $scope.records = [];
@@ -1245,6 +1386,7 @@
             $scope.face.person_name = $scope.hunt.person_name;
             $scope.face.job_id = $scope.hunt.job_id;
             $scope.face.job_name = $scope.hunt.job_name;
+            $scope.face.tel = $scope.personInfo.tel;
             $scope.win8.open();
         };
 
@@ -1274,7 +1416,19 @@
             $scope.face.job_name = $scope.hunt.job_name;
             console.log($scope.face);
             $scope.win8.open();
-        }
+        };
+
+        $scope.deleteFace = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (!isOk) return;
+                $http.post('/hunt/delete-face', {id: id}).success(function (res) {
+                    if (~~res) {
+                        dsFace.read();
+                        $.$modal.alert('面试信息已删除！');
+                    }
+                });
+            });
+        };
 
         $scope.makeOffer = function () {
             $scope.win9.open();
@@ -1323,11 +1477,56 @@
             });
         };
 
+        $scope.makeResult = function () {
+            $scope.win11.open();
+        };
+
+        $scope.saveResult = function () {
+            var result = $scope.result;
+            result.hunt_id = $routeParams.hunt_id;
+            result.job_id = $scope.hunt.job_id;
+            result.job_name = $scope.hunt.job_name;
+            result.company_id = $scope.hunt.company_id;
+            result.company_name = $scope.hunt.company_name;
+            result.person_id = $scope.hunt.person_id;
+            result.person_name = $scope.hunt.person_name;
+
+            $http.post('/hunt/save-result', {result: result}).success(function (res) {
+                if (~~res) {
+                    result.id = res;
+                    $scope.resultInfo = result;
+                    $scope.win11.close();
+                    $.$modal.alert('业绩已填写完成！');
+                }
+            });
+        };
+
+        $scope.deleteResult = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/hunt/delete-result', {id: id}).success(function (res) {
+                        if (~~res) {
+                            $scope.resultInfo = {};
+                            $.$modal.alert('业绩信息已删除！');
+                        }
+                    });
+                }
+            });
+        }
+
         $scope.offerInfo = {};
         model.getHuntOfferInfo(~~$routeParams.hunt_id, function (res) {
             console.log(res);
             if (res.id) {
                 $scope.offerInfo = res;
+            }
+        });
+
+        $scope.resultInfo = {};
+        model.getHuntResultInfo(~~$routeParams.hunt_id, function (res) {
+            console.log(res);
+            if (res.id) {
+                $scope.resultInfo = res;
             }
         });
 
@@ -1392,11 +1591,12 @@
                     {field: 'id', title: 'ID', sortable: false, filterable: false},
                     {field: 'name', title: '账号', sortable: false},
                     {field: 'nickname', title: '顾问', sortable: false},
-                    {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person_count')},
-                    {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report_count')},
-                    {field: 'face_count', title: '面试', filterable: false, template: getCountColor('face_count')},
-                    {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer_count')},
-                    {field: 'success_count', title: '上岗', filterable: false, template: getCountColor('success_count')}
+                    {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person')},
+                    {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report')},
+                    {field: 'face_count', title: '面试', filterable: false, template: getCountColor('face')},
+                    {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer')},
+                    {field: 'success_count', title: '上岗', filterable: false, template: getCountColor('success')},
+                    {title: 'KPI', filterable: false, template: getKpi}
                 ],
                 sortable: true,
                 scrollable: false,
@@ -1425,9 +1625,52 @@
             }
         };
 
+        function getKpi(item) {
+            var kpi = { person: 0, report: 0, face: 0, offer: 0}, result = 0;
+            kpi.person = item.person_count > 100 ? 20 : item.person_count * 0.2;
+            kpi.report = item.report_count > 40 ? 40 : item.report_count * 1;
+            kpi.face = item.face_count > 18 ? 36 : item.face_count * 2;
+            kpi.offer = item.offer_count * 5;
+            result = kpi.person.plus(kpi.report).plus(kpi.face).plus(kpi.offer);
+            if (result < 60) {
+                return '<span class="bold red">{0}</span>'.format(result);
+            } else if (result >= 60 && result < 80) {
+                return '<span class="bold dark-orange">{0}</span>'.format(result);
+            } else if (result >= 80 && result < 100) {
+                return '<span class="bold dark-yellow">{0}</span>'.format(result);
+            } else {
+                return '<span class="bold green">{0}</span>'.format(result);
+            }
+        }
+
         function getCountColor(name) {
+            var count_field = name + '_count', target_field = name + '_target';
             return function (item) {
-                return item[name] == '0' ? '<span class="bold red">{0}</span>'.format(item[name]) : '<span class="bold green pointer" ng-click="showDetailList({1},\'{2}\')">{0}</span>'.format(item[name], item.id, name);
+                var performance = item[count_field] || 0, target = item[target_field] || 1
+                var percent = performance / target;
+                var color = '';
+                if (percent >= 0.8) {
+                    //green
+                    color = '#20bb0d';
+                //} else if (percent < 0.9 && percent >= 0.5) {
+                //    //blue
+                //    color = '#207fcc';
+                } else if (percent < 0.8 && percent >= 0.2) {
+                    //yellow
+                    color = '#ded02c';
+                } else {
+                    //red
+                    color = '#f72626';
+                }
+                if (percent > 1) percent = 1;
+                if (percent < 0 || !percent) percent = 0;
+                if (performance > 0) {
+                    return '<div class="box-progress"><div class="box-target"><div class="box-performance pointer {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}" ng-click="showDetailList({4},\'{5}\')">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color, item.id, count_field);
+                } else {
+                    return '<div class="box-progress"><div class="box-target"><div class="box-performance {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color);
+                }
+
+                //return item[count_field] == '0' ? '<span class="bold red">{0}</span>'.format(item[count_field]) : '<span class="bold green pointer" ng-click="showDetailList({1},\'{2}\')">{0}</span>'.format(item[count_field], item.id, count_field);
             }
         }
 
@@ -1484,7 +1727,7 @@
             switch (type) {
                 case '本周':
                     date.sdate = Date.translate('now-'+(day - 1)).format();
-                    date.edate = Date.translate('now+'+(day % 7 + (7 - day))).format();
+                    date.edate = Date.translate('now+'+(7 - day)).format();
                     break;
                 case '上周':
                     date.sdate = Date.translate('now-'+(day - 1 + 7)).format();
@@ -1541,8 +1784,11 @@
         $scope.selMonth = '';
         $scope.days = [];
 
+        var monthEditable = true;
         $scope.isValidMonth = function () {
-            return Date.compute(new Date($scope.selMonth + '-01'), new Date().format()) > 0;
+            var selDate = new Date($scope.selMonth + '-01');
+            console.log((selDate.getFullYear() >= 2017), monthEditable);
+            return !((selDate.getFullYear() >= 2017) && monthEditable);
         };
 
         //getMonthTargetInfo($scope.selMonth);
@@ -1595,6 +1841,7 @@
             $http.get('/performance/json-month-target?month='+month).success(function (res) {
                 var res = res[0];
                 if (res) {
+                    monthEditable = false;
                     $scope.target = {
                         person: res.person_target || 0,
                         report: res.report_target || 0,
@@ -1603,6 +1850,7 @@
                         success: res.success_target || 0,
                     };
                 } else {
+                    monthEditable = true;
                     $scope.target = {
                         person: 0,
                         report: 0,
@@ -1653,7 +1901,7 @@
             $scope.view = {
                 name: user.name,
                 nickname: user.nickname,
-                date: user.date.split(' ').shift(),
+                date: user.date ? user.date.split(' ').shift() : '',
                 group: user.group,
                 job: user.job
             };

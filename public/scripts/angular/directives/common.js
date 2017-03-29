@@ -21,9 +21,9 @@
                         {url: '/job/list', label: '职位库', power: 9},
                         {url: '/candidate/list', label: '简历库', power: 9},
                     ]},
-                    {url: '/bd/list', label: '客户管理', power: 9},
+                    {url: '/bd/list', label: '客户管理', power: 1},
                     {url: '/hunt/list', label: '项目管理', power: 1},
-                    {url: '/performance/list', label: '绩效管理', power: 9, items: [
+                    {url: '/performance/list', label: '绩效管理', power: 1, items: [
                         {url: '/performance/list', label: '绩效管理', power: 1},
                         {url: '/target/list', label: '目标管理', power: 1},
                     ]}
@@ -1029,5 +1029,20 @@
             }
         }
     });
+
+    app.directive('powerChecker', function () {
+        return {
+            restrict: 'AE',
+            controller: ['$scope', '$http', 'model', function ($scope, $http, model) {
+                $scope.power = model.getUserSession().power;
+            }],
+            link: function (scope, element, attr) {
+                var power = scope.power;
+                if (power != 9) {
+                    element.remove();
+                }
+            }
+        }
+    })
 
 })(window, angular);
