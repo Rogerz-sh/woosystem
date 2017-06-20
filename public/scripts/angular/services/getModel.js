@@ -303,7 +303,7 @@
 
         this.getRecordSuccess = function () {
             return {
-                date: '',
+                date: (new Date()).format(),
                 protected: '',
                 job_id: '',
                 job_name: '',
@@ -316,7 +316,7 @@
 
         this.getRecordResult = function () {
             return {
-                date: '',
+                date: (new Date()).format(),
                 amount: 0,
                 job_id: '',
                 job_name: '',
@@ -369,10 +369,33 @@
             }
         };
 
+        this.getHuntSuccessInfo = function (id, callback) {
+            if (!id || !_.isNumber(id)) {
+                callback({});
+            } else {
+                $http.get('/hunt/hunt-success-json-data/', {params: {hunt_id: id}}).success(function (res) {
+                    callback(res);
+                });
+            }
+        };
+
         this.getUserInfo = function (callback) {
             $http.get('/user/json-user-info/').success(function (res) {
                 callback(res);
             });
+        }
+
+        this.getNewDailyReport = function () {
+            return {
+                type: 'report',
+                date: Date.translate('now+1').format(),
+                user_id: '',
+                job_id: '',
+                job_name: '',
+                company_id: '',
+                company_name: '',
+                target: 0
+            }
         }
     }]);
 

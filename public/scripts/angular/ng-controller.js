@@ -267,8 +267,10 @@
 
         $http.get('/performance/json-target-data', {params: {month: now.format('yyyy-mm')}}).success(function (res) {
             console.log(res);
-            for (var t in $scope.target) {
-                $scope.target[t].target = res[0][t + '_target'];
+            if (res.length > 0) {
+                for (var t in $scope.target) {
+                    $scope.target[t].target = res[0][t + '_target'];
+                }
             }
             $http.get('/performance/json-performance-data', {params: {sdate: startDate, edate: endDate}}).success(function (res) {
                 console.log(res);
@@ -317,7 +319,7 @@
         }
 
         function getType(item) {
-            var color = {'低': 'dark-gray', '中': 'yellow', '高': 'red'};
+            var color = {'三级': 'dark-gray', '二级': 'yellow', '一级': 'red'};
             return '<span class="{0}">{1}</span>'.format(color[item.type], item.type);
         }
 
@@ -689,7 +691,7 @@
                             return status[a.status] < status[b.status] ? -1 : status[a.status] === status[b.status] ? 0 : 1;
                         }},
                         {field: 'type', dir: 'desc', compare: function (a, b) {
-                            var type = {'低': 1, '中': 2, '高': 3};
+                            var type = {'三级': 1, '二级': 2, '一级': 3};
                             return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
                         }},
                     ]
@@ -716,7 +718,7 @@
                     {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer_count')},
                     {field: 'type', title: '重要程度', template: getType, sortable: {
                         compare: function (a, b) {
-                            var type = {'低': 1, '中': 2, '高': 3};
+                            var type = {'三级': 1, '二级': 2, '一级': 3};
                             return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
                         }
                     }, filterable: {multi:true}},
@@ -850,7 +852,7 @@
         }
 
         function getType(item) {
-            var color = {'低': 'dark-gray', '中': 'yellow', '高': 'red'};
+            var color = {'三级': 'dark-gray', '二级': 'yellow', '一级': 'red'};
             return '<span class="{0}">{1}</span>'.format(color[item.type], item.type);
         }
 
@@ -1240,12 +1242,18 @@
             successDate: {
                 culture: 'zh-CN',
                 value: new Date(),
-                format: 'yyyy-MM-dd'
+                format: 'yyyy-MM-dd',
+                change: function () {
+                    $scope.success.date = this.value().format();
+                }
             },
-            date: {
+            resultDate: {
                 culture: 'zh-CN',
                 value: new Date(),
-                format: 'yyyy-MM-dd'
+                format: 'yyyy-MM-dd',
+                change: function () {
+                    $scope.result.date = this.value().format();
+                }
             },
             numeric: {
                 spinners: false,
@@ -1396,10 +1404,14 @@
             delete face.time;
 
             $http.post('/hunt/save-face', {face: face}).success(function (res) {
-                if (~~res) {
+                if (~~res > 0) {
                     $scope.win8.close();
                     dsFace.read();
                     $.$modal.alert('面试通知保存成功');
+                } else if (res == -1) {
+                    $.$modal.alert(face['type'] + '面试信息重复');
+                } else {
+                    $.$modal.alert('保存失败');
                 }
             });
         };
@@ -1454,6 +1466,19 @@
             });
         };
 
+        $scope.deleteOffer = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/hunt/delete-report', {id: id}).success(function (res) {
+                        if (~~res) {
+                            $scope.offerInfo = {};
+                            $.$modal.alert('Offer已删除！');
+                        }
+                    });
+                }
+            });
+        }
+
         $scope.makeSuccess = function () {
             $scope.win10.open();
         };
@@ -1471,11 +1496,25 @@
             $http.post('/hunt/save-success', {success: success}).success(function (res) {
                 if (~~res) {
                     success.id = res;
+                    $scope.successInfo = success;
                     $scope.win10.close();
-                    $.$modal.alert('候选人已成功上岗！');
+                    $.$modal.alert('候选人上岗信息保存成功！');
                 }
             });
         };
+
+        $scope.deleteSuccess = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/hunt/delete-success', {id: id}).success(function (res) {
+                        if (~~res) {
+                            $scope.successInfo = {};
+                            $.$modal.alert('上岗信息已删除！');
+                        }
+                    });
+                }
+            });
+        }
 
         $scope.makeResult = function () {
             $scope.win11.open();
@@ -1519,6 +1558,14 @@
             console.log(res);
             if (res.id) {
                 $scope.offerInfo = res;
+            }
+        });
+
+        $scope.successInfo = {};
+        model.getHuntSuccessInfo(~~$routeParams.hunt_id, function (res) {
+            console.log(res);
+            if (res.id) {
+                $scope.successInfo = res;
             }
         });
 
@@ -1570,7 +1617,15 @@
                     id: 'id'
                 }
             },
-            filter: {field: 'deleted', operator: 'neq', value: true}
+            aggregate: [
+                { field: "person_count", aggregate: "max" },
+                { field: "report_count", aggregate: "max" },
+                { field: "face_count", aggregate: "max" },
+                { field: "offer_count", aggregate: "max" },
+                { field: "success_count", aggregate: "max" }
+            ],
+            filter: {field: 'deleted', operator: 'neq', value: true},
+            sort: {field: 'id', dir: 'desc'}
         });
 
         var detailData = new kendo.data.DataSource({
@@ -1646,6 +1701,7 @@
         function getCountColor(name) {
             var count_field = name + '_count', target_field = name + '_target';
             return function (item) {
+                console.log(gridData.aggregates());
                 var performance = item[count_field] || 0, target = item[target_field] || 1
                 var percent = performance / target;
                 var color = '';
@@ -1655,7 +1711,7 @@
                 //} else if (percent < 0.9 && percent >= 0.5) {
                 //    //blue
                 //    color = '#207fcc';
-                } else if (percent < 0.8 && percent >= 0.2) {
+                } else if (percent < 0.8 && percent >= 0.5) {
                     //yellow
                     color = '#ded02c';
                 } else {
@@ -1665,9 +1721,9 @@
                 if (percent > 1) percent = 1;
                 if (percent < 0 || !percent) percent = 0;
                 if (performance > 0) {
-                    return '<div class="box-progress"><div class="box-target"><div class="box-performance pointer {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}" ng-click="showDetailList({4},\'{5}\')">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color, item.id, count_field);
+                    return '<div class="box-progress"><div class="box-target"><div class="box-performance pointer {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}" ng-click="showDetailList({4},\'{5}\')">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div><div class="width-20 text-center">{6}</div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color, item.id, count_field, percent > 0.8 && performance == gridData.aggregates()[count_field].max ? '<i class="fa fa-thumbs-up dark-yellow"></i>': '');
                 } else {
-                    return '<div class="box-progress"><div class="box-target"><div class="box-performance {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color);
+                    return '<div class="box-progress"><div class="box-target"><div class="box-performance {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div><div class="width-20"></div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color);
                 }
 
                 //return item[count_field] == '0' ? '<span class="bold red">{0}</span>'.format(item[count_field]) : '<span class="bold green pointer" ng-click="showDetailList({1},\'{2}\')">{0}</span>'.format(item[count_field], item.id, count_field);
@@ -1780,6 +1836,237 @@
         }
     }]);
 
+    app.controller('performanceChartController', ['$scope', '$http', function ($scope, $http) {
+        var d = new Date(), day = d.getDay() === 0 ? 7 : d.getDay();
+
+        $scope.search = {
+            type: 'day',
+            user: '',
+            sdate: Date.translate('now-6').format(),
+            edate: Date.translate('now').format()
+        };
+
+        $scope.searched = {
+            type: '自定义',
+            sdate: $scope.search.sdate,
+            edate: $scope.search.edate
+        };
+
+        initChartData($scope.search);
+
+        function initChartData(data, callback) {
+            if (Date.compute(data.sdate, data.edate) > 30) {
+                data.type = 'month';
+            }
+            var category = generateCategories(data);
+            console.log(category);
+            $http.get('/performance/json-performance-chart-data', {params: data}).success(function (res) {
+                var person = [], report = [], face = [], offer = [], success = [];
+                category.forEach(function (v, i) {
+                    person[i] = res.person.has({date: v}) ? res.person[res.person.at({date: v})].count : 0;
+                    report[i] = res.report.has({date: v}) ? res.report[res.report.at({date: v})].count : 0;
+                    face[i] = res.face.has({date: v}) ? res.face[res.face.at({date: v})].count : 0;
+                    offer[i] = res.offer.has({date: v}) ? res.offer[res.offer.at({date: v})].count : 0;
+                    success[i] = res.success.has({date: v}) ? res.success[res.success.at({date: v})].count : 0;
+                });
+                if (data.type == 'day') {
+                    category = category.map(function(v){
+                        return Date.format(v, 'mm.dd');
+                    });
+                }
+                $('#chart').kendoChart({
+                    //title: {
+                    //    text: "Gross domestic product growth /GDP annual %/"
+                    //},
+                    legend: {
+                        position: "top"
+                    },
+                    seriesDefaults: {
+                        type: "column",
+                        overlay: {
+                            gradient: "none"
+                        },
+                        labels: {
+                            visible: true,
+                            background: "transparent"
+                        }
+                    },
+                    series: [{
+                        name: "人选",
+                        data: person
+                    }, {
+                        name: "报告",
+                        data: report
+                    }, {
+                        name: "面试",
+                        data: face
+                    },{
+                        name: "Offer",
+                        data: offer
+                    },{
+                        name: "上岗",
+                        data: success
+                    }],
+                    valueAxis: {
+                        labels: {
+                            //format: "{0}%"
+                        },
+                        line: {
+                            visible: false
+                        },
+                        axisCrossingValue: 0
+                    },
+                    categoryAxis: {
+                        categories: category,
+                        line: {
+                            visible: false
+                        }
+                    },
+                    tooltip: {
+                        visible: true,
+                        //format: "{0}%",
+                        template: "#= series.name #: #= value #"
+                    }
+                });
+                if (typeof callback === 'function') callback();
+            });
+        }
+
+        function generateCategories(data) {
+            var start = new Date(data.sdate), end = new Date(data.edate), pointer = new Date(data.sdate), list = [];
+            if (data.type == 'day') {
+                while (pointer.format('yyyy-mm-dd') <= end.format('yyyy-mm-dd')) {
+                    list.push(pointer.format('yyyy-mm-dd'));
+                    pointer = new Date(pointer.getFullYear(), pointer.getMonth(), pointer.getDate() + 1);
+                }
+            } else {
+                while (pointer.format('yyyy-mm') <= end.format('yyyy-mm')) {
+                    list.push(pointer.format('yyyy-mm'));
+                    pointer = new Date(pointer.getFullYear(), pointer.getMonth() + 1, pointer.getDate());
+                }
+            }
+            return list;
+        }
+
+        $scope.config = {
+            sdate: {
+                culture: 'zh-CN',
+                format: 'yyyy-MM-dd',
+                min: '2017-01-01',
+                value: $scope.search.sdate
+            },
+            edate: {
+                culture: 'zh-CN',
+                format: 'yyyy-MM-dd',
+                min: '2017-01-01',
+                value: $scope.search.edate
+            },
+            user: {
+                dataSource: {
+                    transport: {
+                        read: function (options) {
+                            $http.get('/performance/json-user-list').success(function(res) {
+                                res.unshift({id: '-2', nickname: '项目二部'});
+                                res.unshift({id: '-1', nickname: '项目一部'});
+                                res.unshift({id: '', nickname: '全体成员'});
+                                options.success(res);
+                            });
+                        }
+                    }
+                },
+                dataTextField: 'nickname',
+                dataValueField: 'id',
+                change: function () {
+                    initChartData($scope.search);
+                }
+            }
+        };
+
+        $scope.customSearch = function () {
+            initChartData($scope.search, function () {
+                $scope.searched = {
+                    type: '自定义',
+                    sdate: $scope.search.sdate,
+                    edate: $scope.search.edate
+                }
+            });
+        }
+
+        $scope.quickSearch = function (type) {
+            var date = {type: 'day', sdate: '', edate: '', user: $scope.search.user};
+            switch (type) {
+                case '本周':
+                    date.sdate = Date.translate('now-'+(day - 1)).format();
+                    date.edate = Date.translate('now+'+(7 - day)).format();
+                    break;
+                case '上周':
+                    date.sdate = Date.translate('now-'+(day - 1 + 7)).format();
+                    date.edate = Date.translate('now-' + day).format();
+                    break;
+                case '本月':
+                    date.sdate = new Date(d.getFullYear(), d.getMonth(), 1).format();
+                    date.edate = new Date(d.getFullYear(), d.getMonth()+1, 0).format();
+                    break;
+                case '上月':
+                    date.sdate = new Date(d.getFullYear(), d.getMonth()-1, 1).format();
+                    date.edate = new Date(d.getFullYear(), d.getMonth(), 0).format();
+                    break;
+                case '一季度':
+                    date.sdate = new Date(d.getFullYear(), 0, 1).format();
+                    date.edate = new Date(d.getFullYear(), 3, 0).format();
+                    date.type = 'month';
+                    break;
+                case '二季度':
+                    date.sdate = new Date(d.getFullYear(), 3, 1).format();
+                    date.edate = new Date(d.getFullYear(), 6, 0).format();
+                    date.type = 'month';
+                    break;
+                case '三季度':
+                    date.sdate = new Date(d.getFullYear(), 6, 1).format();
+                    date.edate = new Date(d.getFullYear(), 9, 0).format();
+                    date.type = 'month';
+                    break;
+                case '四季度':
+                    date.sdate = new Date(d.getFullYear(), 9, 1).format();
+                    date.edate = new Date(d.getFullYear(), 12, 0).format();
+                    date.type = 'month';
+                    break;
+                case '上半年':
+                    date.sdate = new Date(d.getFullYear(), 0, 1).format();
+                    date.edate = new Date(d.getFullYear(), 6, 0).format();
+                    date.type = 'month';
+                    break;
+                case '下半年':
+                    date.sdate = new Date(d.getFullYear(), 6, 1).format();
+                    date.edate = new Date(d.getFullYear(), 12, 0).format();
+                    date.type = 'month';
+                    break;
+                case '今年':
+                    date.sdate = new Date(d.getFullYear(), 0, 1).format();
+                    date.edate = new Date(d.getFullYear() + 1, 0, 0).format();
+                    date.type = 'month';
+                    break;
+                case '去年':
+                    date.sdate = new Date(d.getFullYear() - 1, 0, 1).format();
+                    date.edate = new Date(d.getFullYear(), 0, 0).format();
+                    date.type = 'month';
+                    break;
+                default:
+                    return;
+                    break;
+            }
+            initChartData(date, function () {
+                $scope.searched = {
+                    type: type,
+                    sdate: date.sdate,
+                    edate: date.edate
+                }
+                $scope.search.sdate = date.sdate;
+                $scope.search.edate = date.edate;
+            });
+        }
+    }]);
+
     app.controller('targetListController', ['$scope', '$http', function ($scope, $http) {
         $scope.selMonth = '';
         $scope.days = [];
@@ -1879,8 +2166,528 @@
             target.month = $scope.selMonth;
             $http.post('/performance/save-target', {month: target, days: $scope.days}).success(function (res) {
                 console.log(res);
+                $.$modal.alert('保存成功！');
             });
         }
+    }]);
+
+    /*
+    app.controller('dailyReportController', ['$scope', '$http', 'model', function ($scope, $http, model) {
+        var d = new Date(), day = d.getDay() === 0 ? 7 : d.getDay();
+
+        $scope.search = {
+            user: '',
+            sdate: Date.translate('now-6').format(),
+            edate: Date.translate('now').format()
+        };
+
+        $scope.searched = {
+            type: '自定义',
+            sdate: $scope.search.sdate,
+            edate: $scope.search.edate
+        };
+
+        var dsReport = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '/performance/daily-report-list',
+                    dataType: 'json',
+                    data: $scope.search
+                }
+            },
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            },
+            pageSize: 10,
+        });
+
+        var dsJob = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '/hunt/json-job-list-data',
+                    dataType: 'json'
+                }
+            }
+        });
+
+        var detailData = new kendo.data.DataSource({
+            pageSize: 10,
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            },
+            data: []
+        });
+
+        $scope.report = model.getNewDailyReport();
+
+        $scope.config = {
+            grid: {
+                dataSource: dsReport,
+                scrollable: false,
+                pageable: true,
+                filterable: true,
+                toolbar: [{
+                    template: '<div class="pull-left margin-left-10"><button class="btn btn-info" ng-click="addNewReport()">新建日清任务</button></div>'
+                }],
+                columns: [
+                    {field: 'nickname', title: '顾问'},
+                    {field: 'group', title: '小组'},
+                    {field: 'date', title: '任务日期', template: '#:Date.format(date)#'},
+                    {field: 'job_name', title: '目标岗位'},
+                    {field: 'company_name', title: '目标企业'},
+                    {field: 'target', title: '目标量', filterable: false},
+                    {field: 'complete', title: '完成量', filterable: false},
+                    {title: '当日作业情况', columns: [
+                        {field: 'person_count', title: '人选', template: getDetail('person_count'), filterable: false},
+                        {field: 'report_count', title: '报告', template: getDetail('report_count'), filterable: false},
+                        {field: 'face_count', title: '面试', template: getDetail('face_count'), filterable: false},
+                        {field: 'offer_count', title: 'Offer', template: getDetail('offer_count'), filterable: false},
+                        {field: 'success_count', title: '上岗', template: getDetail('success_count'), filterable: false},
+                    ], filterable: false},
+                    {title: '操作', template: '<a class="btn btn-xs btn-info" ng-click="editDailyReport(#:id#)"><i class="fa fa-pencil"></i></a>' +
+                    '<a class="btn btn-xs btn-danger margin-left-5" ng-click="deleteDailyReport(#:id#)" ng-if="user.power==9"><i class="fa fa-trash-o"></i></a>', filterable: false},
+                ]
+            },
+            jobs: {
+                dataSource: dsJob,
+                optionLabel: '请选择岗位...',
+                filter: 'startswith',
+                delay: 500,
+                dataTextField: 'name',
+                dataValueField: 'id',
+                defaultValue: $scope.report.job_id,
+                template: '<strong>#:name#</strong> <span class="dark-gray">[ #:company_name# ]</span>',
+                change: function () {
+                    var item = this.dataItem();
+                    $scope.report.job_name = item.name;
+                    $scope.report.job_id = item.id;
+                    $scope.report.company_id = item.company_id;
+                    $scope.report.company_name = item.company_name;
+                    $scope.$apply();
+                }
+            },
+            date: {
+                culture: 'zh-CN',
+                format: 'yyyy-MM-dd',
+                value: new Date().format(),
+                min: Date.translate('now-1').format()
+            },
+            gridDetail: {
+                dataSource: detailData,
+                scrollable: false,
+                pageable: true,
+                columns: [
+                    {title: '详细信息', template: getDetailText},
+                    {filed: 'updated_at', title: '提交日期', template: getDetailTime}
+                ]
+            },
+            sdate: {
+                culture: 'zh-CN',
+                format: 'yyyy-MM-dd',
+                min: '2017-01-01',
+                value: $scope.search.sdate
+            },
+            edate: {
+                culture: 'zh-CN',
+                format: 'yyyy-MM-dd',
+                min: '2017-01-01',
+                value: $scope.search.edate
+            },
+            user: {
+                dataSource: {
+                    transport: {
+                        read: function (options) {
+                            $http.get('/performance/json-user-list').success(function(res) {
+                                res.unshift({id: '-2', nickname: '项目二部'});
+                                res.unshift({id: '-1', nickname: '项目一部'});
+                                res.unshift({id: '', nickname: '全体成员'});
+                                options.success(res);
+                            });
+                        }
+                    }
+                },
+                dataTextField: 'nickname',
+                dataValueField: 'id',
+                change: function () {
+                    dsReport.read($scope.search);
+                }
+            },
+        };
+
+        function getDetail(field) {
+            return function (item) {
+                return '<a class="text-info pointer" ng-click="showDetailList({0}, {1},\'{2}\',\'{3}\')">{0}</a>'.format(item[field], item.user_id, field, Date.format(item.date));
+            }
+        }
+
+        function getDetailText(item) {
+            switch ($scope.detailField) {
+                case 'person_count':
+                    return '<span class="orange bold">{0}</span> <span class="gray"> {1} {2}岁</span> <span class="blue">{3}</span> <span class="main">{4}</span>'.format(item.name, item.sex, item.age, item.job, item.company);
+                    break;
+                case 'report_count':
+                    return item.filename;
+                    break;
+                case 'face_count':
+                    return '<span class="orange bold">{0}</span> <small class="gray">{1}</small> <span class="red">{2}</span> <span class="dark-gray">{3}</span> <span class="blue">{4}</span>'.format(item.person_name, item.tel, item.date, item.job_name, item.type);
+                    break;
+                case 'offer_count':
+                    return '<span class="orange bold">{0}</span> <span class="blue">{1}</span> <span class="dark-gray">{2}</span> <span class="main">{3}</span>'.format(item.person_name, item.job_name, item.company_name, item.filename);
+                    break;
+                case 'success_count':
+                    return '<span class="orange bold">{0}</span> <span class="blue">{1}</span> <span class="dark-gray">{2}</span> <span class="red">{3}上岗</span> <span class="main">保证期：{4}</span>'.format(item.person_name, item.job_name, item.company_name, Date.format(item.date), item.protected);
+                    break;
+                default:
+                    return '';
+                    break;
+            }
+        }
+
+        function getDetailTime(item) {
+            var time = $scope.detailField == 'person_count' ? item.created_at : item.updated_at;
+            return Date.format(time);
+        }
+
+        $scope.customSearch = function () {
+            dsReport.read($scope.search).then(function () {
+                $scope.searched = {
+                    type: '自定义',
+                    sdate: $scope.search.sdate,
+                    edate: $scope.search.edate
+                }
+                $scope.$apply();
+            });
+        }
+
+        $scope.quickSearch = function (type) {
+            var date = {sdate: '', edate: '', user: $scope.search.user};
+            switch (type) {
+                case '昨天':
+                    date.sdate = Date.translate('now-1').format();
+                    date.edate = Date.translate('now-1').format();
+                    break;
+                case '今天':
+                    date.sdate = Date.translate('now').format();
+                    date.edate = Date.translate('now').format();
+                    break;
+                case '明天':
+                    date.sdate = Date.translate('now+1').format();
+                    date.edate = Date.translate('now+1').format();
+                    break;
+                case '本周':
+                    date.sdate = Date.translate('now-'+(day - 1)).format();
+                    date.edate = Date.translate('now+'+(7 - day)).format();
+                    break;
+                case '上周':
+                    date.sdate = Date.translate('now-'+(day - 1 + 7)).format();
+                    date.edate = Date.translate('now-' + day).format();
+                    break;
+                case '本月':
+                    date.sdate = new Date(d.getFullYear(), d.getMonth(), 1).format();
+                    date.edate = new Date(d.getFullYear(), d.getMonth()+1, 0).format();
+                    break;
+                case '上月':
+                    date.sdate = new Date(d.getFullYear(), d.getMonth()-1, 1).format();
+                    date.edate = new Date(d.getFullYear(), d.getMonth(), 0).format();
+                    break;
+                default:
+                    return;
+                    break;
+            }
+            dsReport.read(date).then(function () {
+                $scope.searched = {
+                    type: type,
+                    sdate: date.sdate,
+                    edate: date.edate
+                }
+                $scope.search.sdate = date.sdate;
+                $scope.search.edate = date.edate;
+                $scope.$apply();
+            });
+        }
+
+        $scope.showDetailList = function (count, user_id, field, date) {
+            if (count <= 0) return;
+            $scope.detailField = field;
+            $http.get('/performance/json-detail-list', {params: {id: user_id, field: field, sdate: date, edate: date}}).success(function (res) {
+                detailData.data(res);
+                $scope.win2.center().open();
+            });
+        };
+
+        $scope.user = model.getUserSession();
+
+        $scope.date = {
+            'yesterday': Date.translate('now-1').format(),
+            'today': Date.translate('now').format(),
+            'tomorrow': Date.translate('now+1').format(),
+        };
+
+        $scope.addNewReport = function () {
+            $scope.report = model.getNewDailyReport();
+            $scope.win1.center().open();
+        };
+
+        $scope.saveDailyReport = function () {
+            console.log($scope.report);
+            $http.post('/performance/save-daily-report', {report: $scope.report}).success(function (res) {
+                if (res > 0) {
+                    dsReport.read();
+                    $scope.win1.close();
+                } else if (res == -1) {
+                    $.$modal.alert('该日期的任务已经设置过了');
+                } else {
+                    $.$modal.alert('保存失败');
+                }
+            });
+        };
+
+        $scope.editDailyReport = function (id) {
+            var item = dsReport.get(id).toJSON();
+            $scope.report.id = item.id;
+            $scope.report.user_id = item.user_id;
+            $scope.report.date = item.date;
+            $scope.report.job_id = item.job_id;
+            $scope.report.job_name = item.job_name;
+            $scope.report.company_id = item.company_id;
+            $scope.report.company_name = item.company_name;
+            $scope.report.target = item.target;
+            $scope.win1.center().open();
+        };
+
+        $scope.deleteDailyReport = function (id) {
+            $.$modal.confirm('确定要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/performance/delete-daily-report', {id: id}).success(function (res) {
+                        if (res > 0) {
+                            $.$modal.alert('删除成功');
+                            dsReport.pushDestroy({id: id});
+                        } else {
+                            $.$modal.alert('删除失败');
+                        }
+                    });
+                }
+            });
+        };
+    }]);
+    */
+
+    app.controller('dailyReportController', ['$scope', '$http', 'model', function ($scope, $http, model) {
+        $scope.session = model.getUserSession();
+        $scope.today = new Date().format();
+        $scope.tomorrow = Date.translate('now+1').format();
+
+        $scope.users = [];
+        $scope.selectedUser = {id: $scope.session.id, nickname: $scope.session.nickname};
+        $scope.selectedDate = new Date().format();
+        $scope.selectedNextDate = Date.translate('now+1').format();
+        $scope.report = model.getNewDailyReport();
+        $scope.detail = {'today': [], 'tomorrow': [], 'person': [], 'report': [], 'face': [], 'offer': [], 'success': []};
+
+        var dsJob = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $http.get('/hunt/json-job-list-data').success(function (res) {
+                        res.forEach(function (v) {
+                            v.fullname = '{0} - {1}'.format(v.name, v.company_name);
+                        });
+                        options.success(res);
+                    });
+                }
+            }
+        });
+
+        $scope.config = {
+            calendar: {
+                culture: 'zh-CN',
+                value: new Date(),
+                change: function () {
+                    $scope.selectedDate = this.value().format();
+                    $scope.selectedNextDate = this.value().translate('now+1').format();
+                    $scope.$apply();
+                    $scope.getReportInfo();
+                }
+            },
+            jobs: {
+                dataSource: dsJob,
+                optionLabel: '请选择岗位...',
+                filter: 'contains',
+                delay: 500,
+                dataTextField: 'fullname',
+                dataValueField: 'id',
+                defaultValue: $scope.report.job_id,
+                template: '<strong>#:name#</strong> <span class="dark-gray">[ #:company_name# ]</span>',
+                change: function () {
+                    var item = this.dataItem();
+                    $scope.report.job_name = item.name;
+                    $scope.report.job_id = item.id;
+                    $scope.report.company_id = item.company_id;
+                    $scope.report.company_name = item.company_name;
+                    $scope.$apply();
+                }
+            },
+            date: {
+                culture: 'zh-CN',
+                value: Date.translate('now+1'),
+                format: 'yyyy-MM-dd',
+                min: Date.translate('now+1').format()
+            }
+        }
+
+        $scope.getDate = function (date) {
+            return new Date(date).format();
+        }
+
+        $http.get('/performance/json-user-list').success(function(res) {
+            $scope.users = res;
+        });
+
+        $scope.selectUser = function (user) {
+            $scope.selectedUser = user;
+            $scope.getReportInfo();
+        }
+
+        $scope.setDailyReport = function () {
+            $scope.win1.center().open();
+        }
+
+        $scope.getReportInfo = function () {
+            $http.get('/performance/daily-report', {params: {user_id: $scope.selectedUser.id, date: $scope.selectedDate, nextDate: $scope.selectedNextDate}}).success(function(res) {
+                console.log(res);
+                $scope.detail = res;
+            });
+        }
+
+        $scope.saveDailyReport = function () {
+            console.log($scope.report);
+            $http.post('/performance/save-daily-report', {report: $scope.report}).success(function (res) {
+                if (res > 0) {
+                    if ($scope.selectedDate == $scope.today && $scope.selectedUser.id == $scope.session.id) {
+                        $scope.getReportInfo();
+                    }
+                    $scope.win1.close();
+                } else if (res == -1) {
+                    $.$modal.alert('该岗位已经添加过了');
+                } else {
+                    $.$modal.alert('保存失败');
+                }
+            });
+        };
+
+        $scope.deleteDailyReport = function (id) {
+            $.$modal.confirm('确定要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/performance/delete-daily-report', {id: id}).success(function (res) {
+                        if (res > 0) {
+                            $.$modal.alert('删除成功');
+                            $scope.getReportInfo();
+                        } else {
+                            $.$modal.alert('删除失败');
+                        }
+                    });
+                }
+            });
+        };
+
+        $scope.getReportInfo();
+    }]);
+
+    //controller for team
+    app.controller('teamRecentController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
+
+        $scope.config = {
+            gridFace: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/team/recent-face-list',
+                            data: {}
+                        }
+                    },
+                    pageSize: 10
+                },
+                columns: [
+                    {field: 'person_name', title: '面试人'},
+                    {field: 'job_name', title: '面试岗位'},
+                    {field: 'type', title: '面试名称'},
+                    {field: 'date', title: '面试日期'},
+                    {field: 'tel', title: '手机号'},
+                    {field: 'nickname', title: '顾问'},
+                    {field: 'updated_at', title: '更新日期', template: '#:new Date(updated_at).format()#'},
+                    {field: 'desc', title: '备注'},
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+            gridOffer: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/team/recent-offer-list',
+                            data: {}
+                        }
+                    },
+                    pageSize: 10
+                },
+                columns: [
+                    {field: 'person_name', title: '姓名'},
+                    {field: 'job_name', title: '岗位'},
+                    {field: 'company_name', title: '公司'},
+                    {field: 'date', title: '日期', template: '#:new Date(date).format()#'},
+                    {field: 'nickname', title: '顾问'},
+                    {field: 'updated_at', title: '更新日期', template: '#:new Date(updated_at).format()#'},
+                    {field: 'desc', title: '备注'},
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+            gridSuccess: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/team/recent-success-list',
+                            data: {}
+                        }
+                    },
+                    pageSize: 10
+                },
+                columns: [
+                    {field: 'person_name', title: '姓名'},
+                    {field: 'job_name', title: '岗位'},
+                    {field: 'company_name', title: '公司'},
+                    {field: 'date', title: '日期', template: '#:new Date(date).format()#'},
+                    {field: 'protected', title: '保证期'},
+                    {field: 'nickname', title: '顾问'},
+                    {field: 'updated_at', title: '更新日期', template: '#:new Date(updated_at).format()#'},
+                    {field: 'desc', title: '备注'},
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+        };
+
+
+        $scope.viewCompany = function (cid) {
+            $scope.$broadcast('refresh.company-info', cid, function () {
+                $scope.win6.center().open();
+            });
+        };
+
+        $scope.viewJob = function (jid) {
+            $scope.$broadcast('refresh.job-info', jid, function () {
+                $scope.win5.center().open();
+            });
+        };
+
+        $scope.viewPerson = function (pid) {
+            $scope.$broadcast('refresh.person-info', pid, function () {
+                $scope.win4.center().open();
+            });
+        };
     }]);
 
     //controllers for user

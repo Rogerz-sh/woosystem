@@ -25,7 +25,12 @@
                     {url: '/hunt/list', label: '项目管理', power: 1},
                     {url: '/performance/list', label: '绩效管理', power: 1, items: [
                         {url: '/performance/list', label: '绩效管理', power: 1},
+                        {url: '/performance/charts', label: '绩效图表', power: 1},
                         {url: '/target/list', label: '目标管理', power: 1},
+                        {url: '/target/daily-report', label: '日清表', power: 1},
+                    ]},
+                    {url: '/team/recent', label: '团队管理', power: 9, items: [
+                        {url: '/team/recent', label: '团队近况', power: 9},
                     ]}
                 ];
                 $scope.changeSubNav = function (idx) {

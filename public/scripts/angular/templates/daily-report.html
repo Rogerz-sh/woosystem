@@ -1,0 +1,174 @@
+<div class="wrapper bg-white padding-15 margin-top-20 margin-bottom-50 box-shadow">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li>日清表</li>
+            </ul>
+        </div>
+        <div class="row margin-bottom-10 border-bottom border-color-dark-orange">
+            <div class="col-xs-12">
+                <div class="padding-10">
+                    <button class="btn btn-xs btn-success" ng-click="setDailyReport()"><i class="fa fa-plus-circle"></i> 增加明日 ({{tomorrow}}) 日清任务</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="flex flex-row">
+                    <div style="width:200px;padding:0 10px;" ng-if="session.power==9">
+                        <ul class="list-group">
+                            <li class="list-group-item list pointer" ng-repeat="user in users" ng-click="selectUser(user)">{{user.nickname}} <i class="fa fa-check-circle green pull-right margin-left-20" ng-if="user.id == selectedUser.id"></i></li>
+                        </ul>
+                    </div>
+                    <div style="width:280px;padding:0 10px;">
+                        <div kendo-calendar k-options="config.calendar"></div>
+                    </div>
+                    <div class="flex-4">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">明日 <b class="dark-orange">({{selectedNextDate}})</b> 任务目标</div>
+                            <div class="panel-body">
+                                <ul class="list-group margin-bottom-5">
+                                    <li class="list-group-item" ng-if="detail.tomorrow.length==0">尚未设置明日任务目标</li>
+                                    <li class="list-group-item" ng-repeat="t in detail.tomorrow">
+                                        <span class="dark-yellow">{{t.job_name}} ({{t.company_name}})</span> —— <span class="dark-orange">{{t.target}}</span>份
+                                        <a class="btn btn-danger btn-xs pull-right" ng-click="deleteDailyReport(t.id, $index)" ng-if="selectedDate==today"><i class="fa fa-trash-o"></i> 删除</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="panel panel-warning">
+                            <div class="panel-heading">今日 <b class="dark-orange">({{selectedDate}})</b> 任务目标</div>
+                            <div class="panel-body">
+                                <ul class="list-group margin-bottom-5">
+                                    <li class="list-group-item" ng-if="detail.today.length==0">未设置今日任务目标</li>
+                                    <li class="list-group-item" ng-repeat="t in detail.today">
+                                        <span class="dark-yellow">{{t.job_name}} ({{t.company_name}})</span> —— <span class="dark-orange">{{t.target}}</span>份
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="panel panel-warning">
+                            <div class="panel-heading">今日 <b class="dark-orange">({{selectedDate}})</b> 工作内容</div>
+                            <div class="panel-body">
+                                <blockquote style="padding: 5px 10px;margin: 0 0 10px;font-size: 14.5px;">报告</blockquote>
+                                <ul class="list-group">
+                                    <li class="list-group-item" ng-if="detail.report.length==0">无</li>
+                                    <li class="list-group-item" ng-repeat="t in detail.report">
+                                        <span class="dark-main">{{t.filename}}</span> <small class="dark-yellow pull-right">{{getDate(t.date)}}</small>
+                                    </li>
+                                </ul>
+                                <blockquote style="padding: 5px 10px;margin: 0 0 10px;font-size: 14.5px;">面试</blockquote>
+                                <ul class="list-group">
+                                    <li class="list-group-item" ng-if="detail.face.length==0">无</li>
+                                    <li class="list-group-item" ng-repeat="t in detail.face">
+                                        <span class="orange bold">{{t.person_name}}</span> <small class="gray">{{t.tel}}</small> <span class="red">{{t.date}}</span> <span class="dark-gray">{{t.job_name}}</span> <span class="blue">{{t.type}}</span>
+                                    </li>
+                                </ul>
+                                <blockquote style="padding: 5px 10px;margin: 0 0 10px;font-size: 14.5px;">Offer</blockquote>
+                                <ul class="list-group">
+                                    <li class="list-group-item" ng-if="detail.offer.length==0">无</li>
+                                    <li class="list-group-item" ng-repeat="t in detail.offer">
+                                        <span class="orange bold">{{t.person_name}}</span> <span class="blue">{{t.job_name}}</span> <span class="dark-gray">{{t.company_name}}</span> <span class="main">{{t.filename}}</span>
+                                    </li>
+                                </ul>
+                                <blockquote style="padding: 5px 10px;margin: 0 0 10px;font-size: 14.5px;">上岗</blockquote>
+                                <ul class="list-group">
+                                    <li class="list-group-item" ng-if="detail.success.length==0">无</li>
+                                    <li class="list-group-item" ng-repeat="t in detail.success">
+                                        <span class="orange bold">{{t.person_name}}</span> <span class="blue">{{t.job_name}}</span> <span class="dark-gray">{{t.company_name}}</span> <span class="red">{{getDate(t.date)}}上岗</span> <span class="main">保证期：{{t.protected}}</span>
+                                    </li>
+                                </ul>
+                                <blockquote style="padding: 5px 10px;margin: 0 0 10px;font-size: 14.5px;">人选</blockquote>
+                                <ul class="list-group">
+                                    <li class="list-group-item" ng-if="detail.person.length==0">无</li>
+                                    <li class="list-group-item" ng-repeat="t in detail.person">
+                                        <span class="orange bold">{{t.name}}</span> <span class="gray"> {{t.sex}} {{t.age}}岁</span> <span class="blue">{{t.job}}</span> <span class="main">{{t.company}}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--<div class="row margin-bottom-10" ng-if="user.power==9">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="pull-left margin-left-10 form-control-static">开始日期：</div>-->
+                <!--<div class="pull-left margin-left-10"><input type="text" name="sdate" id="sdate" kendo-date-picker k-options="config.sdate" class="size-120" ng-model="search.sdate"></div>-->
+                <!--<div class="pull-left margin-left-10 form-control-static">结束日期：</div>-->
+                <!--<div class="pull-left margin-left-10"><input type="text" name="edate" id="edate" kendo-date-picker k-options="config.edate" class="size-120" ng-model="search.edate"></div>-->
+                <!--<div class="pull-left margin-left-10">-->
+                    <!--<button class="btn btn-primary" ng-click="customSearch()"><i class="fa fa-search"></i> 查询</button>-->
+                <!--</div>-->
+                <!--<div class="pull-left margin-left-20 form-control-static">顾问：</div>-->
+                <!--<div class="pull-left margin-left-10"><select kendo-drop-down-list k-options="config.user" ng-model="search.user"></select></div>-->
+                <!--<div class="pull-right margin-right-10">-->
+                    <!--<div class="btn-group btn-group-sm margin-top-5">-->
+                        <!--<button class="btn btn-default" ng-click="quickSearch('昨天')">昨天</button>-->
+                        <!--<button class="btn btn-default" ng-click="quickSearch('今天')">今天</button>-->
+                        <!--<button class="btn btn-default" ng-click="quickSearch('明天')">明天</button>-->
+                        <!--<button class="btn btn-default" ng-click="quickSearch('本周')">本周</button>-->
+                        <!--<button class="btn btn-default" ng-click="quickSearch('上周')">上周</button>-->
+                        <!--<button class="btn btn-default" ng-click="quickSearch('本月')">本月</button>-->
+                        <!--<button class="btn btn-default" ng-click="quickSearch('上月')">上月</button>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <!--<div class="pull-right margin-right-10 form-control-static">快速查询：</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row margin-bottom-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="alert alert-warning" role="alert">-->
+                    <!--当前查询范围： [<span class="text-info bold" ng-bind="searched.type"></span>]-->
+                    <!--<span class="text-danger bold" ng-bind="searched.sdate"></span> 至 <span class="text-danger bold" ng-bind="searched.edate"></span>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row margin-bottom-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div kendo-grid k-options="config.grid"></div>-->
+            <!--</div>-->
+        <!--</div>-->
+    </div>
+    <div kendo-window="win1" k-title="'设置明日日清任务'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+         k-on-open="win1visible = true" k-on-close="win1visible = false">
+        <div class="container-fluid">
+            <div class="row">
+                <form name="dlgForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2"><span class="red">*</span> 任务日期</label>
+                        <div class="col-xs-10">
+                            <!--<label class="form-control-static" ng-bind="tomorrow"></label>-->
+                            <input kendo-date-picker k-options="config.date" class="form-control" name="target" ng-model="report.date" required/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2"><span class="red">*</span> 目标岗位</label>
+                        <div class="col-xs-10">
+                            <select kendo-drop-down-list k-options="config.jobs" style="width:100%;" name="job_id" ng-model="report.job_id" required></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2"><span class="red">*</span> 目标值</label>
+                        <div class="col-xs-10">
+                            <input class="form-control" name="target" ng-model="report.target" required/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-10 col-xs-offset-2">
+                            <button class="btn btn-success col-xs-2" ng-click="saveDailyReport()" ng-disabled="dlgForm.$invalid">保存</button>
+                            <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win1.close()">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div kendo-window="win2" k-title="'绩效详细信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+         k-on-open="win2visible = true" k-on-close="win2visible = false">
+        <div class="container-fluid">
+            <div kendo-grid k-options="config.gridDetail"></div>
+        </div>
+    </div>
+</div>

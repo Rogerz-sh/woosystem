@@ -119,6 +119,10 @@ class HuntController extends BaseController {
             }
             $hunt->updated_by = Session::get('id');
             $hunt->save();
+            HuntReport::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
+            HuntFace::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
+            HuntSuccess::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
+            HuntResult::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
             return response($hunt->id);
         }
     }
@@ -189,6 +193,11 @@ class HuntController extends BaseController {
     public function postDelete($id) {
         $hunt = Hunt::find($id);
         $hunt->delete();
+        //同时删除相关信息
+        HuntReport::where('hunt_id', $id)->delete();
+        HuntFace::where('hunt_id', $id)->delete();
+        HuntSuccess::where('hunt_id', $id)->delete();
+        HuntResult::where('hunt_id', $id)->delete();
         return response($id);
     }
 
@@ -260,6 +269,19 @@ class HuntController extends BaseController {
         }
     }
 
+    public function postDeleteSuccess() {
+        $id = request()->input('id');
+        $oldRst = HuntSuccess::find($id);
+        if ($oldRst) {
+            $oldRst->deleted_by = Session::get('id');
+            $oldRst->save();
+            $oldRst->delete();
+            return response($oldRst->id);
+        } else {
+            return response(-1);
+        }
+    }
+
     public function postSaveResult() {
         $rst = request()->input('result');
         $oldRst = HuntResult::where('hunt_id', $rst['hunt_id'])->first();
@@ -304,6 +326,12 @@ class HuntController extends BaseController {
         return response($rpt);
     }
 
+    public function getHuntSuccessJsonData() {
+        $hunt_id = request()->input('hunt_id');
+        $rst = HuntSuccess::where('hunt_id', $hunt_id)->orderBy('updated_at', 'desc')->first();
+        return response($rst);
+    }
+
     public function getHuntResultJsonData() {
         $hunt_id = request()->input('hunt_id');
         $rst = HuntResult::where('hunt_id', $hunt_id)->orderBy('updated_at', 'desc')->first();
@@ -312,8 +340,11 @@ class HuntController extends BaseController {
 
     public function postSaveFace() {
         $face = request()->input('face');
-//        return response(isset($face['id']) ? '1' : '0');
         if (isset($face['id'])) {
+            $existFace = HuntFace::where('type', $face['type'])->where('hunt_id', $face['hunt_id'])->where('id', '<>', $face['id'])->first();
+            if ($existFace) {
+                return response(-1);
+            }
             $oldFace = HuntFace::where('id', $face['id'])->where('created_by', Session::get('id'))->where('hunt_id', $face['hunt_id'])->first();
             foreach ($face as $key => $value) {
                 if ($key != 'id') {
@@ -325,6 +356,10 @@ class HuntController extends BaseController {
             $this->updateHuntTime($oldFace->job_id);
             return response($oldFace->id);
         } else {
+            $existFace = HuntFace::where('type', $face['type'])->where('hunt_id', $face['hunt_id'])->first();
+            if ($existFace) {
+                return response(-1);
+            }
             $newFace = new HuntFace();
             foreach ($face as $key => $value) {
                 if ($key != 'id') {

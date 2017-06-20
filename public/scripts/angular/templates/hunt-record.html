@@ -121,8 +121,20 @@
                 <p>Offer</p>
             </blockquote>
             <div class="col-xs-12" ng-if="offerInfo.id>0">
-                <p class="indent">文件名称： <a href="/file/download-file/?path={{offerInfo.filepath}}&name={{offerInfo.filename}}&coded={{offerInfo.filecoded}}">{{offerInfo.filename}}</a></p>
+                <p class="indent">文件名称： <a href="/file/download-file/?path={{offerInfo.filepath}}&name={{offerInfo.filename}}&coded={{offerInfo.filecoded}}">{{offerInfo.filename}}</a>
+                    <a ng-click="deleteOffer(offerInfo.id)" class="red"><i class="fa fa-times"></i> 删除</a>
+                </p>
                 <p class="indent">备注信息： <span class="text-info">{{offerInfo.desc}}</span></p>
+            </div>
+            <div class="clearfix"></div>
+            <blockquote ng-if="resultInfo.id>0">
+                <p>上岗</p>
+            </blockquote>
+            <div class="col-xs-12" ng-if="successInfo.id>0">
+                <p class="indent">
+                    上岗日期： {{successInfo.date}}, 保证期: {{successInfo.protected}}
+                    <a ng-click="deleteSuccess(successInfo.id)" class="red"><i class="fa fa-times"></i> 删除</a>
+                </p>
             </div>
             <div class="clearfix"></div>
             <blockquote ng-if="resultInfo.id>0">
@@ -401,7 +413,7 @@
                         <div class="form-group">
                             <label class="control-label col-xs-2"><span class="red">*</span> 打款日期</label>
                             <div class="col-xs-10">
-                                <input kendo-date-picker k-options="config.date" ng-model="result.date" type="file" class="form-control" required>
+                                <input kendo-date-picker k-options="config.resultDate" ng-model="result.date" type="file" class="form-control" required>
                             </div>
                         </div>
                         <div class="form-group">

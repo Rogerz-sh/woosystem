@@ -33,7 +33,7 @@
                         <div class="col-xs-8">
                             <select kendo-drop-down-list ng-model="hs.type" class="form-control size-full" required>
                                 <option value="">请选择优先级...</option>
-                                <option ng-repeat="item in ['低','中','高']" value="{{item}}">{{item}}</option>
+                                <option ng-repeat="item in ['一级','二级','三级']" value="{{item}}">{{item}}</option>
                             </select>
                         </div>
                     </div>
@@ -42,7 +42,7 @@
                         <div class="col-xs-8">
                             <select kendo-drop-down-list ng-model="hs.status" class="form-control size-full" required>
                                 <option value="">请选择状态...</option>
-                                <option ng-repeat="item in ['进行中','已暂停','已停止']" value="{{item}}">{{item}}</option>
+                                <option ng-repeat="item in ['进行中','已暂停','已停止','已上岗']" value="{{item}}">{{item}}</option>
                             </select>
                         </div>
                     </div>

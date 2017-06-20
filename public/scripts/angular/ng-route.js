@@ -98,9 +98,21 @@
                 templateUrl: '/scripts/angular/templates/performance-list.html',
                 controller: 'performanceListController'
             })
+            .when('/performance/charts', {
+                templateUrl: '/scripts/angular/templates/performance-chart.html',
+                controller: 'performanceChartController'
+            })
             .when('/target/list', {
                 templateUrl: '/scripts/angular/templates/target-list.html',
                 controller: 'targetListController'
+            })
+            .when('/target/daily-report', {
+                templateUrl: '/scripts/angular/templates/daily-report.html',
+                controller: 'dailyReportController'
+            })
+            .when('/team/recent', {
+                templateUrl: '/scripts/angular/templates/team-recent.html',
+                controller: 'teamRecentController'
             })
             .when('/user/info', {
                 templateUrl: '/scripts/angular/templates/user-info.html',

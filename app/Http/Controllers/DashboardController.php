@@ -22,20 +22,20 @@ class DashboardController extends BaseController {
 
     public function getRecentFaceList() {
         $face = HuntFace::where('created_by', Session::get('id'))
-            ->whereRaw('datediff(now(), updated_at) < 30')->get();
+            ->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
         return response($face);
     }
 
     public function getRecentOfferList() {
         $offer = HuntReport::where('created_by', Session::get('id'))
             ->where('type', 'offer')
-            ->whereRaw('datediff(now(), updated_at) < 30')->get();
+            ->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
         return response($offer);
     }
 
     public function getRecentSuccessList() {
         $offer = HuntSuccess::where('created_by', Session::get('id'))
-            ->whereRaw('datediff(now(), updated_at) < 30')->get();
+            ->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
         return response($offer);
     }
 
