@@ -6,11 +6,13 @@
  * Time: 下午4:08
  */
 namespace App\Http\Controllers;
+use App\Bd;
 use App\Candidate;
 use App\DailyReport;
 use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
+use App\HuntResult;
 use App\HuntSelect;
 use App\HuntSuccess;
 use App\User;
@@ -42,16 +44,19 @@ class PerformanceController extends BaseController {
         $edate = request()->input('edate').' 23:59:59';
         $result = DB::table('users')
             ->select(DB::raw('users.id, users.name, users.nickname,
+            (select count(id) from bd where bd.user_id = users.id and bd.created_at >= "'.$sdate.'" and bd.created_at <= "'.$edate.'" and deleted_at is null) as bd_count,
             (select count(id) from person where person.created_by = users.id and person.created_at >= "'.$sdate.'" and person.created_at <= "'.$edate.'" and deleted_at is null) as person_count,
             (select count(distinct hunt_id) from hunt_face where hunt_face.type = "一面" and hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
             (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as report_count,
             (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as offer_count,
             (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.updated_at >= "'.$sdate.'" and hunt_success.updated_at <= "'.$edate.'" and deleted_at is null) as success_count,
+            (select sum(amount) from hunt_result where hunt_result.created_by = users.id and hunt_result.updated_at >= "'.$sdate.'" and hunt_result.updated_at <= "'.$edate.'" and deleted_at is null) as result_count,
             (select sum(person_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as person_target,
             (select sum(report_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as report_target,
             (select sum(face_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as face_target,
             (select sum(offer_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as offer_target,
-            (select sum(success_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as success_target
+            (select sum(success_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as success_target,
+            (select sum(result_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as result_target
             '))
             ->where('users.deleted_at', null)
             ->where('users.status', '1')
@@ -92,6 +97,13 @@ class PerformanceController extends BaseController {
         $field = request()->input('field');
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
+        if ($field == 'bd_count') {
+            $result = Bd::where('user_id', $id)
+                ->where('created_at', '>=', $sdate)
+                ->where('created_at', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
         if ($field == 'person_count') {
             $result = Candidate::where('created_by', $id)
                 ->where('created_at', '>=', $sdate)
@@ -129,17 +141,24 @@ class PerformanceController extends BaseController {
                 ->orderBy('updated_at', 'desc')->get();
             return response($result);
         }
+        if ($field == 'result_count') {
+            $result = HuntResult::where('created_by', $id)
+                ->where('updated_at', '>=', $sdate)
+                ->where('updated_at', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
         return response([]);
     }
 
     public function getJsonTargetList() {
         if (Session::get('power') != '9') {
             $targets = DB::table('month_target')->join('users', 'month_target.user_id', '=', 'users.id')
-                ->select('month', 'user_id', 'nickname', 'person_target', 'report_target', 'face_target', 'offer_target', 'success_target')
+                ->select('month', 'user_id', 'nickname', 'bd_target', 'person_target', 'report_target', 'face_target', 'offer_target', 'success_target', 'result_target')
                 ->where('user_id', Session::get('id'))->get();
         } else {
             $targets = DB::table('month_target')->join('users', 'month_target.user_id', '=', 'users.id')
-                ->select('month', 'user_id', 'nickname', 'person_target', 'report_target', 'face_target', 'offer_target', 'success_target')->get();
+                ->select('month', 'user_id', 'nickname', 'bd_target', 'person_target', 'report_target', 'face_target', 'offer_target', 'success_target', 'result_target')->get();
         }
         return response($targets);
     }
@@ -155,9 +174,9 @@ class PerformanceController extends BaseController {
         $id = Session::get('id');
         $target = DB::table('month_target')->where('user_id', $id)->where('month', $month['month'])->first();
         if ($target) {
-            DB::table('month_target')->where('user_id', $id)->where('month', $month['month'])->update(['person_target'=>$month['person'], 'report_target'=>$month['report'], 'face_target'=>$month['face'], 'offer_target'=>$month['offer'], 'success_target'=>$month['success']]);
+            DB::table('month_target')->where('user_id', $id)->where('month', $month['month'])->update(['bd_target'=>$month['bd'], 'person_target'=>$month['person'], 'report_target'=>$month['report'], 'face_target'=>$month['face'], 'offer_target'=>$month['offer'], 'success_target'=>$month['success'], 'result_target'=>$month['result']]);
         } else {
-            DB::table('month_target')->insert(['user_id'=>$id, 'month'=>$month['month'], 'person_target'=>$month['person'], 'report_target'=>$month['report'], 'face_target'=>$month['face'], 'offer_target'=>$month['offer'], 'success_target'=>$month['success']]);
+            DB::table('month_target')->insert(['user_id'=>$id, 'month'=>$month['month'], 'bd_target'=>$month['bd'], 'person_target'=>$month['person'], 'report_target'=>$month['report'], 'face_target'=>$month['face'], 'offer_target'=>$month['offer'], 'success_target'=>$month['success'], 'result_target'=>$month['result']]);
         }
 
         $days = request()->input('days');
@@ -403,5 +422,10 @@ class PerformanceController extends BaseController {
         $report = DailyReport::find($id);
         $report->forceDelete();
         return response($report->id);
+    }
+
+    public function getJsonHuntSelectListData() {
+        $hs = DB::table('hunt_count')->whereRaw('locate(concat(",", ?, ","), concat(",", user_ids, ",")) > 0 and status="进行中"', [Session::get('id')])->orderBy('updated_at', 'desc')->get();
+        return response($hs);
     }
 }

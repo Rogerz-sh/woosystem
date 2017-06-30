@@ -28,9 +28,17 @@
                                 <!--<div class="pull-left margin-left-10"><input type="number" kendo-numeric-text-box id="target_report" /></div>-->
                                 <form class="form form-horizontal">
                                     <div class="form-group">
-                                        <label class="control-label col-xs-2">月份：</label>
-                                        <div class="col-xs-10">
-                                            <input type="text" name="month" class="form-control" kendo-date-picker k-options="config.date" ng-model="selMonth" />
+                                        <div class="col-xs-6 no-padding error-box">
+                                            <label class="control-label col-xs-4">月份：</label>
+                                            <div class="col-xs-8">
+                                                <input type="text" name="month" class="form-control" kendo-date-picker k-options="config.date" ng-model="selMonth" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-6 no-padding error-box">
+                                            <label class="control-label col-xs-4">BD：</label>
+                                            <div class="col-xs-8">
+                                                <input type="text" name="target_report" ng-model="target.bd" class="form-control" />
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -68,12 +76,15 @@
                                                 <input type="text" name="target_success" ng-model="target.success" class="form-control" />
                                             </div>
                                         </div>
-                                        <!--<div class="col-xs-6 no-padding error-box">-->
-                                            <!--<label class="control-label col-xs-4">Offer：</label>-->
-                                            <!--<div class="col-xs-8">-->
-                                                <!--<input type="text" name="target_offer" ng-model="target.offer" class="form-control" />-->
-                                            <!--</div>-->
-                                        <!--</div>-->
+                                        <div class="col-xs-6 no-padding error-box">
+                                            <label class="control-label col-xs-4">业绩：</label>
+                                            <div class="col-xs-8">
+                                                <div class="input-group">
+                                                    <input type="text" name="target_offer" ng-model="target.result" class="form-control" />
+                                                    <span class="input-group-addon">万元</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-xs-6 no-padding error-box">
@@ -85,7 +96,7 @@
                                         <!--<button class="btn btn-success width-100 margin-left-20">保存</button>-->
                                     </div>
                                 </form>
-                                <month month="selMonth" tp="target.person" tr="target.report" tf="target.face" to="target.offer" ts="target.success"></month>
+                                <month id="calendar" month="selMonth" tb="target.bd" tp="target.person" tr="target.report" tf="target.face" to="target.offer" ts="target.success" tt="target.result"></month>
                             </div>
                         </div>
                     </div>

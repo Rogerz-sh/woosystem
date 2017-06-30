@@ -1618,11 +1618,13 @@
                 }
             },
             aggregate: [
+                { field: "bd_count", aggregate: "max" },
                 { field: "person_count", aggregate: "max" },
                 { field: "report_count", aggregate: "max" },
                 { field: "face_count", aggregate: "max" },
                 { field: "offer_count", aggregate: "max" },
-                { field: "success_count", aggregate: "max" }
+                { field: "success_count", aggregate: "max" },
+                { field: "result_count", aggregate: "max" }
             ],
             filter: {field: 'deleted', operator: 'neq', value: true},
             sort: {field: 'id', dir: 'desc'}
@@ -1646,11 +1648,13 @@
                     {field: 'id', title: 'ID', sortable: false, filterable: false},
                     {field: 'name', title: '账号', sortable: false},
                     {field: 'nickname', title: '顾问', sortable: false},
+                    {field: 'bd_count', title: 'BD', filterable: false, template: getCountColor('bd')},
                     {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person')},
                     {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report')},
                     {field: 'face_count', title: '面试', filterable: false, template: getCountColor('face')},
                     {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer')},
                     {field: 'success_count', title: '上岗', filterable: false, template: getCountColor('success')},
+                    {field: 'result_count', title: '业绩', filterable: false, template: getCountColor('result')},
                     {title: 'KPI', filterable: false, template: getKpi}
                 ],
                 sortable: true,
@@ -1732,6 +1736,9 @@
 
         function getDetailText(item) {
             switch ($scope.detailField) {
+                case 'bd_count':
+                    return '<span class="orange bold">{0}</span> <span class="blue"> 顾问：{1} </span> <span class="gray">合作顾问：{2}</span> <span class="dark-yellow">状态：{3}</span>'.format(item.company_name, item.user_name, item.user_names, item.status);
+                    break;
                 case 'person_count':
                     return '<span class="orange bold">{0}</span> <span class="gray"> {1} {2}岁</span> <span class="blue">{3}</span> <span class="main">{4}</span>'.format(item.name, item.sex, item.age, item.job, item.company);
                     break;
@@ -1746,6 +1753,9 @@
                     break;
                 case 'success_count':
                     return '<span class="orange bold">{0}</span> <span class="blue">{1}</span> <span class="dark-gray">{2}</span> <span class="red">{3}上岗</span> <span class="main">保证期：{4}</span>'.format(item.person_name, item.job_name, item.company_name, Date.format(item.date), item.protected);
+                    break;
+                case 'result_count':
+                    return '<span class="orange bold">{0}</span> <span class="blue">{1}</span> <span class="dark-gray">{2}</span> <span class="red">业绩额度{3}元</span> <span class="main">日期：{4}</span>'.format(item.person_name, item.job_name, item.company_name, item.amount, Date.format(item.date));
                     break;
                 default:
                     return '';
@@ -2105,11 +2115,13 @@
                     {field: 'nickname', title: '顾问'},
                     {field: 'month', title: '月份'},
                     {title: '<div class=\'text-center\'>目标设定</div>', columns: [
+                        {field: 'bd_target', title: 'BD'},
                         {field: 'person_target', title: '人选录入'},
                         {field: 'report_target', title: '推荐报告'},
                         {field: 'face_target', title: '面试'},
                         {field: 'offer_target', title: 'Offer'},
-                        {field: 'success_target', title: '成功上岗'}
+                        {field: 'success_target', title: '成功上岗'},
+                        {field: 'result_target', title: '业绩'}
                     ]}
                 ]
             },
@@ -2130,31 +2142,37 @@
                 if (res) {
                     monthEditable = false;
                     $scope.target = {
+                        bd: res.bd_target || 0,
                         person: res.person_target || 0,
                         report: res.report_target || 0,
                         face: res.face_target || 0,
                         offer: res.offer_target || 0,
                         success: res.success_target || 0,
+                        result: res.result_target || 0,
                     };
                 } else {
                     monthEditable = true;
                     $scope.target = {
+                        bd: 0,
                         person: 0,
                         report: 0,
                         face: 0,
                         offer: 0,
-                        success: 0
+                        success: 0,
+                        result: 0,
                     };
                 }
             });
         }
 
         $scope.target = {
+            bd: 0,
             person: 0,
             report: 0,
             face: 0,
             offer: 0,
-            success: 0
+            success: 0,
+            result: 0,
         };
 
         $scope.$on('weeksData', function (res, days) {
@@ -2535,8 +2553,96 @@
                 value: Date.translate('now+1'),
                 format: 'yyyy-MM-dd',
                 min: Date.translate('now+1').format()
+            },
+            grid: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/performance/json-hunt-select-list-data',
+                            dataType: 'json'
+                        }
+                    },
+                    pageSize: 10,
+                    schema: {
+                        model: {
+                            id: 'id'
+                        }
+                    },
+                    filter: {field: 'deleted', operator: 'neq', value: true},
+                    sort: [
+                        {field: 'type', dir: 'desc', compare: function (a, b) {
+                            var type = {'三级': 1, '二级': 2, '一级': 3};
+                            return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
+                        }},
+                        {field: 'updated_at', dir: 'desc'},
+                    ]
+                },
+                filterable: {mode: 'row'},
+                columns: [
+                    //{field: 'id', title: 'ID', sortable: false, filterable: false},
+                    {
+                        field: 'job_name',
+                        title: '职位名称',
+                        template: '#:job_name# <a ng-click="viewJob(#:job_id#)"><i class="fa fa-search pointer"></i></a>',
+                        sortable: false,
+                        filterable: {
+                            cell: {
+                                operator: 'contains'
+                            }
+                        }
+                    },
+                    {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
+                    //{field: 'user_names', title: '顾问', sortable: false},
+                    {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person_count')},
+                    {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report_count')},
+                    {field: 'view_count', title: '面试', filterable: false, template: getCountColor('view_count')},
+                    {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer_count')},
+                    {field: 'type', title: '重要程度', template: getType, sortable: {
+                        compare: function (a, b) {
+                            var type = {'三级': 1, '二级': 2, '一级': 3};
+                            return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
+                        }
+                    }, filterable: {multi:true}},
+                    {field: 'status', title: '状态', template: getStatus},
+                    {field: 'updated_at', title: '更新时间', template: getDate}
+                ],
+                sortable: true,
+                scrollable: false,
+                pageable: true,
+            },
+        }
+
+        function getType(item) {
+            var color = {'三级': 'dark-gray', '二级': 'yellow', '一级': 'red'};
+            return '<span class="{0}">{1}</span>'.format(color[item.type], item.type);
+        }
+
+        function getStatus(item) {
+            var color = {'已停止': 'dark-gray', '已暂停': 'yellow', '进行中': 'green'};
+            return '<span class="{0}">{1}</span>'.format(color[item.status], item.status);
+        }
+
+        function getCountColor(name) {
+            return function (item) {
+                return item[name] == '0' ? '<span class="bold red">'+item[name]+'</span>' : '<span class="bold green">'+item[name]+'</span>';
             }
         }
+
+        function getDate(item) {
+            return new Date(item.updated_at.replace(/-/g, '/')).format();
+        }
+
+        $scope.viewCompany = function (cid) {
+            $scope.$broadcast('refresh.company-info', cid, function () {
+                $scope.win6.center().open();
+            });
+        };
+
+        $scope.viewJob = function (jid) {
+            $scope.$broadcast('refresh.job-info', jid, function () {
+                $scope.win5.center().open();
+            });
+        };
 
         $scope.getDate = function (date) {
             return new Date(date).format();
