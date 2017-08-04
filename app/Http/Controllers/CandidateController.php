@@ -9,6 +9,11 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\Authenticate;
 use App\Candidate;
+use App\Hunt;
+use App\HuntFace;
+use App\HuntReport;
+use App\HuntResult;
+use App\HuntSuccess;
 use App\PersonCompany;
 use App\PersonSchool;
 use App\PersonTraining;
@@ -200,6 +205,11 @@ class CandidateController extends BaseController {
                 $perTr->save();
             }
         }
+        Hunt::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
+        HuntReport::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
+        HuntFace::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
+        HuntSuccess::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
+        HuntResult::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
         return response($candidate->id);
     }
 

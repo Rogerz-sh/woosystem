@@ -694,7 +694,8 @@
                     transport: {
                         read: {
                             url: '/hunt/json-candidate-list-data',
-                            dataType: 'json'
+                            dataType: 'json',
+                            data: {hunt_id: ~~$routeParams.hunt_id}
                         }
                     },
                     serverFiltering: true

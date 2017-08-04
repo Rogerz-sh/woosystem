@@ -8,6 +8,7 @@
 namespace App\Http\Controllers;
 use App\Bd;
 use App\Candidate;
+use App\DailyReason;
 use App\DailyReport;
 use App\Hunt;
 use App\HuntFace;
@@ -46,11 +47,11 @@ class PerformanceController extends BaseController {
             ->select(DB::raw('users.id, users.name, users.nickname,
             (select count(id) from bd where bd.user_id = users.id and bd.created_at >= "'.$sdate.'" and bd.created_at <= "'.$edate.'" and deleted_at is null) as bd_count,
             (select count(id) from person where person.created_by = users.id and person.created_at >= "'.$sdate.'" and person.created_at <= "'.$edate.'" and deleted_at is null) as person_count,
-            (select count(distinct hunt_id) from hunt_face where hunt_face.type = "一面" and hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
-            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as report_count,
-            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as offer_count,
-            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.updated_at >= "'.$sdate.'" and hunt_success.updated_at <= "'.$edate.'" and deleted_at is null) as success_count,
-            (select sum(amount) from hunt_result where hunt_result.created_by = users.id and hunt_result.updated_at >= "'.$sdate.'" and hunt_result.updated_at <= "'.$edate.'" and deleted_at is null) as result_count,
+            (select count(distinct hunt_id) from hunt_face where hunt_face.type = "一面" and (hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) and hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
+            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.is_confirm = 1 and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and deleted_at is null) as report_count,
+            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and deleted_at is null) as offer_count,
+            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and deleted_at is null) as success_count,
+            (select sum(amount) from hunt_result where hunt_result.created_by = users.id and hunt_result.date >= "'.$sdate.'" and hunt_result.date <= "'.$edate.'" and deleted_at is null) as result_count,
             (select sum(person_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as person_target,
             (select sum(report_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as report_target,
             (select sum(face_target) from day_target where day_target.user_id = users.id and day_target.date >= "'.$sdate.'" and day_target.date <= "'.$edate.'") as face_target,
@@ -72,10 +73,10 @@ class PerformanceController extends BaseController {
         $result = DB::table('users')
             ->select(DB::raw('users.id, users.name, users.nickname,
             (select count(id) from person where person.created_by = users.id and person.created_at >= "'.$sdate.'" and person.created_at <= "'.$edate.'" and deleted_at is null) as person_count,
-            (select count(distinct hunt_id) from hunt_face where hunt_face.type = "一面" and hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
-            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as report_count,
-            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.updated_at >= "'.$sdate.'" and hunt_report.updated_at <= "'.$edate.'" and deleted_at is null) as offer_count,
-            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.updated_at >= "'.$sdate.'" and hunt_success.updated_at <= "'.$edate.'" and deleted_at is null) as success_count
+            (select count(distinct hunt_id) from hunt_face where hunt_face.type = "一面" and (hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) and hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
+            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.is_confirm = 1 and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and deleted_at is null) as report_count,
+            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and deleted_at is null) as offer_count,
+            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and deleted_at is null) as success_count
             '))
             ->where('users.id', Session::get('id'))
             ->where('users.deleted_at', null)
@@ -114,8 +115,8 @@ class PerformanceController extends BaseController {
         if ($field == 'report_count') {
             $result = HuntReport::where('created_by', $id)
                 ->where('type', 'report')
-                ->where('updated_at', '>=', $sdate)
-                ->where('updated_at', '<=', $edate)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
                 ->orderBy('updated_at', 'desc')->get();
             return response($result);
         }
@@ -129,22 +130,22 @@ class PerformanceController extends BaseController {
         if ($field == 'offer_count') {
             $result = HuntReport::where('created_by', $id)
                 ->where('type', 'offer')
-                ->where('updated_at', '>=', $sdate)
-                ->where('updated_at', '<=', $edate)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
                 ->orderBy('updated_at', 'desc')->get();
             return response($result);
         }
         if ($field == 'success_count') {
             $result = HuntSuccess::where('created_by', $id)
-                ->where('updated_at', '>=', $sdate)
-                ->where('updated_at', '<=', $edate)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
                 ->orderBy('updated_at', 'desc')->get();
             return response($result);
         }
         if ($field == 'result_count') {
             $result = HuntResult::where('created_by', $id)
-                ->where('updated_at', '>=', $sdate)
-                ->where('updated_at', '<=', $edate)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
                 ->orderBy('updated_at', 'desc')->get();
             return response($result);
         }
@@ -208,11 +209,12 @@ class PerformanceController extends BaseController {
                 $report = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
                     ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
                     ->where('type', 'report')
+                    ->where('is_confirm', 1)
                     ->where('date', '>=', $sdate)
                     ->where('date', '<=', $edate)
                     ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
                 $face = HuntFace::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
+                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'") and (hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
                     ->where('date', '>=', $sdate)
                     ->where('date', '<=', $edate)
                     ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
@@ -236,10 +238,12 @@ class PerformanceController extends BaseController {
                 $report = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
                     ->where('created_by', $user)
                     ->where('type', 'report')
+                    ->where('is_confirm', 1)
                     ->where('date', '>=', $sdate)
                     ->where('date', '<=', $edate)
                     ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
                 $face = HuntFace::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
+                    ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
                     ->where('created_by', $user)
                     ->where('date', '>=', $sdate)
                     ->where('date', '<=', $edate)
@@ -263,10 +267,12 @@ class PerformanceController extends BaseController {
                 ->groupBy(DB::raw('DATE_FORMAT(created_at,"'.$format.'")'))->get();
             $report = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"'.$format.'") as date'))
                 ->where('type', 'report')
+                ->where('is_confirm', 1)
                 ->where('date', '>=', $sdate)
                 ->where('date', '<=', $edate)
                 ->groupBy(DB::raw('DATE_FORMAT(date,"'.$format.'")'))->get();
             $face = HuntFace::select(DB::raw('count(id) as count, DATE_FORMAT(date,"'.$format.'") as date'))
+                ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
                 ->where('date', '>=', $sdate)
                 ->where('date', '<=', $edate)
                 ->groupBy(DB::raw('DATE_FORMAT(date,"'.$format.'")'))->get();
@@ -281,6 +287,89 @@ class PerformanceController extends BaseController {
                 ->groupBy(DB::raw('DATE_FORMAT(date,"'.$format.'")'))->get();
         }
         $result = ["person"=>$person, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success];
+        return response($result);
+    }
+
+    public function getJsonPerformanceRateData() {
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        $user = request()->input('user');
+        $format = '%Y-%m-%d';
+        if ($user) {
+            if ($user == '-1' || $user == '-2') {
+                $group = $user == '-1' ? '项目一部' : '项目二部';
+                $person = Candidate::select(DB::raw('count(id) as count'))
+                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
+                    ->where('created_at', '>=', $sdate)
+                    ->where('created_at', '<=', $edate)->get();
+                $report = HuntReport::select(DB::raw('count(id) as count'))
+                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
+                    ->where('type', 'report')
+                    ->where('is_confirm', 1)
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+                $face = HuntFace::select(DB::raw('count(id) as count'))
+                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
+                    ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+                $offer = HuntReport::select(DB::raw('count(id) as count'))
+                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
+                    ->where('type', 'offer')
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+                $success = HuntSuccess::select(DB::raw('count(id) as count'))
+                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+            } else {
+                $person = Candidate::select(DB::raw('count(id) as count'))
+                    ->where('created_by', $user)
+                    ->where('created_at', '>=', $sdate)
+                    ->where('created_at', '<=', $edate)->get();
+                $report = HuntReport::select(DB::raw('count(id) as count'))
+                    ->where('created_by', $user)
+                    ->where('type', 'report')
+                    ->where('is_confirm', 1)
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+                $face = HuntFace::select(DB::raw('count(id) as count'))
+                    ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                    ->where('created_by', $user)
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+                $offer = HuntReport::select(DB::raw('count(id) as count'))
+                    ->where('created_by', $user)
+                    ->where('type', 'offer')
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+                $success = HuntSuccess::select(DB::raw('count(id) as count'))
+                    ->where('created_by', $user)
+                    ->where('date', '>=', $sdate)
+                    ->where('date', '<=', $edate)->get();
+            }
+        } else {
+            $person = Candidate::select(DB::raw('count(id) as count'))
+                ->where('created_at', '>=', $sdate)
+                ->where('created_at', '<=', $edate)->get();
+            $report = HuntReport::select(DB::raw('count(id) as count'))
+                ->where('type', 'report')
+                ->where('is_confirm', 1)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
+            $face = HuntFace::select(DB::raw('count(id) as count'))
+                ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
+            $offer = HuntReport::select(DB::raw('count(id) as count'))
+                ->where('type', 'offer')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
+            $success = HuntSuccess::select(DB::raw('count(id) as count'))
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
+        }
+        $result = ["person"=>$person[0]["count"], "report"=>$report[0]["count"], "face"=>$face[0]["count"], "offer"=>$offer[0]["count"], "success"=>$success[0]["count"]];
         return response($result);
     }
 
@@ -299,12 +388,12 @@ class PerformanceController extends BaseController {
                 daily_report.user_id, daily_report.date,
                 daily_report.job_id, daily_report.job_name, daily_report.company_id, daily_report.company_name,
                 daily_report.target, users.nickname, users.group,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
+                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
                 (select count(id) from person where person.created_by = daily_report.user_id and date_format(person.created_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as person_count,
                 (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as face_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
-                (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
+                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
+                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
+                (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
                 ->join('users', 'users.id', '=', 'daily_report.user_id')
                 ->where('daily_report.date', '>=', $sdate)
                 ->where('daily_report.date', '<=', $edate);
@@ -323,12 +412,12 @@ class PerformanceController extends BaseController {
                 daily_report.user_id, daily_report.date,
                 daily_report.job_id, daily_report.job_name, daily_report.company_id, daily_report.company_name,
                 daily_report.target, users.nickname, users.group,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
+                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
                 (select count(id) from person where person.created_by = daily_report.user_id and date_format(person.created_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as person_count,
                 (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as face_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
-                (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
+                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
+                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
+                (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
                 ->join('users', 'users.id', '=', 'daily_report.user_id')->where('daily_report.user_id', Session::get('id'))->orderBy('daily_report.date', 'desc')->get();
         }
         return response($report);
@@ -342,13 +431,7 @@ class PerformanceController extends BaseController {
         $report1 = DailyReport::select(DB::raw('daily_report.id,
                 daily_report.user_id, daily_report.date,
                 daily_report.job_id, daily_report.job_name, daily_report.company_id, daily_report.company_name,
-                daily_report.target, users.nickname, users.group,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
-                (select count(id) from person where person.created_by = daily_report.user_id and date_format(person.created_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as person_count,
-                (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as face_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
-                (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
+                daily_report.target, users.nickname, users.group'))
             ->join('users', 'users.id', '=', 'daily_report.user_id')
             ->where('daily_report.date', '>=', $date.' 00:00:00')
             ->where('daily_report.date', '<=', $date.' 23:59:59')
@@ -357,13 +440,7 @@ class PerformanceController extends BaseController {
         $report2 = DailyReport::select(DB::raw('daily_report.id,
                 daily_report.user_id, daily_report.date,
                 daily_report.job_id, daily_report.job_name, daily_report.company_id, daily_report.company_name,
-                daily_report.target, users.nickname, users.group,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
-                (select count(id) from person where person.created_by = daily_report.user_id and date_format(person.created_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as person_count,
-                (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as face_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
-                (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
-                (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.updated_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
+                daily_report.target, users.nickname, users.group'))
             ->join('users', 'users.id', '=', 'daily_report.user_id')
             ->where('daily_report.date', '>=', $nextDate.' 00:00:00')
             ->where('daily_report.date', '<=', $nextDate.' 23:59:59')
@@ -371,6 +448,9 @@ class PerformanceController extends BaseController {
 
         $sdate = $date.' 00:00:00';
         $edate = $date.' 23:59:59';
+        $reason = DailyReason::select('reason')
+            ->where('deleted_at', null)
+            ->where('date', $sdate)->get();
         $person = Candidate::where('created_by', $user_id)
             ->where('created_at', '>=', $sdate)
             ->where('created_at', '<=', $edate)->get();
@@ -389,7 +469,7 @@ class PerformanceController extends BaseController {
             ->where('date', '>=', $sdate)
             ->where('date', '<=', $edate)->get();
 
-        return response(['today'=>$report1, 'tomorrow'=>$report2, "person"=>$person, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success]);
+        return response(['today'=>$report1, 'tomorrow'=>$report2, "person"=>$person, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success, "reason"=>$reason]);
     }
 
     public function postSaveDailyReport() {
@@ -415,6 +495,25 @@ class PerformanceController extends BaseController {
         }
         return response($report->id);
 
+    }
+
+    public function postSaveDailyReason() {
+        $reason = request()->input("reason");
+        $date = request()->input("date").' 00:00:00';
+        $oldRst = DailyReason::where('date', $date)->where('created_by', Session::get('id'))->first();
+        if ($oldRst) {
+            $oldRst->reason = $reason;
+            $oldRst->updated_by = Session::get('id');
+            $oldRst->save();
+            return response($oldRst->id);
+        } else {
+            $newRst = new DailyReason();
+            $newRst->reason = $reason;
+            $newRst->date = $date;
+            $newRst->created_by = Session::get('id');
+            $newRst->save();
+            return response($newRst->id);
+        }
     }
 
     public function postDeleteDailyReport() {

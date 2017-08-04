@@ -53,26 +53,33 @@ class HuntController extends BaseController {
 //        $filter = request()->input('filter');
 //        $key = $filter['filters'][0]['value'];
         $job = DB::table('jobs')->select('id', 'name', 'company_id', 'company_name')->where('deleted_at', null)
-//            ->orWhereRaw('name like ? or company_name like ?', ['%'.$key.'%', '%'.$key.'%'])
+            ->WhereRaw('jobs.id not in (select distinct(job_id) from hunt_select where (hunt_select.status = "已暂停" or hunt_select.status = "已停止"))')
             ->orderBy('updated_at', 'desc')->get();
         return response($job);
     }
 
     public function getJsonCandidateListData() {
         $filter = request()->input('filter');
+        $hunt_id = request()->input('hunt_id');
         if ($filter) {
             $key = $filter['filters'][0]['value'];
             $job = DB::table('person')
                 ->select('id', 'name', 'real_id', 'job', 'company', 'sex', 'age')
                 ->orWhereRaw('name like ? or job like ? or company like ?', ['%'.$key.'%', '%'.$key.'%', '%'.$key.'%'])
                 ->where('deleted_at', null)
-                ->orderBy('updated_at', 'desc')->get();
-            return response($job);
+                ->orderBy('updated_at', 'desc');
+            //return response($job);
         } else {
             $job = DB::table('person')->select('id', 'name', 'real_id', 'job', 'company', 'sex',
-                'age')->where('deleted_at', null)->orderBy('updated_at', 'desc')->get();
-            return response($job);
+                'age')->where('deleted_at', null)->orderBy('updated_at', 'desc');
+            //return response($job);
         }
+        if ($hunt_id) {
+            $job = $job->get();
+        } else {
+            $job = $job->limit(100)->get();
+        }
+        return response($job);
     }
 
     public function postSaveNew() {
@@ -120,7 +127,7 @@ class HuntController extends BaseController {
             $hunt->updated_by = Session::get('id');
             $hunt->save();
             HuntReport::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
-            HuntFace::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
+            HuntFace::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name]);
             HuntSuccess::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
             HuntResult::where('hunt_id', $hunt->id)->update(['person_id'=>$hunt->person_id, 'person_name'=>$hunt->person_name, 'job_id'=>$hunt->job_id, 'job_name'=>$hunt->job_name, 'company_id'=>$hunt->company_id, 'company_name'=>$hunt->company_name]);
             return response($hunt->id);
@@ -216,6 +223,7 @@ class HuntController extends BaseController {
                 $oldRpt->$key = $value;
             }
             $oldRpt->updated_by = Session::get('id');
+            $oldRpt->is_confirm = 0;
             $oldRpt->save();
             $oldRpt->restore();
             $this->updateHuntTime($oldRpt->job_id);
@@ -225,10 +233,23 @@ class HuntController extends BaseController {
             foreach ($rpt as $key => $value) {
                 $newRpt->$key = $value;
             }
+            $newRpt->is_confirm = 0;
             $newRpt->created_by = Session::get('id');
             $newRpt->save();
             $this->updateHuntTime($newRpt->job_id);
             return response($newRpt->id);
+        }
+    }
+
+    public function postConfirmReport() {
+        $id = request()->input('id');
+        $oldRpt = HuntReport::find($id);
+        if ($oldRpt) {
+            $oldRpt->is_confirm = 1;
+            $oldRpt->save();
+            return response($oldRpt->id);
+        } else {
+            return response(-1);
         }
     }
 

@@ -711,6 +711,7 @@
                         }
                     },
                     {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
+                    {field: 'last_report', title: '报告编号', template: getReportNum},
                     {field: 'user_names', title: '顾问', sortable: false},
                     {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person_count')},
                     {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report_count')},
@@ -835,6 +836,15 @@
             return '<span class="person-{0}">{1} <small class="dark-gray">{2}</small> <a ng-click="viewPerson({3})"><i class="fa fa-search pointer"></i></a> <a ng-click="editPerson({3})"><i class="fa fa-pencil pointer"></i></a></span>'.format(item.type, item.name, item.sex=="男"?"先生":"女士", item.person_id);
         }
 
+        function getReportNum(item) {
+            var num = item.last_report && item.last_report.match(/\d+/);
+            if (num) {
+                return num[0];
+            } else {
+                return '暂无'
+            }
+        }
+
         function getPersonStatus(name) {
             return function (item) {
                 return item[name] == '0' ? '<span class="bold red"><i class="fa fa-times"></i></span>' : '<span class="bold green"><i class="fa fa-check"></i></span>';
@@ -957,6 +967,9 @@
                     }
                     $scope.hs.user_names = names;
                     $scope.$apply();
+                },
+                dataBound: function () {
+                    $scope.hs.user_ids = $scope.debug.user_ids;
                 }
             },
             jobs: {
@@ -1366,6 +1379,19 @@
             });
         };
 
+        $scope.confirmReport = function (id) {
+            $.$modal.confirm('确认后报告将计入绩效，确认吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/hunt/confirm-report', {id: id}).success(function (res) {
+                        if (~~res) {
+                            $scope.reportInfo.is_confirm = 1;
+                            $.$modal.alert('推荐报告已确认！');
+                        }
+                    });
+                }
+            });
+        }
+
         $scope.deleteReport = function (id) {
             $.$modal.confirm('确认要删除吗？', function (isOk) {
                 if (isOk) {
@@ -1679,7 +1705,8 @@
                 pageable: true,
                 columns: [
                     {title: '详细信息', template: getDetailText},
-                    {filed: 'updated_at', title: '提交日期', template: getDetailTime}
+                    {filed: 'updated_at', title: '提交日期', template: getDetailTime},
+                    {title: '操作', template: getDetailOperator}
                 ]
             }
         };
@@ -1705,7 +1732,6 @@
         function getCountColor(name) {
             var count_field = name + '_count', target_field = name + '_target';
             return function (item) {
-                console.log(gridData.aggregates());
                 var performance = item[count_field] || 0, target = item[target_field] || 1
                 var percent = performance / target;
                 var color = '';
@@ -1743,7 +1769,7 @@
                     return '<span class="orange bold">{0}</span> <span class="gray"> {1} {2}岁</span> <span class="blue">{3}</span> <span class="main">{4}</span>'.format(item.name, item.sex, item.age, item.job, item.company);
                     break;
                 case 'report_count':
-                    return item.filename;
+                    return '{0} {1}'.format(item.filename, item.is_confirm == 1 ? '<small class="text-info">已确认</small>' : '<a class="btn btn-xs btn-primary" ng-click="confirmReport('+item.id+')"><i class="fa fa-check"></i> 确认</a>');
                     break;
                 case 'face_count':
                     return '<span class="orange bold">{0}</span> <small class="gray">{1}</small> <span class="red">{2}</span> <span class="dark-gray">{3}</span> <span class="blue">{4}</span>'.format(item.person_name, item.tel, item.date, item.job_name, item.type);
@@ -1768,12 +1794,60 @@
             return Date.format(time);
         }
 
+        function getDetailOperator(item) {
+            if ($scope.detailField == 'report_count') {
+                return '<a class="btn btn-danger btn-xs" ng-click="deleteReport({0})"><i class="fa fa-trash-o"></i> 删除</a>'.format(item.id);
+            } else if ($scope.detailField == 'face_count') {
+                return '<a class="btn btn-danger btn-xs" ng-click="deleteFace({0})"><i class="fa fa-trash-o"></i> 删除</a>'.format(item.id);
+            } else {
+                return '';
+            }
+        }
+
         $scope.detailField = 'person_count';
         $scope.showDetailList = function (id, field) {
             $scope.detailField = field;
             $http.get('/performance/json-detail-list', {params: {id: id, field: field, sdate: $scope.searched.sdate, edate: $scope.searched.edate}}).success(function (res) {
                 detailData.data(res);
                 $scope.win1.center().open();
+            });
+        };
+
+        $scope.confirmReport = function (id) {
+            $.$modal.confirm('确认后报告将计入绩效，确认吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/hunt/confirm-report', {id: id}).success(function (res) {
+                        if (~~res) {
+                            $scope.win1.close();
+                            $.$modal.alert('推荐报告已确认！');
+                        }
+                    });
+                }
+            });
+        }
+
+        $scope.deleteReport = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/hunt/delete-report', {id: id}).success(function (res) {
+                        if (~~res) {
+                            $scope.win1.close();
+                            $.$modal.alert('推荐报告已删除！');
+                        }
+                    });
+                }
+            });
+        }
+
+        $scope.deleteFace = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (!isOk) return;
+                $http.post('/hunt/delete-face', {id: id}).success(function (res) {
+                    if (~~res) {
+                        $scope.win1.close();
+                        $.$modal.alert('面试信息已删除！');
+                    }
+                });
             });
         };
 
@@ -1939,6 +2013,66 @@
                     }
                 });
                 if (typeof callback === 'function') callback();
+            });
+            $http.get('/performance/json-performance-rate-data', {params: data}).success(function (res) {
+                var data = [];
+                for (var n in res) {
+                    data.push({"name": n, "value": res[n]});
+                }
+                var names = {'person': '人选', 'report': '报告', 'face': '面试', 'offer': 'Offer', 'success': '上岗'}
+                $("#funnel").kendoChart({
+                    title: {
+                        text: '转化率',
+                        margin: {
+                            top: 10,
+                            bottom: 10,
+                            left: -5
+                        }
+                    },
+                    legend: {
+                        visible: false
+                    },
+                    dataSource: {
+                        data: data
+                    },
+                    series: [{
+                        type: "funnel",
+                        dynamicSlope:true,
+                        field: "value",
+                        categoryField: "name",
+                        dynamicHeight : false,
+                        labels: {
+                            color:"black",
+                            visible: true,
+                            background: "transparent",
+                            template: "#= {'person': '人选', 'report': '报告', 'face': '面试', 'offer': 'Offer', 'success': '上岗'}[category] #: #= value#",
+                            align: "left"
+                        }
+                    }],
+                    tooltip: {
+                        visible: true,
+                        template: function (e) {
+                            var parent = e.dataItem.parent()
+                            switch (e.category) {
+                                case 'person':
+                                    return '--';
+                                    break;
+                                case 'report':
+                                    return '人选/报告转化率： {0}'.format(kendo.toString(parent[0].value/e.value, 'n2'));
+                                    break;
+                                case 'face':
+                                    return '报告/面试转化率： {0}'.format(kendo.toString(parent[1].value/e.value, 'n2'));
+                                    break;
+                                case 'offer':
+                                    return '面试/Offer转化率： {0}'.format(kendo.toString(parent[2].value/e.value, 'n2'));
+                                    break;
+                                case 'success':
+                                    return '报告/上岗转化率： {0}<br>面试/上岗转化率： {1}<br>Offer/上岗转化率： {2}'.format(kendo.toString(parent[1].value/e.value, 'n2'), kendo.toString(parent[2].value/e.value, 'n2'), kendo.toString(parent[3].value/e.value, 'n2'));
+                                    break;
+                            }
+                        }
+                    }
+                });
             });
         }
 
@@ -2504,7 +2638,7 @@
         $scope.selectedDate = new Date().format();
         $scope.selectedNextDate = Date.translate('now+1').format();
         $scope.report = model.getNewDailyReport();
-        $scope.detail = {'today': [], 'tomorrow': [], 'person': [], 'report': [], 'face': [], 'offer': [], 'success': []};
+        $scope.detail = {'today': [], 'tomorrow': [], 'person': [], 'report': [], 'face': [], 'offer': [], 'success': [], 'reason': ''};
 
         var dsJob = new kendo.data.DataSource({
             transport: {
@@ -2592,7 +2726,8 @@
                         }
                     },
                     {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
-                    //{field: 'user_names', title: '顾问', sortable: false},
+                    {field: 'last_report', title: '报告编号', template: getReportNum},
+                    {field: 'user_names', title: '顾问', sortable: false},
                     {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person_count')},
                     {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report_count')},
                     {field: 'view_count', title: '面试', filterable: false, template: getCountColor('view_count')},
@@ -2604,12 +2739,28 @@
                         }
                     }, filterable: {multi:true}},
                     {field: 'status', title: '状态', template: getStatus},
-                    {field: 'updated_at', title: '更新时间', template: getDate}
+                    {field: 'updated_at', title: '更新时间', template: getDate},
+                    {
+                        title: '操作',
+                        template: '<a href="\\#/hunt/select/#:id#" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-pencil"></i></a>',
+                        width: 140,
+                        sortable: false,
+                        filterable: {multi:true}
+                    }
                 ],
                 sortable: true,
                 scrollable: false,
                 pageable: true,
             },
+        }
+
+        function getReportNum(item) {
+            var num = item.last_report && item.last_report.match(/\d+/);
+            if (num) {
+                return num[0];
+            } else {
+                return '暂无'
+            }
         }
 
         function getType(item) {
@@ -2663,8 +2814,9 @@
 
         $scope.getReportInfo = function () {
             $http.get('/performance/daily-report', {params: {user_id: $scope.selectedUser.id, date: $scope.selectedDate, nextDate: $scope.selectedNextDate}}).success(function(res) {
-                console.log(res);
+                //console.log(res);
                 $scope.detail = res;
+                $scope.detail.reason = $scope.detail.reason.length ? $scope.detail.reason[0].reason : '';
             });
         }
 
@@ -2698,6 +2850,17 @@
                 }
             });
         };
+
+        $scope.saveDailyReason = function () {
+            console.log($scope.selectedDate, $scope.detail.reason);
+            $http.post('/performance/save-daily-reason', {reason: $scope.detail.reason, date: $scope.selectedDate}).success(function (res) {
+                if (res > 0) {
+                    $.$modal.alert('保存成功');
+                } else {
+                    $.$modal.alert('保存失败');
+                }
+            });
+        }
 
         $scope.getReportInfo();
     }]);

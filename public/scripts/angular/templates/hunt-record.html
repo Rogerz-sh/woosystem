@@ -87,7 +87,8 @@
                 </li>
                 <li class="list-group-item list-group-item-warning">
                     <form action="" class="form" name="recForm" novalidate>
-                        <textarea ng-model="record.text" cols="30" rows="5" class="form-control" required></textarea>
+                        <span class="help-block">记录文字必须达到15字或以上</span>
+                        <textarea ng-model="record.text" cols="30" rows="5" class="form-control" ng-minlength="15" required></textarea>
                         <div class="text-right margin-top-10">
                             <div class="pull-left">
                                 <button class="btn btn-info" ng-click="makeReport()">推荐报告</button>
@@ -106,7 +107,8 @@
             </blockquote>
             <div class="col-xs-12" ng-if="reportInfo.id>0">
                 <p class="indent">文件名称： <a href="/file/download-file/?path={{reportInfo.filepath}}&name={{reportInfo.filename}}&coded={{reportInfo.filecoded}}">{{reportInfo.filename}}</a>
-                    <a ng-click="deleteReport(reportInfo.id)" class="red"><i class="fa fa-times"></i> 删除</a></p>
+                    <a ng-click="deleteReport(reportInfo.id)" class="btn btn-xs btn-danger margin-left-10" style="text-indent:0;"><i class="fa fa-times"></i> 删除</a>
+                    <a ng-click="confirmReport(reportInfo.id)" ng-disabled="reportInfo.is_confirm" class="btn btn-xs btn-primary margin-left-10" style="text-indent:0;"><i class="fa fa-check"></i> {{reportInfo.is_confirm == 1 ? "已确认" : "确认"}}</a></p>
                 <p class="indent">备注信息： <span class="text-info">{{reportInfo.desc}}</span></p>
             </div>
             <div class="clearfix"></div>

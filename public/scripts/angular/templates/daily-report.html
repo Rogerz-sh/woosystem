@@ -61,7 +61,14 @@
                                             <div class="panel-body">
                                                 <blockquote style="padding: 5px 10px;margin: 0 0 10px;font-size: 14.5px;">报告</blockquote>
                                                 <ul class="list-group">
-                                                    <li class="list-group-item" ng-if="detail.report.length==0">无</li>
+                                                    <li class="list-group-item" ng-if="detail.report.length==0">
+                                                        <span ng-if="selectedDate!=today">{{detail.reason || '无'}}</span>
+                                                        <div ng-if="selectedDate==today">
+                                                            <span class="help-block">未完成任务原因：</span>
+                                                            <textarea class="form-control" ng-model="detail.reason"></textarea>
+                                                            <a class="btn btn-xs btn-primary margin-top-5" ng-disabled="!detail.reason || detail.reason.length < 15" ng-if="selectedDate==today" ng-click="saveDailyReason()">保存</a>
+                                                        </div>
+                                                    </li>
                                                     <li class="list-group-item" ng-repeat="t in detail.report">
                                                         <span class="dark-main">{{t.filename}}</span> <small class="dark-yellow pull-right">{{getDate(t.date)}}</small>
                                                     </li>
