@@ -19,6 +19,7 @@ use App\HuntResult;
 use App\Belongs;
 use App\HuntSuccess;
 use App\Job;
+use App\ResultTarget;
 use App\User;
 use App\ResultUser;
 use Illuminate\Support\Facades\Storage;
@@ -829,5 +830,84 @@ class PerformanceController extends BaseController {
             }
         }
         return response(["users"=>$user, "groups"=>$group, "areas"=>$area]);
+    }
+
+    public function getResultTargetSearch() {
+        $syear = request()->input('syear');
+        $eyear = request()->input('eyear');
+        $area = request()->input('area');
+        $group = request()->input('group');
+        $user = request()->input('user');
+        $power = Session::get('power');
+        $sid = Session::get('id');
+        $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+        if ($power < 10 && $sid != 85) {
+            $belong = Belongs::where('user_id', $sid)->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')');
+                } else {
+                    $users = $users->where('id', $sid);
+                }
+            } else {
+                $users = $users->where('id', $sid);
+            }
+        }
+        if ($user) {
+            $users = $users->where('id', $user)->get();
+        } else if ($group) {
+            $users = $users->where('group_id', $group)->get();
+        } else if ($area) {
+            $users = $users->where('area_id', $area)->get();
+        } else {
+            $users = $users->get();
+        }
+        $uids = array();
+        foreach($users as $u) {
+            array_push($uids, $u->id);
+        }
+        $uids = join(',', $uids);
+
+        $list = ResultTarget::select(DB::raw('result_target.id, result_target.year, result_target.area, result_target.target, result_target.start, result_target.end, users.nickname, users.group_name, users.area_name,
+        (select sum(result_users.user_result) from result_users where result_users.user_id = result_target.user_id and deleted_at is null and date >= result_target.start and date <= result_target.end) as result_count'))
+            ->join('users', 'users.id', '=', 'result_target.user_id')
+            ->where('year', '>=', $syear)->where('year', '<=', $eyear)
+            ->whereRaw('result_target.user_id in (' . $uids . ')')->get();
+
+        return response($list);
+    }
+
+    public function postSaveResultTarget() {
+        $year = request()->input('year');
+        $area = request()->input('area');
+        $user_id = Session::get('id');
+        $target = request()->input('target');
+
+        $exist = ResultTarget::where('year', $year)->where('area', $area)->where('user_id', $user_id)->first();
+
+        if ($exist) {
+            return response(-1);
+        } else {
+            $resultTarget = new ResultTarget();
+            $resultTarget->year = $year;
+            $resultTarget->area = $area;
+            if ($area == 1) {
+                $resultTarget->start = $year.'-01-01 00:00:00';
+                $resultTarget->end = $year.'-06-31 23:59:59';
+            } else {
+                $resultTarget->start = $year.'-07-01 00:00:00';
+                $resultTarget->end = $year.'-12-31 23:59:59';
+            }
+            $resultTarget->target = $target;
+            $resultTarget->user_id = $user_id;
+            $resultTarget->save();
+            return response(1);
+        }
     }
 }

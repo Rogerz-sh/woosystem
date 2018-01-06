@@ -17,21 +17,21 @@ tbody tr:nth-child(2n) td {background: #f9f9f9;}
             </ul>
             <div>
                 <div class="row margin-bottom-10 margin-top-10">
-                    <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增目标</a></div>
+                    <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增KPI目标</a></div>
                 </div>
                 <div class="row margin-bottom-10">
                     <div class="col-xs-12">
                         <div class="pull-left">
                             <div class="pull-left margin-left-10 form-control-static">查询月份：</div>
-                            <div class="pull-left margin-left-10"><input type="text" name="sdate" id="sdate" class="size-120" placeholder="开始月份"></div>
+                            <div class="pull-left margin-left-10"><input type="text" id="sdate" class="size-120" placeholder="开始月份"></div>
                             <div class="pull-left margin-left-10 form-control-static"> ~ </div>
-                            <div class="pull-left margin-left-10"><input type="text" name="edate" id="edate" class="size-120" placeholder="结束月份"></div>
+                            <div class="pull-left margin-left-10"><input type="text" id="edate" class="size-120" placeholder="结束月份"></div>
                         </div>
                         <div class="pull-left margin-left-20"><select id="search_area"></select></div>
                         <div class="pull-left margin-left-20"><select id="search_group"></select></div>
                         <div class="pull-left margin-left-20"><select id="search_user"></select></div>
                         <div class="pull-left margin-left-10">
-                            <button class="btn btn-sm btn-primary" id="search"><i class="fa fa-search"></i> 查询</button>
+                            <button class="btn btn-xs btn-primary" id="search"><i class="fa fa-search"></i> 查询</button>
                         </div>
                     </div>
                 </div>
@@ -48,7 +48,23 @@ tbody tr:nth-child(2n) td {background: #f9f9f9;}
             </div>
             <div>
                 <div class="row margin-bottom-10 margin-top-10">
-                    <div class="col-xs-1"><a class="btn btn-sm btn-success" id="addResultTarget"><i class="fa fa-plus"></i> 新增目标</a></div>
+                    <div class="col-xs-1"><a class="btn btn-sm btn-success" id="addResultTarget"><i class="fa fa-plus"></i> 新增业绩目标</a></div>
+                </div>
+                <div class="row margin-bottom-10">
+                    <div class="col-xs-12">
+                        <div class="pull-left">
+                            <div class="pull-left margin-left-10 form-control-static">查询年份：</div>
+                            <div class="pull-left margin-left-10"><select class="width-80" id="syear"></select></div>
+                            <div class="pull-left margin-left-10 form-control-static"> ~ </div>
+                            <div class="pull-left margin-left-10"><select class="width-80" id="eyear"></select></div>
+                        </div>
+                        <div class="pull-left margin-left-20"><select id="search_areas"></select></div>
+                        <div class="pull-left margin-left-20"><select id="search_groups"></select></div>
+                        <div class="pull-left margin-left-20"><select id="search_users"></select></div>
+                        <div class="pull-left margin-left-10">
+                            <button class="btn btn-xs btn-primary" id="searchs"><i class="fa fa-search"></i> 查询</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="row margin-bottom-10">
                     <div class="col-xs-12">
@@ -82,23 +98,38 @@ $(function () {
         dataSource: []
     });
 
+
+    var dsAreas = new kendo.data.DataSource({
+        dataSource: []
+    });
+
+    var dsGroups = new kendo.data.DataSource({
+        dataSource: []
+    });
+
+    var dsUsers = new kendo.data.DataSource({
+        dataSource: []
+    });
+
     var sessionId = +$('meta[name="_sessionId"]').attr('content');
-    var ddl_area, ddl_group, ddl_user;
     $.$ajax({
         url: '/performance/json-area-group-user-data',
         type: 'GET',
         dataType: 'json',
         success: function (res) {
             console.log(res);
-            //if (res.areas.length > 1) res.areas.unshift({id: '', a_name: '全部区域'});
-            //if (res.groups.length > 1) res.groups.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
-            //if (res.users.length > 1) res.users.unshift({id: '', nickname: '全体成员', area_id: 0, area_name: '', group_id: 0, group_name: ''});
             dsArea.data(res.areas);
             dsGroup.data(res.groups);
             dsUser.data(res.users);
-            ddl_area = $('#search_area').kendoDropDownList(config.area).data('kendoDropDownList');
-            ddl_group = $('#search_group').kendoDropDownList(config.group).data('kendoDropDownList');
-            ddl_user = $('#search_user').kendoDropDownList(config.user).data('kendoDropDownList');
+            dsAreas.data(res.areas);
+            dsGroups.data(res.groups);
+            dsUsers.data(res.users);
+            $('#search_area').kendoDropDownList(config.area).data('kendoDropDownList');
+            $('#search_group').kendoDropDownList(config.group).data('kendoDropDownList');
+            $('#search_user').kendoDropDownList(config.user).data('kendoDropDownList');
+            $('#search_areas').kendoDropDownList(config.area).data('kendoDropDownList');
+            $('#search_groups').kendoDropDownList(config.group).data('kendoDropDownList');
+            $('#search_users').kendoDropDownList(config.user).data('kendoDropDownList');
         }
     });
 
@@ -145,6 +176,52 @@ $(function () {
         },
         user: {
             dataSource: dsUser,
+            dataTextField: 'nickname',
+            dataValueField: 'id',
+            optionLabel: '全体成员'
+        },
+        areas: {
+            dataSource: dsAreas,
+            dataTextField: 'a_name',
+            dataValueField: 'id',
+            optionLabel: '全部区域',
+            change: function () {
+                var area_id = ~~this.value();
+                dsGroups.filter({
+                    logic: 'or',
+                    filters: [
+                        {field: 'area_id', operator: 'eq', value: area_id},
+                        {field: 'area_id', operator: 'eq', value: 0},
+                    ]
+                });
+                dsUsers.filter({
+                    logic: 'or',
+                    filters: [
+                        {field: 'area_id', operator: 'eq', value: area_id},
+                        {field: 'area_id', operator: 'eq', value: 0},
+                    ]
+                });
+            }
+        },
+        groups: {
+            dataSource: dsGroups,
+            dataTextField: 'g_name',
+            dataValueField: 'id',
+            optionLabel: '全部项目组',
+            template: '#:g_name##:area_name ? " [" + area_name + "]" : ""#',
+            change: function () {
+                var group_id = ~~this.value();
+                dsUsers.filter({
+                    logic: 'or',
+                    filters: [
+                        {field: 'group_id', operator: 'eq', value: group_id},
+                        {field: 'group_id', operator: 'eq', value: 0},
+                    ]
+                });
+            }
+        },
+        users: {
+            dataSource: dsUsers,
             dataTextField: 'nickname',
             dataValueField: 'id',
             optionLabel: '全体成员'
@@ -460,17 +537,169 @@ $(function () {
 
 
     /*******************************业绩目标***************************************/
+    $('#syear').kendoDropDownList({
+        dataSource: {
+            data: (function () {
+                var years = [];
+                for (var i = 2018; i < 2100; i ++) {
+                    years.push(i + '');
+                }
+                return years;
+            })()
+        },
+        value: (new Date()).getFullYear()
+    });
 
-    $('#gridResultTarget').kendoGrid({
+    $('#eyear').kendoDropDownList({
+        dataSource: {
+            data: (function () {
+                var years = [];
+                for (var i = 2018; i < 2100; i ++) {
+                    years.push(i + '');
+                }
+                return years;
+            })()
+        },
+        value: (new Date()).getFullYear()
+    });
+
+    $('#searchs').click(function () {
+        var data = {}, area = $('#search_areas').val(), group = $('#search_groups').val(), user = $('#search_users').val()
+        data.syear = $('#syear').val();
+        data.eyear = $('#eyear').val();
+        data.area = area;
+        data.group = group;
+        data.user = user;
+        console.log(data);
+        $.$ajax({
+            url: '/performance/result-target-search',
+            type: 'GET',
+            dataType: 'json',
+            data: data,
+            success: function (res) {
+                res.forEach(function (v) {
+                    v.result_count = +v.result_count;
+                });
+                gridResultTarget.dataSource.data(res);
+            }
+        })
+    });
+
+    $('#searchs').trigger('click');
+
+    var gridResultTarget = $('#gridResultTarget').kendoGrid({
         dataSource: {
             data: []
         },
         scrollable: false,
         pageable: true,
         columns: [
-            {field: 'start_date', 'title': '目标时间'},
-            {field: 'result_target', 'title': '目标额度'},
+            {field: 'nickname', 'title': '顾问'},
+            {field: 'group_name', 'title': '项目组'},
+            {field: 'area_name', 'title': '区域'},
+            {field: 'year', 'title': '目标年度'},
+            {field: 'area', 'title': '目标区间', template: showArea},
+            {field: 'target', 'title': '目标额度', template: '#:kendo.toString(target, "n2")#'},
+            {field: 'result_count', 'title': '完成额度', template: '#:kendo.toString(result_count, "n2")#'},
+            {'title': '完成率', template: '#:kendo.toString(result_count/target, "p2")#'},
+            {
+                title: '操作',
+                template: '<a class="btn btn-xs btn-default">编辑</a>' +
+                            '<a class="btn btn-xs btn-danger margin-left-5">删除</a>'
+            }
         ]
+    }).data('kendoGrid');
+
+    function showArea(item) {
+        return item.area == '1' ? '上半年' : '下半年';
+    }
+
+    $('#addResultTarget').click(function () {
+        $.$modal.dialog({
+            title: '新增业绩目标',
+            content: '<div class="row"><div class="col-xs-12">' +
+                '<form class="form-horizontal">' +
+                '<div class="form-group">' +
+                    '<label class="control-label col-xs-3">选择年度：</label>' +
+                    '<div class="col-xs-8"><select id="year"></select></div> ' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<label class="control-label col-xs-3">选择区间：</label>' +
+                    '<div class="col-xs-8">' +
+                        '<div class="col-xs-6 no-padding-left"><label class="form-control-static"><input type="radio" checked name="area" value="1" /><span class="text">上半年</span> </label></div>' +
+                        '<div class="col-xs-6 no-padding-left"><label class="form-control-static"><input type="radio" name="area" value="2" /><span class="text">下半年</span> </label></div>' +
+                    '</div> ' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<label class="control-label col-xs-3">目标额度：</label>' +
+                    '<div class="col-xs-8">' +
+                        '<div class="input-group"><input type="text" class="form-control" id="target" /><span class="input-group-addon">元</span></div>' +
+                    '</div> ' +
+                '</div>' +
+                '</form>' +
+                '</div></div>',
+            destroy: true,
+            footer: {
+                buttons: [
+                    {
+                        name: 'ok',
+                        handler: function () {
+                            var self = this, dom = self.dom;
+                            var data = {
+                                year: $('#year', dom).val(),
+                                area: $('input[name="area"]:checked').val(),
+                                target: $('#target', dom).data('kendoNumericTextBox').value()
+                            }
+                            console.log(data);
+                            $.$ajax({
+                                url: '/performance/save-result-target',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: data,
+                                success: function (res) {
+                                    if (res == 1) {
+                                        self.hide();
+                                        gridResultTarget.dataSource.read();
+                                    } else if (res == -1) {
+                                        $.$modal.alert('不要重复录入');
+                                    } else {
+                                        $.$modal.alert('保存失败');
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    {
+                        name: 'cancel',
+                        handler: function () {
+                            this.hide();
+                        }
+                    }
+                ]
+            },
+            onLoaded: function () {
+                var self = this, dom = self.dom;
+                $('#year', dom).kendoDropDownList({
+                    dataSource: {
+                        data: (function () {
+                            var years = [];
+                            for (var i = 2018; i < 2100; i ++) {
+                                years.push(i + '');
+                            }
+                            return years;
+                        })()
+                    },
+                    value: (new Date()).getFullYear()
+                });
+                $('#target', dom).kendoNumericTextBox({
+                    spinners: false,
+                    min: 0,
+                    decimals: 0,
+                    format: 'n2',
+                    value: 0
+                });
+            }
+        }).show();
     });
 });
 </script>

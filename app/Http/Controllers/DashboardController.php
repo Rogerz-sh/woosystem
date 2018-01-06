@@ -9,8 +9,11 @@ namespace App\Http\Controllers;
 
 use App\HuntFace;
 use App\HuntReport;
+use App\Job;
 use App\HuntSuccess;
 use App\Invoice;
+use App\ResultTarget;
+use App\ResultUser;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -19,6 +22,26 @@ class DashboardController extends BaseController {
 
     public function getIndex() {
         return view('user.dashboard')->with('navIndex', 0);
+    }
+
+    public function getRecentJobList() {
+        $data = Job::join('company', 'jobs.company_id', '=', 'company.id')
+            ->leftJoin('job_types', 'jobs.type_id', '=', 'job_types.id')
+            ->leftJoin('hunt_select', 'jobs.id', '=', 'hunt_select.job_id')
+            ->select('jobs.id', 'jobs.name', 'jobs.type_id', 'job_types.name as type_name', 'job_types.parentid as type_parent', 'jobs.company_id', 'jobs.company_name', 'company.industry', 'jobs.salary', 'jobs.area', 'jobs.sellpoint', 'jobs.created_at', 'jobs.updated_at', 'jobs.created_by', 'hunt_select.user_names', 'hunt_select.user_ids', 'hunt_select.status')
+            ->whereRaw('datediff(now(), jobs.created_at) < 30')
+            ->orderBy('jobs.created_at', 'desc')->get();
+        return response($data);
+    }
+
+    public function getPersonalResultTarget() {
+        $year = request()->input('year');
+        $user = Session::get('id');
+        $rt = ResultTarget::where('user_id', $user)->where('year', $year)->get();
+        $rc = ResultUser::select(DB::raw('max(user_id) as user_id, date_format(max(date), "%Y-%m") as month, sum(user_result) as count'))
+            ->where('user_id', $user)->whereRaw('date_format(date, "%Y") = '.$year.'')
+            ->groupBy(DB::raw('date_format(date, "%Y-%m")'))->get();
+        return response(["rt"=>$rt, "rc"=>$rc]);
     }
 
     public function getRecentFaceList() {

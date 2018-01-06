@@ -4,6 +4,11 @@
     .circle span {position: relative; font-size: 1.5em; font-weight: bold; color: #666;}
     .circle .p_bg {position: absolute; width: 90px; height: 90px; left: 5px; top: 5px; border-radius: 50%; overflow: hidden;}
     .circle .p_bg div {width: 100%; height: 100px; background: #fff;}
+    .result-box {border-bottom: 1px solid #eee;}
+    .result-box:last-child {border-bottom: none;}
+    .result-target {border: 1px solid #eea236; background: #ffeacc; position: relative; height: 35px; margin-left: 10px;}
+    .result-count {width: 0.1%; height: 100%; background: #ffca4c;}
+    .result-text {position: absolute; right: 5px; bottom: 2px;}
 </style>
 <div class="wrapper">
     <div class="container-fluid">
@@ -62,6 +67,63 @@
                         <!--</div>-->
                         <!--<p class="margin-top-10 bold text-center">业绩额 <br> 完成率：<span class="p_text"></span></p>-->
                     <!--</div>-->
+                </div>
+            </div>
+        </div>
+        <div class="row margin-top-20">
+            <div class="col-xs-6">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>近30天发布的职位</b></div>
+                    <ul class="list-group" id="recent_jobs" style="height:270px;overflow-y:auto;">
+                        <li class="list-group-item text-center">暂无数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-6">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>业绩达成率</b></div>
+                    <div class="panel-body">
+                        <div id="result_performance">
+                            <ul>
+                                <li class="k-state-active">个人</li>
+                                <li>团队</li>
+                            </ul>
+                            <div style="height:200px;">
+                                <div class="flex flex-col full-height" id="personal_result">
+                                    <div class="flex flex-row flex-1 flex-v-center result-box">
+                                        <div class="width-50 text-right">年度：</div>
+                                        <div class="flex-1 flex flex-col">
+                                            <div class="result-target flex-1">
+                                                <div class="result-count"></div>
+                                                <small class="text-right white result-text">0元 / 0元</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-row flex-1 flex-v-center result-box">
+                                        <div class="width-50 text-right">半年度：</div>
+                                        <div class="flex-1 flex flex-col">
+                                            <div class="result-target flex-1">
+                                                <div class="result-count"></div>
+                                                <small class="text-right white result-text">0元 / 0元</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-row flex-1 flex-v-center result-box">
+                                        <div class="width-50 text-right">本月：</div>
+                                        <div class="flex-1 flex flex-col">
+                                            <div class="result-target flex-1">
+                                                <div class="result-count"></div>
+                                                <small class="text-right white result-text">0元 / 0元</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="height:200px;">
+                                <div id="group_result"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
