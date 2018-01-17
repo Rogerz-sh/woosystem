@@ -318,6 +318,7 @@
             return {
                 date: (new Date()).format(),
                 amount: 0,
+                type: '一期',
                 job_id: '',
                 job_name: '',
                 company_id: '',

@@ -54,7 +54,7 @@ return [
 
         'mysql' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_HOST', '139.129.36.169'),
+            'host'      => env('DB_HOST', '118.31.41.210'),
             'database'  => env('DB_DATABASE', 'woosystem'),
             'username'  => env('DB_USERNAME', 'woosystem'),
             'password'  => env('DB_PASSWORD', 'Giewoo2015'),

@@ -47,7 +47,7 @@ class BdController extends BaseController {
     }
 
     public function getUserList() {
-        $persons = User::where('id', '<>', Session::get('id'))->get();
+        $persons = User::where('id', '<>', Session::get('id'))->where('status', '1')->get();
         return response($persons);
     }
 

@@ -16,10 +16,10 @@
                 $scope.session = model.getUserSession();
                 $scope.menus = [
                     {url: '/', label: '首页', power: 1},
-                    {url: '#', label: '数据管理', power: 9, items: [
+                    {url: '#', label: '数据管理', power: 1, items: [
                         {url: '/company/list', label: '企业库', power: 9},
                         {url: '/job/list', label: '职位库', power: 9},
-                        {url: '/candidate/list', label: '简历库', power: 9},
+                        {url: '/candidate/list', label: '简历库', power: 1},
                     ]},
                     {url: '/bd/list', label: '客户管理', power: 1},
                     {url: '/hunt/list', label: '项目管理', power: 1},
@@ -31,6 +31,11 @@
                     ]},
                     {url: '/team/recent', label: '团队管理', power: 9, items: [
                         {url: '/team/recent', label: '团队近况', power: 9},
+                    ]},
+                    {url: '/team/users', label: '用户管理', power: 9, items: [
+                        {url: '/team/users', label: '用户管理', power: 9},
+                        {url: '/team/groups', label: '项目组管理', power: 9},
+                        {url: '/team/areas', label: '区域管理', power: 9},
                     ]}
                 ];
                 $scope.changeSubNav = function (idx) {

@@ -29,7 +29,7 @@ class CandidateController extends BaseController {
     }
 
     public function getJsonListData() {
-        $candidate = Candidate::orderBy('created_at', 'desc')->get();
+        $candidate = Candidate::orderBy('created_at', 'desc')->limit(1000)->get();
         return response($candidate);
     }
 

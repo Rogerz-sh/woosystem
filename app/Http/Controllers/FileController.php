@@ -37,7 +37,7 @@ class FileController extends BaseController {
         if (!isset($user)) {
             $user = 'guest';
         }
-        $path = 'upload/resume/'.$user.'/'.date('Y').'/'.date('m');
+        $path = 'upload/resume/'.date('Y').'/'.date('m').'/'.Session::get('id');
         $file->move($path, $saveName);
 
         return response('"/'.$path.'/'.$saveName.'"');

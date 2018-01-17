@@ -1,0 +1,33 @@
+<div class="wrapper">
+    <div class="container-fluid">
+        <div class="row margin-top-10">
+            <div class="col-xs-12">
+                <div kendo-grid k-options="config.grid">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div kendo-window="win1" k-title="'新增/编辑区域'" k-width="600" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+         k-on-open="win1visible = true" k-on-close="win1visible = false">
+        <div class="container-fluid" style="overflow: hidden;">
+            <div class="row">
+                <form name="areaForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2"><span class="red">*</span> 区域名称</label>
+                        <div class="col-xs-9">
+                            <input type="hidden" ng-model="area.id">
+                            <input ng-model="area.a_name" type="text" class="form-control input-size-normal" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-9 col-xs-offset-2">
+                            <button class="btn btn-success col-xs-2" ng-click="saveArea()" ng-disabled="areaForm.$invalid">保存</button>
+                            <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win1.close()">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

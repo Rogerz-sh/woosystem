@@ -114,6 +114,18 @@
                 templateUrl: '/scripts/angular/templates/team-recent.html',
                 controller: 'teamRecentController'
             })
+            .when('/team/users', {
+                templateUrl: '/scripts/angular/templates/team-users.html',
+                controller: 'teamUsersController'
+            })
+            .when('/team/groups', {
+                templateUrl: '/scripts/angular/templates/team-groups.html',
+                controller: 'teamGroupsController'
+            })
+            .when('/team/areas', {
+                templateUrl: '/scripts/angular/templates/team-areas.html',
+                controller: 'teamAreasController'
+            })
             .when('/user/info', {
                 templateUrl: '/scripts/angular/templates/user-info.html',
                 controller: 'userInfoController'

@@ -1099,6 +1099,22 @@
             filter: {field: 'deleted', operator: 'neq', value: true}
         });
 
+        var dsResult = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '/hunt/result-list',
+                    data: {hunt_id: $routeParams.hunt_id}
+                }
+            },
+            pageSize: 10,
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            },
+            filter: {field: 'deleted', operator: 'neq', value: true}
+        });
+
         $scope.file = model.getRecordFile();
         $scope.report = model.getRecordReport();
         $scope.face = model.getRecordNewFace();
@@ -1169,6 +1185,18 @@
                     {field: 'tel', title: '手机号'},
                     {field: 'desc', title: '备注'},
                     {title: '操作', template: '<a ng-click="editFace(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteFace(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+            grid_result: {
+                dataSource: dsResult,
+                columns: [
+                    {field: 'id', title: 'ID'},
+                    {field: 'date', title: '打款日期', template: '#:Date.format(date)#'},
+                    {field: 'amount', title: '打款金额', template: '#:kendo.toString(amount, "n2")#'},
+                    {field: 'type', title: '类型'},
+                    {title: '操作', template: '<a ng-click="editResult(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteResult(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
                 ],
                 scrollable: false,
                 pageable: true,
@@ -1543,6 +1571,12 @@
         }
 
         $scope.makeResult = function () {
+            $scope.result = model.getRecordResult();
+            $scope.result.hunt_id = $routeParams.hunt_id;
+            $scope.result.person_id = $scope.hunt.person_id;
+            $scope.result.person_name = $scope.hunt.person_name;
+            $scope.result.job_id = $scope.hunt.job_id;
+            $scope.result.job_name = $scope.hunt.job_name;
             $scope.win11.open();
         };
 
@@ -1557,13 +1591,27 @@
             result.person_name = $scope.hunt.person_name;
 
             $http.post('/hunt/save-result', {result: result}).success(function (res) {
-                if (~~res) {
-                    result.id = res;
-                    $scope.resultInfo = result;
+                if (~~res > 0) {
                     $scope.win11.close();
-                    $.$modal.alert('业绩已填写完成！');
+                    dsResult.read();
+                    $.$modal.alert('业绩保存成功');
+                } else if (res == -1) {
+                    $.$modal.alert(result['type'] + '打款信息重复');
+                } else {
+                    $.$modal.alert('保存失败');
                 }
             });
+        };
+
+        $scope.editResult = function (id) {
+            var result = dsResult.get(id).toJSON();
+            $scope.result = angular.extend({}, result);
+            $scope.result.hunt_id = $routeParams.hunt_id;
+            $scope.result.person_id = $scope.hunt.person_id;
+            $scope.result.person_name = $scope.hunt.person_name;
+            $scope.result.job_id = $scope.hunt.job_id;
+            $scope.result.job_name = $scope.hunt.job_name;
+            $scope.win11.open();
         };
 
         $scope.deleteResult = function (id) {
@@ -1571,7 +1619,7 @@
                 if (isOk) {
                     $http.post('/hunt/delete-result', {id: id}).success(function (res) {
                         if (~~res) {
-                            $scope.resultInfo = {};
+                            dsResult.read();
                             $.$modal.alert('业绩信息已删除！');
                         }
                     });
@@ -2957,6 +3005,352 @@
                 $scope.win4.center().open();
             });
         };
+    }]);
+
+
+    app.controller('teamUsersController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '/team/json-user-list',
+                    data: {}
+                }
+            },
+            pageSize: 10,
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            }
+        });
+
+        $scope.user = {
+            id: '',
+            name: '',
+            group_id: '',
+            group_name: '',
+            area_id: '',
+            area_name: ''
+        }
+
+        $scope.config = {
+            grid: {
+                dataSource: ds,
+                columns: [
+                    {field: 'id', title: 'ID'},
+                    {field: 'name', title: '账号'},
+                    {field: 'nickname', title: '昵称'},
+                    {field: 'group_name', title: '所属项目组'},
+                    {field: 'area_name', title: '所属区域'},
+                    {field: 'status', title: '状态', template: getStatus},
+                    {field: 'created_at', title: '创建时间'},
+                    {title: '操作', template: getButtons, width: 140}
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+            list: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/team/json-group-list',
+                            data: {}
+                        }
+                    }
+                },
+                template: '#:g_name# [#:area_name#]',
+                optionLabel: '请选择所属项目组',
+                dataTextField: 'g_name',
+                dataValueField: 'id',
+                change: function () {
+                    var item = this.dataItem();
+                    $scope.user.group_id = item.id;
+                    $scope.user.group_name = item.g_name;
+                    $scope.user.area_id = item.area_id;
+                    $scope.user.area_name = item.area_name;
+                    $scope.$apply();
+                },
+            }
+        }
+
+        function getStatus(item) {
+            if (item.status == '1') {
+                return '<span class="text-success">启用中</span>'
+            } else {
+                return '<span class="text-danger">已禁用</span>'
+            }
+        }
+
+        function getButtons(item) {
+            var button = ['<a ng-click="editUser('+item.id+')" class="btn btn-info btn-sm margin-right-5" title="编辑"><i class="fa fa-pencil"></i></a>']
+            if (item.status == '1') {
+                button.push('<a ng-click="editUserStatus('+item.id+', 0)" class="btn btn-danger btn-sm" title="禁用"><i class="fa fa-times"></i></a>')
+                return button.join('');
+            } else {
+                button.push('<a ng-click="editUserStatus('+item.id+', 1)" class="btn btn-success btn-sm" title="启用"><i class="fa fa-check"></i></a>')
+                return button.join('');
+            }
+        }
+
+        $scope.editUser = function (id) {
+            var item = ds.get(id);
+            $scope.user.id = item.id;
+            $scope.user.name = item.name;
+            $scope.user.group_id = item.group_id;
+            $scope.user.group_name = item.group_name;
+            $scope.user.area_id = item.area_id;
+            $scope.user.area_name = item.area_name;
+            $scope.win1.center().open();
+        }
+
+        $scope.editUserStatus = function (id, status) {
+            $.$modal.confirm('确认要变更吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/team/edit-user-status', {id: id, status: status}).success(function (res) {
+                        if (res >= 1) {
+                            ds.pushUpdate({id: id, status: status});
+                        } else {
+                            $.$modal.alert('操作失败');
+                        }
+                    });
+                }
+            });
+
+        }
+
+        $scope.saveUser = function () {
+            if ($scope.user.id) {
+                $http.post('/team/edit-user', {id: $scope.user.id, group_id: $scope.user.group_id, group_name: $scope.user.group_name, area_id: $scope.user.area_id, area_name: $scope.user.area_name}).success(function (res) {
+                    if (res >= 1) {
+                        $.$modal.alert('保存成功');
+                        $scope.win1.close();
+                        ds.read();
+                    } else {
+                        $.$modal.alert('保存失败');
+                    }
+                });
+            } else {
+                $.$modal.alert('保存失败');
+            }
+        }
+    }]);
+
+
+    app.controller('teamGroupsController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '/team/json-group-list',
+                    data: {}
+                }
+            },
+            pageSize: 10,
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            }
+        });
+
+        $scope.group = {
+            id: '',
+            g_name: '',
+            area_id: '',
+            area_name: ''
+        }
+
+        $scope.config = {
+            grid: {
+                dataSource: ds,
+                toolbar: [
+                    {
+                        template: '<a class="btn btn-success" ng-click="addFile()">新建项目组</a>'
+                    }
+                ],
+                columns: [
+                    {field: 'id', title: 'ID'},
+                    {field: 'g_name', title: '项目组名称'},
+                    {field: 'area_name', title: '所属区域'},
+                    {field: 'created_at', title: '创建时间'},
+                    {title: '操作', template: '<a ng-click="editGroup(#:id#)" class="btn btn-info btn-sm" title="编辑"><i class="fa fa-pencil"></i></a>' +
+                    ' <a  ng-click="deleteGroup(#:id#)" class="btn btn-danger btn-sm" title="删除"><i class="fa fa-trash-o"></i></a>', width: 140}
+                ],
+                scrollable: false,
+                pageable: true,
+            },
+            list: {
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: '/team/json-area-list',
+                            data: {}
+                        }
+                    }
+                },
+                optionLabel: '请选择所属区域',
+                dataTextField: 'a_name',
+                dataValueField: 'id',
+                change: function () {
+                    var item = this.dataItem();
+                    $scope.group.area_id = item.id;
+                    $scope.group.area_name = item.a_name;
+                    $scope.$apply();
+                },
+            }
+        }
+
+        $scope.addFile = function () {
+            $scope.group.id = '';
+            $scope.group.g_name = '';
+            $scope.group.area_id = '';
+            $scope.group.area_name = '';
+            $scope.win1.center().open();
+        }
+
+        $scope.editGroup = function (id) {
+            var item = ds.get(id);
+            $scope.group.id = item.id;
+            $scope.group.g_name = item.g_name;
+            $scope.group.area_id = item.area_id;
+            $scope.group.area_name = item.area_name;
+            $scope.win1.center().open();
+        }
+
+        $scope.deleteGroup = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/team/delete-group', {id: id}).success(function (res) {
+                        if (res >= 1) {
+                            $.$modal.alert('删除成功');
+                            ds.read();
+                        } else {
+                            $.$modal.alert('删除失败');
+                        }
+                    });
+                }
+            });
+
+        }
+
+        $scope.saveGroup = function () {
+            if ($scope.group.id) {
+                $http.post('/team/edit-group', {id: $scope.group.id, g_name: $scope.group.g_name, area_id: $scope.group.area_id, area_name: $scope.group.area_name}).success(function (res) {
+                    if (res >= 1) {
+                        $.$modal.alert('保存成功');
+                        $scope.win1.close();
+                        ds.read();
+                    } else {
+                        $.$modal.alert('保存失败');
+                    }
+                });
+            } else {
+                $http.post('/team/save-group', {g_name: $scope.group.g_name, area_id: $scope.group.area_id, area_name: $scope.group.area_name}).success(function (res) {
+                    if (res >= 1) {
+                        $.$modal.alert('保存成功');
+                        $scope.win1.close();
+                        ds.read();
+                    } else {
+                        $.$modal.alert('保存失败');
+                    }
+                });
+            }
+        }
+    }]);
+
+
+    app.controller('teamAreasController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '/team/json-area-list',
+                    data: {}
+                }
+            },
+            pageSize: 10,
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            }
+        });
+
+        $scope.area = {
+            id: '',
+            a_name: ''
+        }
+
+        $scope.config = {
+            grid: {
+                dataSource: ds,
+                toolbar: [
+                    {
+                        template: '<a class="btn btn-success" ng-click="addFile()">新建区域</a>'
+                    }
+                ],
+                columns: [
+                    {field: 'id', title: 'ID'},
+                    {field: 'a_name', title: '区域名称'},
+                    {field: 'created_at', title: '创建时间'},
+                    {title: '操作', template: '<a ng-click="editArea(#:id#)" class="btn btn-info btn-sm" title="编辑"><i class="fa fa-pencil"></i></a>' +
+                    ' <a  ng-click="deleteArea(#:id#)" class="btn btn-danger btn-sm" title="删除"><i class="fa fa-trash-o"></i></a>', width: 140}
+                ],
+                scrollable: false,
+                pageable: true,
+            }
+        }
+
+        $scope.addFile = function () {
+            $scope.area.id = '';
+            $scope.area.a_name = '';
+            $scope.win1.center().open();
+        }
+
+        $scope.editArea = function (id) {
+            var item = ds.get(id);
+            $scope.area.id = item.id;
+            $scope.area.a_name = item.a_name;
+            $scope.win1.center().open();
+        }
+
+        $scope.deleteArea = function (id) {
+            $.$modal.confirm('确认要删除吗？', function (isOk) {
+                if (isOk) {
+                    $http.post('/team/delete-area', {id: id}).success(function (res) {
+                        if (res >= 1) {
+                            $.$modal.alert('删除成功');
+                            ds.read();
+                        } else {
+                            $.$modal.alert('删除失败');
+                        }
+                    });
+                }
+            });
+
+        }
+
+        $scope.saveArea = function () {
+            if ($scope.area.id) {
+                $http.post('/team/edit-area', {id: $scope.area.id, a_name: $scope.area.a_name}).success(function (res) {
+                    if (res >= 1) {
+                        $.$modal.alert('保存成功');
+                        $scope.win1.close();
+                        ds.read();
+                    } else {
+                        $.$modal.alert('保存失败');
+                    }
+                });
+            } else {
+                $http.post('/team/save-area', {a_name: $scope.area.a_name}).success(function (res) {
+                    if (res >= 1) {
+                        $.$modal.alert('保存成功');
+                        $scope.win1.close();
+                        ds.read();
+                    } else {
+                        $.$modal.alert('保存失败');
+                    }
+                });
+            }
+        }
     }]);
 
     //controllers for user

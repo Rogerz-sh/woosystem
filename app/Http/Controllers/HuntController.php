@@ -305,20 +305,51 @@ class HuntController extends BaseController {
 
     public function postSaveResult() {
         $rst = request()->input('result');
-        $oldRst = HuntResult::where('hunt_id', $rst['hunt_id'])->first();
-        if ($oldRst) {
-            foreach ($rst as $key => $value) {
-                $oldRst->$key = $value;
+//        $oldRst = HuntResult::where('hunt_id', $rst['hunt_id'])->first();
+//        if ($oldRst) {
+//            foreach ($rst as $key => $value) {
+//                $oldRst->$key = $value;
+//            }
+//            $oldRst->deleted_at = null;
+//            $oldRst->updated_by = Session::get('id');
+//            $oldRst->save();
+//            $this->updateHuntTime($oldRst->job_id);
+//            return response($oldRst->id);
+//        } else {
+//            $newRst = new HuntResult();
+//            foreach ($rst as $key => $value) {
+//                $newRst->$key = $value;
+//            }
+//            $newRst->created_by = Session::get('id');
+//            $newRst->save();
+//            $this->updateHuntTime($newRst->job_id);
+//            return response($newRst->id);
+//        }
+        if (isset($rst['id'])) {
+            $existRst = HuntResult::where('type', $rst['type'])->where('hunt_id', $rst['hunt_id'])->where('id', '<>', $rst['id'])->first();
+            if ($existRst) {
+                return response(-1);
             }
-            $oldRst->deleted_at = null;
+            $oldRst = HuntResult::where('id', $rst['id'])->where('created_by', Session::get('id'))->where('hunt_id', $rst['hunt_id'])->first();
+            foreach ($rst as $key => $value) {
+                if ($key != 'id') {
+                    $oldRst->$key = $value;
+                }
+            }
             $oldRst->updated_by = Session::get('id');
             $oldRst->save();
             $this->updateHuntTime($oldRst->job_id);
             return response($oldRst->id);
         } else {
+            $existRst = HuntResult::where('type', $rst['type'])->where('hunt_id', $rst['hunt_id'])->first();
+            if ($existRst) {
+                return response(-1);
+            }
             $newRst = new HuntResult();
             foreach ($rst as $key => $value) {
-                $newRst->$key = $value;
+                if ($key != 'id') {
+                    $newRst->$key = $value;
+                }
             }
             $newRst->created_by = Session::get('id');
             $newRst->save();
@@ -489,7 +520,13 @@ class HuntController extends BaseController {
         $hid = request()->input('hunt_id');
         $hunt = Hunt::find($hid);
         $companyId = $hunt->company_id;
-        $hRpt = HuntReport::where('company_id', $companyId)->where('type', 'report')->orderBy('updated_at', 'desc')->get();
+        $hRpt = HuntReport::where('company_id', $companyId)->where('type', 'report')->orderBy('created_at', 'desc')->limit(5)->get();
         return response($hRpt);
+    }
+
+    public function getResultList() {
+        $hunt_id = request()->input('hunt_id');
+        $rst = HuntResult::where('hunt_id', $hunt_id)->get();
+        return response($rst);
     }
 }
