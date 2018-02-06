@@ -6,10 +6,12 @@
  * Time: 下午4:08
  */
 namespace App\Http\Controllers;
+use App\Areas;
 use App\Bd;
 use App\Candidate;
 use App\DailyReason;
 use App\DailyReport;
+use App\Groups;
 use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
@@ -196,70 +198,48 @@ class PerformanceController extends BaseController {
         $type = request()->input('type');
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
+        $area = request()->input('area');
+        $group = request()->input('group');
         $user = request()->input('user');
         $format = $type == 'day' ? '%Y-%m-%d' : '%Y-%m';
-        if ($user) {
-            if ($user == '-1' || $user == '-2') {
-                $group = $user == '-1' ? '项目一部' : '项目二部';
-                $person = Candidate::select(DB::raw('count(id) as count, DATE_FORMAT(created_at,"' . $format . '") as date'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('created_at', '>=', $sdate)
-                    ->where('created_at', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(created_at,"' . $format . '")'))->get();
-                $report = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('type', 'report')
-                    ->where('is_confirm', 1)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
-                $face = HuntFace::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'") and (hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
-                $offer = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('type', 'offer')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
-                $success = HuntSuccess::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
+        if ($area || $group || $user) {
+            if ($user) {
+                $searchStr = 'created_by = '.$user;
             } else {
-                $person = Candidate::select(DB::raw('count(id) as count, DATE_FORMAT(created_at,"' . $format . '") as date'))
-                    ->where('created_by', $user)
-                    ->where('created_at', '>=', $sdate)
-                    ->where('created_at', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(created_at,"' . $format . '")'))->get();
-                $report = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->where('created_by', $user)
-                    ->where('type', 'report')
-                    ->where('is_confirm', 1)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
-                $face = HuntFace::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
-                    ->where('created_by', $user)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
-                $offer = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->where('created_by', $user)
-                    ->where('type', 'offer')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
-                $success = HuntSuccess::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
-                    ->where('created_by', $user)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)
-                    ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
+                if ($group) {
+                    $searchStr = 'created_by in (select id from users where users.group_id = '.$group.' )';
+                } else {
+                    $searchStr = 'created_by in (select id from users where users.area_id = '.$area.' )';
+                }
             }
+            $person = Candidate::select(DB::raw('count(id) as count, DATE_FORMAT(created_at,"' . $format . '") as date'))
+                ->whereRaw($searchStr)
+                ->where('created_at', '>=', $sdate)
+                ->where('created_at', '<=', $edate)
+                ->groupBy(DB::raw('DATE_FORMAT(created_at,"' . $format . '")'))->get();
+            $report = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
+                ->whereRaw($searchStr)
+                ->where('type', 'report')
+                ->where('is_confirm', 1)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
+            $face = HuntFace::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
+                ->whereRaw($searchStr.' and (hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
+            $offer = HuntReport::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
+                ->whereRaw($searchStr)
+                ->where('type', 'offer')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
+            $success = HuntSuccess::select(DB::raw('count(id) as count, DATE_FORMAT(date,"' . $format . '") as date'))
+                ->whereRaw($searchStr)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->groupBy(DB::raw('DATE_FORMAT(date,"' . $format . '")'))->get();
         } else {
             $person = Candidate::select(DB::raw('count(id) as count, DATE_FORMAT(created_at,"'.$format.'") as date'))
                 ->where('created_at', '>=', $sdate)
@@ -293,61 +273,45 @@ class PerformanceController extends BaseController {
     public function getJsonPerformanceRateData() {
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
+        $area = request()->input('area');
+        $group = request()->input('group');
         $user = request()->input('user');
         $format = '%Y-%m-%d';
-        if ($user) {
-            if ($user == '-1' || $user == '-2') {
-                $group = $user == '-1' ? '项目一部' : '项目二部';
-                $person = Candidate::select(DB::raw('count(id) as count'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('created_at', '>=', $sdate)
-                    ->where('created_at', '<=', $edate)->get();
-                $report = HuntReport::select(DB::raw('count(id) as count'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('type', 'report')
-                    ->where('is_confirm', 1)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
-                $face = HuntFace::select(DB::raw('count(id) as count'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
-                $offer = HuntReport::select(DB::raw('count(id) as count'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('type', 'offer')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
-                $success = HuntSuccess::select(DB::raw('count(id) as count'))
-                    ->whereRaw('created_by in (select id from users where users.group = "'.$group.'")')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
+
+        if ($area || $group || $user) {
+            if ($user) {
+                $searchStr = 'created_by = '.$user;
             } else {
-                $person = Candidate::select(DB::raw('count(id) as count'))
-                    ->where('created_by', $user)
-                    ->where('created_at', '>=', $sdate)
-                    ->where('created_at', '<=', $edate)->get();
-                $report = HuntReport::select(DB::raw('count(id) as count'))
-                    ->where('created_by', $user)
-                    ->where('type', 'report')
-                    ->where('is_confirm', 1)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
-                $face = HuntFace::select(DB::raw('count(id) as count'))
-                    ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
-                    ->where('created_by', $user)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
-                $offer = HuntReport::select(DB::raw('count(id) as count'))
-                    ->where('created_by', $user)
-                    ->where('type', 'offer')
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
-                $success = HuntSuccess::select(DB::raw('count(id) as count'))
-                    ->where('created_by', $user)
-                    ->where('date', '>=', $sdate)
-                    ->where('date', '<=', $edate)->get();
+                if ($group) {
+                    $searchStr = 'created_by in (select id from users where users.group_id = '.$group.' )';
+                } else {
+                    $searchStr = 'created_by in (select id from users where users.area_id = '.$area.' )';
+                }
             }
+            $person = Candidate::select(DB::raw('count(id) as count'))
+                ->whereRaw($searchStr)
+                ->where('created_at', '>=', $sdate)
+                ->where('created_at', '<=', $edate)->get();
+            $report = HuntReport::select(DB::raw('count(id) as count'))
+                ->whereRaw($searchStr)
+                ->where('type', 'report')
+                ->where('is_confirm', 1)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
+            $face = HuntFace::select(DB::raw('count(id) as count'))
+                ->whereRaw($searchStr)
+                ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
+            $offer = HuntReport::select(DB::raw('count(id) as count'))
+                ->whereRaw($searchStr)
+                ->where('type', 'offer')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
+            $success = HuntSuccess::select(DB::raw('count(id) as count'))
+                ->whereRaw($searchStr)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)->get();
         } else {
             $person = Candidate::select(DB::raw('count(id) as count'))
                 ->where('created_at', '>=', $sdate)
@@ -369,12 +333,23 @@ class PerformanceController extends BaseController {
                 ->where('date', '>=', $sdate)
                 ->where('date', '<=', $edate)->get();
         }
+
         $result = ["person"=>$person[0]["count"], "report"=>$report[0]["count"], "face"=>$face[0]["count"], "offer"=>$offer[0]["count"], "success"=>$success[0]["count"]];
         return response($result);
     }
 
+    public function getJsonAreaList() {
+        $area = Areas::select('id', 'a_name')->get();
+        return response($area);
+    }
+
+    public function getJsonGroupList() {
+        $group = Groups::select('id', 'g_name', 'area_id', 'area_name')->get();
+        return response($group);
+    }
+
     public function getJsonUserList() {
-        $user = User::select('id', 'nickname')->where('status', '1')->orderBy('id', 'desc')->get();
+        $user = User::select('id', 'nickname', 'area_id', 'group_id')->where('status', '1')->orderBy('id', 'desc')->get();
         return response($user);
     }
 

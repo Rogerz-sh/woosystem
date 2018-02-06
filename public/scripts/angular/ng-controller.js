@@ -1973,6 +1973,8 @@
 
         $scope.search = {
             type: 'day',
+            area: '',
+            group: '',
             user: '',
             sdate: Date.translate('now-6').format(),
             edate: Date.translate('now').format()
@@ -2140,6 +2142,39 @@
             return list;
         }
 
+        var dsArea = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $http.get('/performance/json-area-list').success(function(res) {
+                        //res.unshift({id: '', a_name: '全国'});
+                        options.success(res);
+                    });
+                }
+            }
+        });
+
+        var dsGroup = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $http.get('/performance/json-group-list').success(function(res) {
+                        //res.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
+                        options.success(res);
+                    });
+                }
+            }
+        });
+
+        var dsUser = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $http.get('/performance/json-user-list').success(function(res) {
+                        //res.unshift({id: '', nickname: '全体成员', area_id: 0, group_id: 0});
+                        options.success(res);
+                    });
+                }
+            }
+        });
+
         $scope.config = {
             sdate: {
                 culture: 'zh-CN',
@@ -2153,21 +2188,56 @@
                 min: '2017-01-01',
                 value: $scope.search.edate
             },
+            area: {
+                dataSource: dsArea,
+                dataTextField: 'a_name',
+                dataValueField: 'id',
+                optionLabel: '全部区域',
+                change: function () {
+                    var area_id = ~~this.value();
+                    $scope.search.group = '';
+                    $scope.search.user = '';
+                    dsGroup.filter({
+                        logic: 'or',
+                        filters: [
+                            {field: 'area_id', operator: 'eq', value: area_id},
+                            {field: 'area_id', operator: 'eq', value: 0},
+                        ]
+                    });
+                    dsUser.filter({
+                        logic: 'or',
+                        filters: [
+                            {field: 'area_id', operator: 'eq', value: area_id},
+                            {field: 'area_id', operator: 'eq', value: 0},
+                        ]
+                    });
+                    initChartData($scope.search);
+                }
+            },
+            group: {
+                dataSource: dsGroup,
+                dataTextField: 'g_name',
+                dataValueField: 'id',
+                optionLabel: '全部项目组',
+                template: '#:g_name##:area_name ? " [" + area_name + "]" : ""#',
+                change: function () {
+                    var group_id = ~~this.value();
+                    $scope.search.user = '';
+                    dsUser.filter({
+                        logic: 'or',
+                        filters: [
+                            {field: 'group_id', operator: 'eq', value: group_id},
+                            {field: 'group_id', operator: 'eq', value: 0},
+                        ]
+                    });
+                    initChartData($scope.search);
+                }
+            },
             user: {
-                dataSource: {
-                    transport: {
-                        read: function (options) {
-                            $http.get('/performance/json-user-list').success(function(res) {
-                                res.unshift({id: '-2', nickname: '项目二部'});
-                                res.unshift({id: '-1', nickname: '项目一部'});
-                                res.unshift({id: '', nickname: '全体成员'});
-                                options.success(res);
-                            });
-                        }
-                    }
-                },
+                dataSource: dsUser,
                 dataTextField: 'nickname',
                 dataValueField: 'id',
+                optionLabel: '全体成员',
                 change: function () {
                     initChartData($scope.search);
                 }

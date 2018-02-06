@@ -15,8 +15,9 @@
                 <div class="pull-left margin-left-10">
                     <button class="btn btn-primary" ng-click="customSearch()"><i class="fa fa-search"></i> 查询</button>
                 </div>
-                <div class="pull-left margin-left-20 form-control-static">顾问：</div>
-                <div class="pull-left margin-left-10"><select kendo-drop-down-list k-options="config.user" ng-model="search.user"></select></div>
+                <div class="pull-left margin-left-20"><select kendo-drop-down-list k-options="config.area" ng-model="search.area"></select></div>
+                <div class="pull-left margin-left-20"><select kendo-drop-down-list k-options="config.group" ng-model="search.group"></select></div>
+                <div class="pull-left margin-left-20"><select kendo-drop-down-list k-options="config.user" ng-model="search.user"></select></div>
                 <div class="pull-right margin-right-10">
                     <div class="btn-group btn-group-sm margin-top-5">
                         <button class="btn btn-default" ng-click="quickSearch('本周')">本周</button>
