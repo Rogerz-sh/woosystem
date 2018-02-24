@@ -29,7 +29,7 @@ class CandidateController extends BaseController {
     }
 
     public function getJsonListData() {
-        $candidate = Candidate::orderBy('created_at', 'desc')->limit(1000)->get();
+        $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name from person order by created_at desc limit 1000');
         return response($candidate);
     }
 

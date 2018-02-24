@@ -14,12 +14,12 @@ $(function () {
             filter: {field: 'deleted', operator: 'neq', value: true}
         },
         columns: [
-            {field: 'id', title: 'ID'},
+            //{field: 'id', title: 'ID'},
             {field: 'name', title: '企业名称'},
-            {field: 'area', title: '所在地区', template: '#:area.split("-")[1]#'},
-            {field: 'industry', title: '所属行业'},
             {field: 'contact', title: '联系人'},
             {field: 'tel', title: '联系电话'},
+            {field: 'area', title: '所在地区', template: '#:area.split("-")[1]#'},
+            {field: 'industry', title: '所属行业'},
             {title: '操作', template: '<a href="\\#/company/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
             '<a href="\\#/company/detail/#:id#" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
             '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}

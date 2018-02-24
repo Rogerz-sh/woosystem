@@ -20,7 +20,8 @@ $(function () {
             {field: 'company', title: '所在公司'},
             {field: 'source', title: '简历来源'},
             {field: 'tel', title: '电话'},
-            {field: 'updated_at', title: '更新时间', template: getDate, filterable: false, width: 100},
+            {field: 'user_name', title: '录入人'},
+            {field: 'created_at', title: '录入时间', template: getDate, filterable: false, width: 150},
             {title: '操作', template: '<a href="\\#/candidate/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
             '<a href="\\#/candidate/detail/#:id#" target="_blank" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
             '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140, filterable: false}
@@ -48,7 +49,7 @@ $(function () {
     }
 
     function getDate(item) {
-        return new Date(item.updated_at.replace(/-/g, '/')).format();
+        return new Date(item.updated_at.replace(/-/g, '/')).format('yyyy-mm-dd hh:MM');
     }
 
     function getType(item) {

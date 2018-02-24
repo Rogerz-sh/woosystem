@@ -702,7 +702,7 @@
                     {
                         field: 'job_name',
                         title: '职位名称',
-                        template: '#:job_name# <a ng-click="viewJob(#:job_id#)"><i class="fa fa-search pointer"></i></a>',
+                        template: getJobName,
                         sortable: false,
                         filterable: {
                             cell: {
@@ -711,23 +711,23 @@
                         }
                     },
                     {field: 'company_name', title: '客户名称', template: '#:company_name# <a ng-click="viewCompany(#:company_id#)"><i class="fa fa-search pointer"></i></a>', sortable: false},
-                    {field: 'last_report', title: '报告编号', template: getReportNum},
-                    {field: 'user_names', title: '顾问', sortable: false},
+                    {field: 'last_report', title: '报告编号', template: getReportNum, width: 120},
+                    {field: 'user_names', title: '操作顾问', sortable: false},
                     {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person_count')},
                     {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report_count')},
                     {field: 'view_count', title: '面试', filterable: false, template: getCountColor('view_count')},
                     {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer_count')},
-                    {field: 'type', title: '重要程度', template: getType, sortable: {
-                        compare: function (a, b) {
-                            var type = {'三级': 1, '二级': 2, '一级': 3};
-                            return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
-                        }
-                    }, filterable: {multi:true}},
-                    {field: 'status', title: '状态', template: getStatus},
+                    //{field: 'type', title: '重要程度', template: getType, sortable: {
+                    //    compare: function (a, b) {
+                    //        var type = {'三级': 1, '二级': 2, '一级': 3};
+                    //        return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
+                    //    }
+                    //}, filterable: {multi:true}},
+                    //{field: 'status', title: '状态', template: getStatus},
                     {
                         title: '操作',
                         template: '<a href="\\#/hunt/select/#:id#" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-pencil"></i></a>',
-                        width: 140,
+                        width: 80,
                         sortable: false,
                         filterable: {multi:true}
                     }
@@ -831,6 +831,12 @@
                 });
             })
         };
+
+        function getJobName(item) {
+            var types = {'三级': '<i class="fa fa-exclamation-circle dark-gray" title="重要程度：三级"></i>', '二级': '<i class="fa fa-exclamation-circle yellow" title="重要程度：二级"></i>', '一级': '<i class="fa fa-exclamation-circle red" title="重要程度：一级"></i>'},
+                status = {'已停止': '<i class="fa fa-times-circle dark-gray" title="状态：已停止"></i>', '已暂停': '<i class="fa fa-minus-circle yellow" title="状态：已暂停"></i>', '进行中': '<i class="fa fa-check-circle green" title="状态：进行中"></i>'};
+            return '{2} {3} {1} <a ng-click="viewJob({0})"><i class="fa fa-search pointer"></i></a>'.format(item.job_id, item.job_name, types[item.type], status[item.status]);
+        }
 
         function getName(item) {
             return '<span class="person-{0}">{1} <small class="dark-gray">{2}</small> <a ng-click="viewPerson({3})"><i class="fa fa-search pointer"></i></a> <a ng-click="editPerson({3})"><i class="fa fa-pencil pointer"></i></a></span>'.format(item.type, item.name, item.sex=="男"?"先生":"女士", item.person_id);

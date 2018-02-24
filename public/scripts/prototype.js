@@ -104,10 +104,13 @@
 
   Date.format = function (date, str) {
     if (typeof date === 'string') date = date.replace(/-/g, '/');
-    var format = str || 'yyyy-mm-dd', date = new Date(date), year = '' + date.getFullYear(), month = '0' + (date.getMonth() + 1), day = '0' + date.getDate();
+    var format = str || 'yyyy-mm-dd', date = new Date(date), year = '' + date.getFullYear(), month = '0' + (date.getMonth() + 1), day = '0' + date.getDate(), hour = '0' + date.getHours(), minute = '0' + date.getMinutes(), second = '0' + date.getSeconds();
     if (format.match(/(y+)/g)) format = format.replace(RegExp.$1, year.substr(0 - RegExp.$1.length));
     if (format.match(/(m+)/g)) format = format.replace(RegExp.$1, month.substr(0 - RegExp.$1.length));
     if (format.match(/(d+)/g)) format = format.replace(RegExp.$1, day.substr(0 - RegExp.$1.length));
+    if (format.match(/(h+)/g)) format = format.replace(RegExp.$1, hour.substr(0 - RegExp.$1.length));
+    if (format.match(/(M+)/g)) format = format.replace(RegExp.$1, minute.substr(0 - RegExp.$1.length));
+    if (format.match(/(s+)/g)) format = format.replace(RegExp.$1, second.substr(0 - RegExp.$1.length));
     return format;
   }
 
