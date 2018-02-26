@@ -136,14 +136,53 @@ class TeamController extends BaseController {
     }
 
     //用户管理：修改所属项目组或状态
+    public function postNewUser() {
+        $id = request()->input('id');
+        $name = request()->input('name');
+        $nickname = request()->input('nickname');
+        $password = request()->input('password');
+        $email = request()->input('email');
+        $job = request()->input('job');
+        $date = request()->input('date');
+        $group_id = request()->input('group_id');
+        $group_name = request()->input('group_name');
+        $area_id = request()->input('area_id');
+        $area_name = request()->input('area_name');
+        $user = User::where('name', $name)->orWhere('email', $email)->count();
+
+        if ($user > 0) {
+            return response(-1);
+        } else {
+            $user = new User();
+            $user->name = $name;
+            $user->nickname = $nickname;
+            $user->password = md5($password);
+            $user->email = $email;
+            $user->job = $job;
+            $user->date = $date;
+            $user->group_id = $group_id;
+            $user->group_name = $group_name;
+            $user->area_id = $area_id;
+            $user->area_name = $area_name;
+            $user->save();
+            return response($user->id);
+        }
+    }
+
     public function postEditUser() {
         $id = request()->input('id');
+        $nickname = request()->input('nickname');
+        $job = request()->input('job');
+        $date = request()->input('date');
         $group_id = request()->input('group_id');
         $group_name = request()->input('group_name');
         $area_id = request()->input('area_id');
         $area_name = request()->input('area_name');
         $user = User::find($id);
         if ($user) {
+            $user->nickname = $nickname;
+            $user->job = $job;
+            $user->date = $date;
             $user->group_id = $group_id;
             $user->group_name = $group_name;
             $user->area_id = $area_id;

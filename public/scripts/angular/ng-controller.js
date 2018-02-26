@@ -3103,21 +3103,39 @@
         $scope.user = {
             id: '',
             name: '',
+            nickname: '',
+            job: '',
+            date: '',
             group_id: '',
             group_name: '',
             area_id: '',
             area_name: ''
         }
 
+        $scope.searchkey = '';
+
         $scope.config = {
             grid: {
                 dataSource: ds,
+                toolbar: [
+                    {
+                        template: '<div class="col-xs-3 pull-right no-padding-right">\
+                                <div class="input-group">\
+                                    <input type="text" ng-model="searchkey" class="form-control" placeholder="输入用户名称搜索"  ng-keyup="searchUser($event)">\
+                                    <span class="input-group-btn" ng-click="searchUser()">\
+                                        <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>\
+                                    </span>\
+                                </div></div>'
+                    }
+                ],
                 columns: [
-                    {field: 'id', title: 'ID'},
+                    //{field: 'id', title: 'ID'},
                     {field: 'name', title: '账号'},
                     {field: 'nickname', title: '昵称'},
+                    {field: 'job', title: '职位'},
                     {field: 'group_name', title: '所属项目组'},
                     {field: 'area_name', title: '所属区域'},
+                    {field: 'date', title: '入职日期', template: '#:date ? new Date(date).format() : ""#'},
                     {field: 'status', title: '状态', template: getStatus},
                     {field: 'created_at', title: '创建时间'},
                     {title: '操作', template: getButtons, width: 140}
@@ -3146,6 +3164,11 @@
                     $scope.user.area_name = item.area_name;
                     $scope.$apply();
                 },
+            },
+            date: {
+                culture: 'zh-CN',
+                max: new Date(),
+                format: 'yyyy-MM-dd'
             }
         }
 
@@ -3168,10 +3191,49 @@
             }
         }
 
+        $scope.searchUser = function (e) {
+            if (e) {
+                var keyCode = e.keyCode || e.which;
+                if (keyCode == 13) {
+                    filterUser($scope.searchkey);
+                }
+            } else {
+                filterUser($scope.searchkey);
+            }
+        }
+
+        function filterUser(key) {
+            if (key) {
+                ds.filter({field: 'name', operator: 'contains', value: $scope.searchkey});
+            } else {
+                ds.filter([]);
+            }
+        }
+
+        $scope.addUser = function () {
+            $scope.user = {
+                id: '',
+                name: '',
+                nickname: '',
+                job: '',
+                date: null,
+                password: '',
+                email: '',
+                group_id: '',
+                group_name: '',
+                area_id: '',
+                area_name: ''
+            }
+            $scope.win2.center().open();
+        }
+
         $scope.editUser = function (id) {
             var item = ds.get(id);
             $scope.user.id = item.id;
             $scope.user.name = item.name;
+            $scope.user.nickname = item.nickname;
+            $scope.user.job = item.job;
+            $scope.user.date = item.date;
             $scope.user.group_id = item.group_id;
             $scope.user.group_name = item.group_name;
             $scope.user.area_id = item.area_id;
@@ -3196,7 +3258,7 @@
 
         $scope.saveUser = function () {
             if ($scope.user.id) {
-                $http.post('/team/edit-user', {id: $scope.user.id, group_id: $scope.user.group_id, group_name: $scope.user.group_name, area_id: $scope.user.area_id, area_name: $scope.user.area_name}).success(function (res) {
+                $http.post('/team/edit-user', $scope.user).success(function (res) {
                     if (res >= 1) {
                         $.$modal.alert('保存成功');
                         $scope.win1.close();
@@ -3209,6 +3271,21 @@
                 $.$modal.alert('保存失败');
             }
         }
+
+        $scope.saveNewUser = function () {
+            $http.post('/team/new-user', $scope.user).success(function (res) {
+                if (res >= 1) {
+                    $.$modal.alert('保存成功');
+                    $scope.win2.close();
+                    ds.read();
+                } else if (res == -1) {
+                    $.$modal.alert('用户名称或邮箱重复');
+                } else {
+                    $.$modal.alert('保存失败');
+                }
+            });
+        }
+
     }]);
 
 

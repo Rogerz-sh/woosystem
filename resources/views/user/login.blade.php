@@ -33,8 +33,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <span class="font-sm"><a href="/user/forget">忘记密码？</a></span>
-                                    <span class="font-sm float-right"><a href="/user/register">快速注册</a></span>
+                                    <span class="font-sm"><a class="gray" disabled>忘记密码？</a></span>
+                                    <span class="font-sm float-right"><a class="gray" disabled>快速注册</a></span>
                                 </div>
                                 <div class="form-group">
                                     <button class="btn col-xs-12 bg-orange white" id="submit">登录</button>
