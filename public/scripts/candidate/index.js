@@ -2,6 +2,50 @@
  * Created by roger on 15/12/8.
  */
 $(function () {
+
+    //search panel
+    var search_options = {
+        source: ["猎聘网", "智联卓聘", "智联招聘", "前程无忧", "LinkedIn", "若邻网", "其他网站", "人脉推荐"],
+        degree: ["高中", "大专", "本科", "研究生", "硕士", "博士", "博士后"]
+    };
+
+    $('#sex').kendoDropDownList({
+        dataSource: ['男', '女'],
+        optionLabel: '全部'
+    });
+
+    $('#source').kendoDropDownList({
+        dataSource: search_options.source,
+        optionLabel: '全部'
+    });
+
+    $('#degree').kendoDropDownList({
+        dataSource: search_options.degree,
+        optionLabel: '全部'
+    });
+
+    $('#search').click(function () {
+        var searchs = {
+            'name': $('#name').val().trim(),
+            'sage': ~~$('#age_begin').val().trim(),
+            'eage': ~~$('#age_end').val().trim(),
+            'sex': $('#sex').val(),
+            'source': $('#source').val(),
+            'degree': $('#degree').val(),
+            'job': $('#job').val(),
+            'company': $('#company').val(),
+            'tel': $('#tel').val()
+        }, filter = {};
+        for (var n in searchs) {
+            if (searchs[n]) filter[n] = searchs[n];
+        }
+        $.$ajax.get('/candidate/json-list-data', {filter: filter}, function (res) {
+            console.log(res[1]);
+            $('#grid').data('kendoGrid').dataSource.data(res[0]);
+        })
+    });
+
+    //grid
     $('#grid').kendoGrid({
         dataSource: {
             data: [],
@@ -26,7 +70,7 @@ $(function () {
             '<a href="\\#/candidate/detail/#:id#" target="_blank" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
             '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140, filterable: false}
         ],
-        filterable: {mode: 'row'},
+        //filterable: {mode: 'row'},
         scrollable: false,
         pageable: true,
 
@@ -56,7 +100,8 @@ $(function () {
         return item.type === 'basic' ? '常规简历' : '附件简历';
     }
 
-    $.$ajax.get('/candidate/json-list-data', function (res) {
-        $('#grid').data('kendoGrid').dataSource.data(res);
+    $.$ajax.get('/candidate/json-list-data', {filter: {}}, function (res, filter) {
+        console.log(res[1]);
+        $('#grid').data('kendoGrid').dataSource.data(res[0]);
     })
 });

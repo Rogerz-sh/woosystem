@@ -18,15 +18,19 @@ class AccountController extends BaseController {
         $name = request()->input('name');
         $password = request()->input('password');
 
-        $user = User::where('name', $name)->where('password', md5($password))->where('status', 1)->first();
+        $user = User::where('name', $name)->where('password', md5($password))->first();
 
         if ($user) {
-            Session::set('id', $user->id);
-            Session::set('name', $user->name);
-            Session::set('nickname', $user->nickname);
-            Session::set('power', $user->power);
 
-            return response(['status'=>1, 'err_code'=>'-1', 'err_msg'=>'']);
+            if ($user->status == 1) {
+                Session::set('id', $user->id);
+                Session::set('name', $user->name);
+                Session::set('nickname', $user->nickname);
+                Session::set('power', $user->power);
+                return response(['status' => 1, 'err_code' => '-1', 'err_msg' => '']);
+            } else {
+                return response(['status'=>0, 'err_code'=>'forbid', 'err_msg'=>'账户已被禁用']);
+            }
         } else {
             return response(['status'=>0, 'err_code'=>'not found', 'err_msg'=>'用户名或密码不正确']);
         }

@@ -29,8 +29,41 @@ class CandidateController extends BaseController {
     }
 
     public function getJsonListData() {
-        $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name from person order by created_at desc limit 1000');
-        return response($candidate);
+        $filter = request()->input('filter');
+        if ($filter) {
+            $whereStr = ' where 1 = 1';
+            if (isset($filter['name'])) {
+                $whereStr = $whereStr.' and name like "%'.$filter['name'].'%"';
+            }
+            if (isset($filter['sage'])) {
+                $whereStr = $whereStr.' and age >= '.$filter['sage'].'';
+            }
+            if (isset($filter['eage'])) {
+                $whereStr = $whereStr.' and age <= '.$filter['eage'].'';
+            }
+            if (isset($filter['sex'])) {
+                $whereStr = $whereStr.' and sex = "'.$filter['sex'].'"';
+            }
+            if (isset($filter['source'])) {
+                $whereStr = $whereStr.' and source = "'.$filter['source'].'"';
+            }
+            if (isset($filter['degree'])) {
+                $whereStr = $whereStr.' and degree = "'.$filter['degree'].'"';
+            }
+            if (isset($filter['job'])) {
+                $whereStr = $whereStr.' and job like "%'.$filter['job'].'%"';
+            }
+            if (isset($filter['company'])) {
+                $whereStr = $whereStr.' and company like "%'.$filter['company'].'%"';
+            }
+            if (isset($filter['tel'])) {
+                $whereStr = $whereStr.' and tel like "%'.$filter['tel'].'%"';
+            }
+            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name from person'.$whereStr.' order by created_at desc limit 1000');
+        } else {
+            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name from person order by created_at desc limit 1000');
+        }
+        return response([$candidate, $filter]);
     }
 
     public function getCreate() {

@@ -2031,7 +2031,8 @@ input[type=radio]:checked + .text:before { background: #173E75; background-clip:
 .dialog-container { position: fixed; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: block; z-index: 99; top: 0; left: 0; }
 .dialog-container .dialog-content { position: absolute; top: 50%; left: 50%; -webkit-transform: translate(-50%, -50%); -moz-transform: translate(-50%, -50%); -ms-transform: translate(-50%, -50%); -o-transform: translate(-50%, -50%); transform: translate(-50%, -50%); background: #fff; }
 
-.flex {display: flex; flex-direction: column;}
+.flex {display: flex !important;}
+.flex.flex-col {flex-direction: column;}
 .flex.flex-row {flex-direction: row;}
 .flex-1 {flex: 1;}
 .flex-2 {flex: 2;}

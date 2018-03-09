@@ -32,10 +32,10 @@
                     {url: '/team/recent', label: '团队管理', power: 9, items: [
                         {url: '/team/recent', label: '团队近况', power: 9},
                     ]},
-                    {url: '/team/users', label: '用户管理', power: 9, items: [
-                        {url: '/team/users', label: '用户管理', power: 9},
-                        {url: '/team/groups', label: '项目组管理', power: 9},
-                        {url: '/team/areas', label: '区域管理', power: 9},
+                    {url: '/team/users', label: '用户管理', power: 2, items: [
+                        {url: '/team/users', label: '用户管理', power: 2},
+                        {url: '/team/groups', label: '项目组管理', power: 2},
+                        {url: '/team/areas', label: '区域管理', power: 2},
                     ]}
                 ];
                 $scope.changeSubNav = function (idx) {
