@@ -138,4 +138,26 @@
 
         $.$ajax(option);
     }
+
+    $.queryString = {
+        parse: function (searchStr) {
+            var query = {};
+            if (searchStr.indexOf('?') >= 0) {
+                searchStr = searchStr.substr(searchStr.indexOf('?') + 1);
+            }
+            var arr = searchStr.split('&');
+            arr.forEach(function (q) {
+                var p = q.split('=');
+                query[p[0]] = p[1] === undefined ? '' : p[1];
+            });
+            return query;
+        },
+        stringify: function (paramsObj) {
+            var query = []
+            for (var n in paramsObj) {
+                query.push(n + '=' + paramsObj[n].toString());
+            }
+            return query.join('&');
+        }
+    }
 })(jQuery)

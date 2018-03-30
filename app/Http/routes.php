@@ -42,6 +42,8 @@ Route::group(['middleware' => 'login'], function () {
 
     Route::controller('performance', 'PerformanceController');
 
+    Route::controller('result', 'ResultController');
+
     Route::controller('team', 'TeamController');
 
 });

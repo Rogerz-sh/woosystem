@@ -1,0 +1,106 @@
+<div class="wrap bg-white padding-15 margin-top-20 margin-bottom-50 bordered border-color-orange">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li><a href="#/result/list">业绩管理</a></li>
+                <li>修改业绩</li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <form class="form form-horizontal" onsubmit="return false;">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="col-xs-2 control-label"><span class="red">*</span>操作岗位：</label>
+                            <div class="col-xs-10">
+                                <select class="form-control" id="job_id" style="width: 100%;" ></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><span class="red">*</span>款项名称：</label>
+                            <div class="col-xs-8">
+                                <input type="text" class="form-control" id="name" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><span class="red">*</span>打款日期：</label>
+                            <div class="col-xs-8">
+                                <input type="text" class="form-control" id="date" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><span class="red">*</span>打款金额：</label>
+                            <div class="col-xs-8">
+                                <div class="input-group"><input type="text" class="full-width _int" id="amount" /><span class="input-group-addon">元</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label"><span class="red">*</span>业绩金额：</label>
+                            <div class="col-xs-8">
+                                <div class="input-group"><input type="text" class="full-width _int" id="result" /><span class="input-group-addon">元</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="col-xs-2 control-label">备注信息：</label>
+                            <div class="col-xs-10">
+                                <textarea class="form-control" id="desc" rows="5" style="resize:none;" ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row margin-top-10 border-top border-color-dark-orange">
+            <div class="col-xs-12">
+                <table class="table table-striped" id="result_user">
+                    <thead>
+                        <tr>
+                            <th>分配环节</th>
+                            <th>操作顾问</th>
+                            <th>顾问所属项目组</th>
+                            <th>顾问所属区域</th>
+                            <th>分配比例 (<span id="totalPercent" class="green">100%</span>)</th>
+                            <th>业绩配额</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="form-control-label">客户线索</span></td>
+                            <td><select style="width:240px;"></select></td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td><div class="input-group" style="width:100px;"><input type="text" class="form-control" /><span class="input-group-addon">%</span></div></td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td><span class="form-control-label">客户线索</span></td>
+                            <td><select style="width:240px;"></select></td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td><div class="input-group" style="width:100px;"><input type="text" class="form-control" /><span class="input-group-addon">%</span></div></td>
+                            <td>0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row margin-top-10 border-top border-color-dark-orange">
+            <div class="col-xs-12 padding-top-20">
+                <button class="btn btn-primary col-xs-2 col-xs-offset-4 margin-right-20" id="save">保存业绩</button>
+                <a href="#/result/list" class="btn btn-default col-xs-2" id="back">返回列表</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/scripts/result/edit.js"></script>

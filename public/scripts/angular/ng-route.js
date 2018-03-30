@@ -102,6 +102,18 @@
                 templateUrl: '/scripts/angular/templates/performance-chart.html',
                 controller: 'performanceChartController'
             })
+            .when('/result/list', {
+                templateUrl: '/scripts/angular/templates/result-list.html',
+                controller: 'routeTempController'
+            })
+            .when('/result/create', {
+                templateUrl: '/scripts/angular/templates/result-create.html',
+                controller: 'routeTempController'
+            })
+            .when('/result/edit', {
+                templateUrl: '/scripts/angular/templates/result-edit.html',
+                controller: 'routeTempController'
+            })
             .when('/target/list', {
                 templateUrl: '/scripts/angular/templates/target-list.html',
                 controller: 'targetListController'
