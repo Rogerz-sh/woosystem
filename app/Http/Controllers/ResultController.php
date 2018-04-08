@@ -17,7 +17,11 @@ use Illuminate\Support\Facades\Session;
 class ResultController extends BaseController {
 
     public function getJsonResultList() {
-        $result = Result::orderBy('date', 'desc')->get();
+        $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, comment,
+        (select name from users where users.id = results.operator) as operator,
+        (select a_name from areas where areas.id = results.area) as area_name,
+        (select name from users where users.id = results.created_by) as creator'))
+            ->orderBy('date', 'desc')->get();
         return response($result);
     }
 
@@ -35,7 +39,9 @@ class ResultController extends BaseController {
         $result_id = request()->input('result_id');
         $result = Result::where('id', $result_id)->first();
         $users = ResultUser::where('result_id', $result_id)->get();
+        $creator = User::where('id', $result->created_by)->first();
         $result->users = $users;
+        $result->creator = $creator;
         return response($result);
     }
 

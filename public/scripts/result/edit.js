@@ -35,24 +35,34 @@ $(function () {
             spinners: false,
             min: 0,
             format: 'n2',
-            value: res.amount
-        });
-
-        $('#result').kendoNumericTextBox({
-            spinners: false,
-            min: 0,
-            format: 'n2',
-            value: res.result,
+            value: res.amount,
             change: function () {
                 var result = +this.value();
                 $('#result_user tbody').find('tr').each(function (i, tr) {
                     showUserResult($(tr));
-                })
+                });
+                $('#result').data('kendoNumericTextBox').value(result);
             }
         });
 
+        $('#area').kendoDropDownList({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: '/team/json-area-list',
+                        dataType: 'json'
+                    }
+                }
+            },
+            dataTextField: 'a_name',
+            dataValueField: 'id',
+            optionLabel: '请选择申请公司',
+            value: res.area
+        });
+
         $('#name').val(res.name);
-        $('#desc').val(res.desc);
+        $('#comment').val(res.comment);
+        $('#created_by').text(res.creator.name);
 
         var initDDL = false;
         var ddl = $('#job_id').kendoDropDownList({
@@ -87,13 +97,24 @@ $(function () {
 
         ddl.search(res.job_name);
 
-        var userData = res.users;
+        var userData = res.users, operator = res.operator;
         $.$ajax({
             url: '/result/json-user-list',
             type: 'GET',
             dataType: 'json',
             success: function (res) {
-                var rows = [], result = +$('#result').data('kendoNumericTextBox').value();
+                var rows = [], result = +$('#amount').data('kendoNumericTextBox').value();
+
+                $('#operator').kendoDropDownList({
+                    dataSource: res,
+                    dataTextField: 'user_name',
+                    dataValueField: 'user_id',
+                    template: '<span style="font-size:12px;">#:user_name# -- #:group_name# -- #:area_name#</span>',
+                    optionLabel: '请选择操作顾问',
+                    filter: 'contains',
+                    value: operator
+                });
+
                 typeList.forEach(function (v) {
                     rows.push('<tr data-type-id="{0}">\
                             <td><span class="form-control-label">{1}</span></td>\
@@ -142,7 +163,7 @@ $(function () {
     }
 
     function showUserResult($tr) {
-        var percent = +$tr.find('input._percent').val(), result = +$('#result').data('kendoNumericTextBox').value(), ur = result.times(percent).divs(100);
+        var percent = +$tr.find('input._percent').val(), result = +$('#amount').data('kendoNumericTextBox').value(), ur = result.times(percent).divs(100);
         $tr.find('span._result').text(kendo.toString(ur, 'n2'));
     }
 
@@ -169,8 +190,10 @@ $(function () {
             job_name = item.job_name,
             company_name = item.company_name,
             amount = +$('#amount').val(),
-            result = +$('#result').val(),
-            desc = $('#desc').val();
+            result = +$('#amount').val(),
+            comment = $('#comment').val(),
+            operator = $('#operator').val(),
+            area = $('#area').val();
         if (!name || !date || !job_id || !amount || !result) invalid = true;
 
         var users = [], totalPercent = 0, totalResult = 0;
@@ -199,15 +222,17 @@ $(function () {
             company_name: company_name,
             amount: amount,
             result: result,
-            desc: desc
+            operator: operator,
+            area: area,
+            comment: comment
         }
 
         if (invalid) {
             $.$modal.alert('数据填写不全，请检查后重新提交');
             return;
         }
-        if (result > amount) {
-            $.$modal.alert('业绩金额不能大于打款金额');
+        if (totalResult > amount) {
+            $.$modal.alert('业绩总配额不能大于打款金额');
             return;
         }
         if (totalPercent != 100) {

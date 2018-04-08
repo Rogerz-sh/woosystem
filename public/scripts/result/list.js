@@ -27,12 +27,14 @@ $(function () {
             pageSize: 10
         },
         columns: [
-            {field: 'company_name', title: '客户名称'},
-            {field: 'job_name', title: '操作岗位'},
+            {field: 'company_name', title: '打款客户'},
+            {field: 'job_name', title: '上岗职位'},
             {field: 'name', title: '款项名称'},
             {field: 'amount', title: '打款金额'},
             {field: 'date', title: '打款日期'},
-            {field: 'result', title: '业绩总额'},
+            {field: 'operator', title: '操作顾问'},
+            {field: 'area_name', title: '申请公司'},
+            {field: 'creator', title: '申请用户'},
             {
                 title: '操作',
                 template: getButtons,
@@ -95,7 +97,7 @@ $(function () {
                 success: function(res) {
                     if (res) {
                         $.$modal.alert('删除成功');
-                        grid.dataSource.pushDestroy({id: id});
+                        grid.dataSource.read();
                     } else {
                         $.$modal.alert('删除失败');
                     }

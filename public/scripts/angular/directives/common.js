@@ -15,30 +15,30 @@
                 $scope.activeIndex = 0;
                 $scope.session = model.getUserSession();
                 $scope.menus = [
-                    {url: '/', label: '首页', power: 1},
-                    {url: '#', label: '数据管理', power: 1, items: [
-                        {url: '/company/list', label: '企业库', power: 9},
-                        {url: '/job/list', label: '职位库', power: 9},
-                        {url: '/candidate/list', label: '简历库', power: 1},
+                    {url: '/', label: '首页', power: [1,2,3,9]},
+                    {url: '#', label: '数据管理', power: [1,2,3,9], items: [
+                        {url: '/company/list', label: '企业库', power: [9]},
+                        {url: '/job/list', label: '职位库', power: [9]},
+                        {url: '/candidate/list', label: '简历库', power: [1,2,3,9]},
                     ]},
-                    {url: '/bd/list', label: '客户管理', power: 1},
-                    {url: '/hunt/list', label: '项目管理', power: 1},
-                    {url: '/performance/list', label: '绩效管理', power: 1, items: [
-                        {url: '/performance/list', label: '绩效管理', power: 1},
-                        {url: '/performance/charts', label: '绩效图表', power: 1},
-                        {url: '/target/list', label: '目标管理', power: 1},
-                        {url: '/target/daily-report', label: '日清表', power: 1},
+                    {url: '/bd/list', label: '客户管理', power: [1,2,3,9]},
+                    {url: '/hunt/list', label: '项目管理', power: [1,2,3,9]},
+                    {url: '/performance/list', label: '绩效管理', power: [1,2,3,9], items: [
+                        {url: '/performance/list', label: '绩效管理', power: [1,2,3,9]},
+                        {url: '/performance/charts', label: '绩效图表', power: [1,2,3,9]},
+                        {url: '/target/list', label: '目标管理', power: [1,2,3,9]},
+                        {url: '/target/daily-report', label: '日清表', power: [1,2,3,9]},
                     ]},
-                    {url: '/team/recent', label: '团队管理', power: 9, items: [
-                        {url: '/team/recent', label: '团队近况', power: 9},
+                    {url: '/team/recent', label: '团队管理', power: [9], items: [
+                        {url: '/team/recent', label: '团队近况', power: [9]},
                     ]},
-                    {url: '/result/list', label: '业绩管理', power: 9, items: [
-                        {url: '/result/list', label: '业绩列表', power: 9},
+                    {url: '/result/list', label: '业绩管理', power: [3,9], items: [
+                        {url: '/result/list', label: '业绩列表', power: [3,9]},
                     ]},
-                    {url: '/team/users', label: '用户管理', power: 2, items: [
-                        {url: '/team/users', label: '用户管理', power: 2},
-                        {url: '/team/groups', label: '项目组管理', power: 2},
-                        {url: '/team/areas', label: '区域管理', power: 2},
+                    {url: '/team/users', label: '用户管理', power: [2,9], items: [
+                        {url: '/team/users', label: '用户管理', power: [2,9]},
+                        {url: '/team/groups', label: '项目组管理', power: [2,9]},
+                        {url: '/team/areas', label: '区域管理', power: [2,9]},
                     ]}
                 ];
                 $scope.changeSubNav = function (idx) {

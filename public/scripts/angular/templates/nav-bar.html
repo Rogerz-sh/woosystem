@@ -1,8 +1,8 @@
 <ul class="nav-list">
-    <li ng-repeat="menu in menus track by $index" ng-if="menu.power <= session.power" ng-class="{'active': activeIndex == $index}" ng-click="activeNavIndex($index)" ng-mouseenter="changeSubNav($index)" ng-mouseleave="changeSubNav(-1)">
+    <li ng-repeat="menu in menus track by $index" ng-if="menu.power.indexOf(session.power - 0) >= 0" ng-class="{'active': activeIndex == $index}" ng-click="activeNavIndex($index)" ng-mouseenter="changeSubNav($index)" ng-mouseleave="changeSubNav(-1)">
         <a href="#{{menu.url}}">{{menu.label}} <span class="caret" ng-if="menu.items.length > 0"></span></a>
         <ul class="sub-nav" ng-if="menu.items.length > 0" ng-show="$index == navIndex" ng-click="activeNavIndex($index)">
-            <li ng-repeat="item in menu.items" ng-if="item.power <= session.power"><a href="#{{item.url}}">{{item.label}}</a></li>
+            <li ng-repeat="item in menu.items" ng-if="item.power.indexOf(session.power - 0)"><a href="#{{item.url}}">{{item.label}}</a></li>
         </ul>
     </li>
 </ul>
