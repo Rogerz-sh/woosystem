@@ -114,6 +114,14 @@
                 templateUrl: '/scripts/angular/templates/result-edit.html',
                 controller: 'routeTempController'
             })
+            .when('/result/count', {
+                templateUrl: '/scripts/angular/templates/result-count.html',
+                controller: 'routeTempController'
+            })
+            .when('/result/user', {
+                templateUrl: '/scripts/angular/templates/result-user.html',
+                controller: 'routeTempController'
+            })
             .when('/target/list', {
                 templateUrl: '/scripts/angular/templates/target-list.html',
                 controller: 'targetListController'

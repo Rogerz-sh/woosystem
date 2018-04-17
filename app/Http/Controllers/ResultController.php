@@ -122,4 +122,19 @@ class ResultController extends BaseController {
         return response(1);
     }
 
+    public function getJsonResultUser() {
+        $user_id = Session::get('id');
+        $results = ResultUser::join('results', 'result_users.result_id', '=', 'results.id')
+            ->select(DB::raw('job_id, job_name, company_id, company_name, amount, name, results.date,
+                            (select name from users where users.id = results.operator) as operator,
+                            (select a_name from areas where areas.id = results.area) as area_name,
+                            sum(percent) as total_percent, sum(user_result) as total_result'))
+            ->where('user_id', $user_id)->groupBy('result_id')->get();
+//        $results = DB::raw('select job_id, job_name, company_id, company_name, amount, name, results.date,
+//                            (select name from users where users.id = results.operator) as operator,
+//                            (select a_name from areas where areas.id = results.area) as area_name,
+//                            sum(percent) as total_percent, sum(user_result) as total_result from result_users join results on result_users.result_id = results.id where user_id = '.$user_id.' group by result_id')->get();
+        return response($results);
+    }
+
 }

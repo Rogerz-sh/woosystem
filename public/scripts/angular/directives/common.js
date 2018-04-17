@@ -34,12 +34,14 @@
                     ]},
                     {url: '/result/list', label: '业绩管理', power: [3,9], items: [
                         {url: '/result/list', label: '业绩列表', power: [3,9]},
+                        //{url: '/result/count', label: '业绩统计', power: [3,9]},
                     ]},
                     {url: '/team/users', label: '用户管理', power: [2,9], items: [
                         {url: '/team/users', label: '用户管理', power: [2,9]},
                         {url: '/team/groups', label: '项目组管理', power: [2,9]},
                         {url: '/team/areas', label: '区域管理', power: [2,9]},
-                    ]}
+                    ]},
+                    {url: '/result/user', label: '我的业绩', power: [1,2,3,9]}
                 ];
                 $scope.changeSubNav = function (idx) {
                     $scope.navIndex = idx;

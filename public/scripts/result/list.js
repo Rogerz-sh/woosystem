@@ -13,7 +13,6 @@ $(function () {
                         type: 'GET',
                         dataType: 'json',
                         success: function (res) {
-                            console.log(res);
                             option.success(res);
                         }
                     });
@@ -31,7 +30,7 @@ $(function () {
             {field: 'job_name', title: '上岗职位'},
             {field: 'name', title: '款项名称'},
             {field: 'amount', title: '打款金额'},
-            {field: 'date', title: '打款日期'},
+            {field: 'date', title: '打款日期', template: '#:new Date(date).format()#'},
             {field: 'operator', title: '操作顾问'},
             {field: 'area_name', title: '申请公司'},
             {field: 'creator', title: '申请用户'},
