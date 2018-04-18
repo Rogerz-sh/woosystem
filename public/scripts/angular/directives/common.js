@@ -34,7 +34,7 @@
                     ]},
                     {url: '/result/list', label: '业绩管理', power: [3,9], items: [
                         {url: '/result/list', label: '业绩列表', power: [3,9]},
-                        //{url: '/result/count', label: '业绩统计', power: [3,9]},
+                        {url: '/result/count', label: '业绩统计', power: [3,9]},
                     ]},
                     {url: '/team/users', label: '用户管理', power: [2,9], items: [
                         {url: '/team/users', label: '用户管理', power: [2,9]},

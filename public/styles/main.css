@@ -1,4 +1,4 @@
-html, body {min-width: 1280px;}
+html, body {min-width: 1280px; font-size: 12px;}
 
 #user-menu { float: left; list-style: none; margin-top: 20px; }
 
@@ -21,7 +21,7 @@ html, body {min-width: 1280px;}
 .nav-list > li > a { color: #FFFFFF; text-decoration: none; }
 .nav-list > li:not(.active):hover:after { content: ""; width: 100%; height: 5px; position: absolute; top: 0; left: 0; display: block; z-index: 1; background: #FEF143; }
 
-.sub-nav { position: absolute; z-index: 11; list-style: none; margin: 0; left: 0; top: 40px; background: #F38E00; min-width: 110px; }
+.sub-nav { position: absolute; z-index: 11; list-style: none; margin: 0; left: 0; top: 37px; background: #F38E00; min-width: 101px; }
 .sub-nav li { padding: 10px 20px; text-align: center; }
 .sub-nav li:hover { background: #F38E00; }
 .sub-nav li > a { color: #FFFFFF; }

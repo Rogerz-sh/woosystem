@@ -129,11 +129,39 @@ class ResultController extends BaseController {
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
                             sum(percent) as total_percent, sum(user_result) as total_result'))
-            ->where('user_id', $user_id)->groupBy('result_id')->get();
+            ->where('user_id', $user_id)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
 //        $results = DB::raw('select job_id, job_name, company_id, company_name, amount, name, results.date,
 //                            (select name from users where users.id = results.operator) as operator,
 //                            (select a_name from areas where areas.id = results.area) as area_name,
 //                            sum(percent) as total_percent, sum(user_result) as total_result from result_users join results on result_users.result_id = results.id where user_id = '.$user_id.' group by result_id')->get();
+        return response($results);
+    }
+
+    public function getJsonResultSearch() {
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        $area = request()->input('area');
+        $group = request()->input('group');
+        $user = request()->input('user');
+        $results = ResultUser::join('results', 'result_users.result_id', '=', 'results.id')
+            ->join('users', 'result_users.user_id', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+            ->select(DB::raw('results.job_id, results.job_name, results.company_id, results.company_name, results.amount, results.name, results.date,
+                            (select name from users where users.id = results.operator) as operator,
+                            (select a_name from areas where areas.id = results.area) as area_name,
+                            sum(percent) as total_percent, sum(user_result) as total_result'))
+            ->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
+
+        if ($user) {
+            $results = $results->where('users.id', $user)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
+        } else if ($group) {
+            $results = $results->where('groups.id', $group)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
+        } else if ($area) {
+            $results = $results->where('areas.id', $area)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
+        } else {
+            $results = $results->groupBy('result_id')->orderBy('results.date', 'desc')->get();
+        }
         return response($results);
     }
 
