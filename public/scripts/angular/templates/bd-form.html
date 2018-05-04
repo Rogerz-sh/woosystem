@@ -47,16 +47,16 @@
             </div>
         </div>
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">状态</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 状态</label>
             <div class="col-xs-8">
-                <select kendo-drop-down-list ng-model="bd.status" class="size-full">
+                <select kendo-drop-down-list ng-model="bd.status" class="size-full" required>
                     <option value="">请选择状态...</option>
                     <option ng-repeat="item in data.status" value="{{item}}">{{item}}</option>
                 </select>
             </div>
         </div>
     </div>
-    <div class="form-group">
+    <div class="form-group hidden">
         <div class="col-xs-6 no-padding error-box">
             <label class="control-label col-xs-4">业务意向</label>
             <div class="col-xs-8">
@@ -68,9 +68,9 @@
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-2">备注</label>
+        <label class="control-label col-xs-2"><span class="red">*</span> 沟通记录</label>
         <div class="col-xs-10">
-            <textarea ng-model="bd.description" rows="6" class="form-control"></textarea>
+            <textarea ng-model="bd.description" rows="6" class="form-control" required></textarea>
         </div>
     </div>
     <div class="form-group">

@@ -50,6 +50,40 @@
                 </div>
             </div>
         </div>
+        <div class="row margin-top-20">
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-orange">
+                    <div class="panel-heading bg-orange white"><b>月度业绩排名TOP10</b></div>
+                    <ul class="list-group">
+                        <li ng-repeat="item in top10list.month track by $index" class="list-group-item {{['red','blue','dark-yellow'][$index]}}"> 第<b>{{$index + 1}}</b>名 <span class="margin-left-10">{{item.name}}</span> <small class="dark-gray margin-left-10">{{item.group}}</small> <span class="pull-right bold">{{item.result}}元</span> </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-orange">
+                    <div class="panel-heading bg-orange white"><b>季度业绩排名TOP10</b></div>
+                    <ul class="list-group">
+                        <li ng-repeat="item in top10list.season track by $index" class="list-group-item {{['red','blue','dark-yellow'][$index]}}"> 第<b>{{$index + 1}}</b>名 <span class="margin-left-10">{{item.name}}</span> <small class="dark-gray margin-left-10">{{item.group}}</small> <span class="pull-right bold">{{item.result}}元</span> </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-orange">
+                    <div class="panel-heading bg-orange white"><b>半年度业绩排名TOP10</b></div>
+                    <ul class="list-group">
+                        <li ng-repeat="item in top10list.halfyear track by $index" class="list-group-item {{['red','blue','dark-yellow'][$index]}}"> 第<b>{{$index + 1}}</b>名 <span class="margin-left-10">{{item.name}}</span> <small class="dark-gray margin-left-10">{{item.group}}</small> <span class="pull-right bold">{{item.result}}元</span> </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-orange">
+                    <div class="panel-heading bg-orange white"><b>年度业绩排名TOP10</b></div>
+                    <ul class="list-group">
+                        <li ng-repeat="item in top10list.fullyear track by $index" class="list-group-item {{['red','blue','dark-yellow'][$index]}}"> 第<b>{{$index + 1}}</b>名 <span class="margin-left-10">{{item.name}}</span> <small class="dark-gray margin-left-10">{{item.group}}</small> <span class="pull-right bold">{{item.result}}元</span> </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <script src="/scripts/result/count.js"></script>

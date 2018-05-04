@@ -165,4 +165,49 @@ class ResultController extends BaseController {
         return response($results);
     }
 
+    public function getJsonResultRank() {
+        $m_sdate = request()->input('m_sdate');
+        $m_edate = request()->input('m_edate');
+        $s_sdate = request()->input('s_sdate');
+        $s_edate = request()->input('s_edate');
+        $h_sdate = request()->input('h_sdate');
+        $h_edate = request()->input('h_edate');
+        $y_sdate = request()->input('y_sdate');
+        $y_edate = request()->input('y_edate');
+        /*
+        select sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname
+        from result_users join users on result_users.user_id = users.id
+        where result_users.date >= '2018-03-01 00:00:00'
+        and result_users.date <= '2018-03-31 23:59:59'
+        and result_users.deleted_at is null
+        group by user_id
+        order by total_result desc
+        */
+        $result_month = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+            ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+            ->where('result_users.date', '>=', $m_sdate)->where('result_users.date', '<=', $m_edate)
+            ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
+        $result_season = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+            ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+            ->where('result_users.date', '>=', $s_sdate)->where('result_users.date', '<=', $s_edate)
+            ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
+        $result_halfyear = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+            ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+            ->where('result_users.date', '>=', $h_sdate)->where('result_users.date', '<=', $h_edate)
+            ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
+        $result_fullyear = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+            ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+            ->where('result_users.date', '>=', $y_sdate)->where('result_users.date', '<=', $y_edate)
+            ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
+        return response(["month"=>$result_month, "season"=>$result_season, "halfyear"=>$result_halfyear, "fullyear"=>$result_fullyear]);
+    }
+
 }

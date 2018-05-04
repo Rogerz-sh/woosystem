@@ -437,6 +437,8 @@
     app.controller('bdListController', ['$scope', '$http', 'model', 'token', function ($scope, $http, model, token) {
         var session = model.getUserSession();
 
+        $scope.session = session;
+
         $scope.config = {
             grid: {
                 dataSource: {
@@ -458,14 +460,14 @@
                 filterable: {mode: 'row'},
                 columns: [
                     //{field: 'name', title: 'ID'},
-                    {field: 'company_name', title: '企业名称'},
-                    {field: 'user_name', title: '顾问'},
-                    {field: 'user_names', title: '合作顾问'},
+                    {field: 'source', title: '来源'},
+                    {field: 'company_name', title: '客户名称'},
                     {field: 'contact', title: '联系人'},
-                    {field: 'tel', title: '联系电话'},
-                    {field: 'source', title: '客户来源'},
-                    {field: 'date', title: '接入日期', template: getDate},
+                    {field: 'user_name', title: '开发顾问'},
+                    {field: 'user_names', title: '合作顾问'},
+                    {field: 'date', title: '联系日期', template: getDate},
                     {field: 'status', title: '状态'},
+                    {field: 'description', title: '沟通记录'},
                     {title: '操作', template: '<a href="\\#/bd/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
                     '<a href="\\#/bd/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
                     '<a data-id="#:id#" class="btn btn-danger btn-sm" ng-click="bdDelete(#:id#)"><i class="fa fa-trash-o"></i></a>', width: 140}
@@ -493,14 +495,14 @@
                 filterable: {mode: 'row'},
                 columns: [
                     //{field: 'name', title: 'ID'},
-                    {field: 'company_name', title: '企业名称'},
-                    {field: 'user_name', title: '顾问'},
-                    {field: 'user_names', title: '合作顾问'},
+                    {field: 'source', title: '来源'},
+                    {field: 'company_name', title: '客户名称'},
                     {field: 'contact', title: '联系人'},
-                    {field: 'tel', title: '联系电话'},
-                    {field: 'source', title: '客户来源'},
-                    {field: 'date', title: '接入日期', template: getDate},
+                    {field: 'user_name', title: '开发顾问'},
+                    {field: 'user_names', title: '合作顾问'},
+                    {field: 'date', title: '联系日期', template: getDate},
                     {field: 'status', title: '状态'},
+                    {field: 'description', title: '沟通记录'},
                     {title: '操作', template: '<a href="\\#/bd/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
                     '<a href="\\#/bd/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
                     '<a data-id="#:id#" class="btn btn-danger btn-sm" ng-click="bdDelete(#:id#)"><i class="fa fa-trash-o"></i></a>', width: 140}
@@ -3615,6 +3617,53 @@
                 if ($scope.user.picpath) $scope.pic_path = $scope.user.picpath;
             });
         })
+    }]);
+
+    //controller for results
+    app.controller('resultCountController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
+
+        function getTop10List(data) {
+            var list = [];
+            for (var i = 0; i < 10; i++) {
+                if (data[i]) {
+                    list.push({name: data[i].nickname, group: data[i].area_name + ' - ' + data[i].group_name, result: data[i].total_result});
+                } else {
+                    list.push({name: '无', group: '', result: 0});
+                }
+            }
+            return list;
+        }
+
+        $scope.top10list = {
+            month: getTop10List([]),
+            season: getTop10List([]),
+            halfyear: getTop10List([]),
+            fullyear: getTop10List([])
+        };
+
+        function getTop10Rank() {
+            var d = new Date(), year = d.getFullYear(), month = d.getMonth(), day = d.getDate(), season = Math.floor((month + 1) / 3) * 3, half = Math.floor((month + 1) / 6) * 6;
+            var dates = {
+                m_sdate: new Date(year, month, 1).format('yyyy-mm-dd 00:00:00'),
+                m_edate: new Date(year, month + 1, 0).format('yyyy-mm-dd 00:00:00'),
+                s_sdate: new Date(year, season, 1).format('yyyy-mm-dd 00:00:00'),
+                s_edate: new Date(year, season + 3, 0).format('yyyy-mm-dd 00:00:00'),
+                h_sdate: new Date(year, half, 1).format('yyyy-mm-dd 00:00:00'),
+                h_edate: new Date(year, half + 6, 0).format('yyyy-mm-dd 00:00:00'),
+                y_sdate: new Date(year, 0, 1).format('yyyy-mm-dd 00:00:00'),
+                y_edate: new Date(year + 1, 0, 0).format('yyyy-mm-dd 00:00:00')
+            }
+            $http.get('/result/json-result-rank', {params: dates}).success(function (res) {
+                $scope.top10list = {
+                    month: getTop10List(res.month),
+                    season: getTop10List(res.season),
+                    halfyear: getTop10List(res.halfyear),
+                    fullyear: getTop10List(res.fullyear)
+                };
+            });
+        }
+
+        getTop10Rank();
     }]);
 
 })(window, angular);

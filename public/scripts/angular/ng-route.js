@@ -116,7 +116,7 @@
             })
             .when('/result/count', {
                 templateUrl: '/scripts/angular/templates/result-count.html',
-                controller: 'routeTempController'
+                controller: 'resultCountController'
             })
             .when('/result/user', {
                 templateUrl: '/scripts/angular/templates/result-user.html',
