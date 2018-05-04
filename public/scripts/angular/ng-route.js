@@ -102,6 +102,10 @@
                 templateUrl: '/scripts/angular/templates/performance-chart.html',
                 controller: 'performanceChartController'
             })
+            .when('/performance/ranks', {
+                templateUrl: '/scripts/angular/templates/performance-ranks.html',
+                controller: 'routeTempController'
+            })
             .when('/result/list', {
                 templateUrl: '/scripts/angular/templates/result-list.html',
                 controller: 'routeTempController'

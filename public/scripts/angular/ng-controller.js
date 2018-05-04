@@ -3626,7 +3626,7 @@
             var list = [];
             for (var i = 0; i < 10; i++) {
                 if (data[i]) {
-                    list.push({name: data[i].nickname, group: data[i].area_name + ' - ' + data[i].group_name, result: data[i].total_result});
+                    list.push({name: data[i].nickname, group: data[i].group_name + ' - ' + data[i].area_name, result: data[i].total_result});
                 } else {
                     list.push({name: '无', group: '', result: 0});
                 }

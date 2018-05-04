@@ -16,31 +16,31 @@
     </div>
     <div class="form-group">
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">所在地区</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 所在地区</label>
             <div class="col-xs-8">
                 <div class="col-xs-6 no-padding-left">
-                    <select kendo-drop-down-list ng-model="job.location.p" name="location-province" k-data-source="locationData.p" k-data-text-field="'name'" k-data-value-field="'name'" k-change="locationData.change" class="form-control size-full">
+                    <select kendo-drop-down-list ng-model="job.location.p" name="location-province" k-data-source="locationData.p" k-data-text-field="'name'" k-data-value-field="'name'" k-change="locationData.change" class="form-control size-full" required>
                     </select>
                 </div>
                 <div class="col-xs-6 no-padding-right">
-                    <select kendo-drop-down-list ng-model="job.location.c" name="location-city" k-data-source="locationData.c" k-data-text-field="'name'" k-data-value-field="'name'" class="form-control size-full">
+                    <select kendo-drop-down-list ng-model="job.location.c" name="location-city" k-data-source="locationData.c" k-data-text-field="'name'" k-data-value-field="'name'" class="form-control size-full" required>
                     </select>
                 </div>
             </div>
         </div>
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">年薪范围</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 年薪范围</label>
             <div class="col-xs-8">
                 <div class="col-xs-5 no-padding">
                     <div class="input-group">
-                        <input type="text" ng-model="job.salarys.s" class="form-control" numeric>
+                        <input type="text" ng-model="job.salarys.s" class="form-control" numeric required>
                         <span class="input-group-addon">万</span>
                     </div>
                 </div>
                 <div class="col-xs-2 text-center form-control-static">至</div>
                 <div class="col-xs-5 no-padding">
                     <div class="input-group">
-                        <input type="text" ng-model="job.salarys.e" class="form-control" numeric>
+                        <input type="text" ng-model="job.salarys.e" class="form-control" numeric required>
                         <span class="input-group-addon">万</span>
                     </div>
                 </div>
@@ -49,36 +49,36 @@
     </div>
     <div class="form-group">
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">工作年限</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 工作年限</label>
             <div class="col-xs-8">
                 <div class="col-xs-5 no-padding">
                     <div class="input-group">
-                        <input type="text" ng-model="job.years.s" class="form-control" numeric>
+                        <input type="text" ng-model="job.years.s" class="form-control" numeric required>
                         <span class="input-group-addon">年</span>
                     </div>
                 </div>
                 <div class="col-xs-2 text-center form-control-static">至</div>
                 <div class="col-xs-5 no-padding">
                     <div class="input-group">
-                        <input type="text" ng-model="job.years.e" class="form-control" numeric>
+                        <input type="text" ng-model="job.years.e" class="form-control" numeric required>
                         <span class="input-group-addon">年</span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">年龄要求</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 年龄要求</label>
             <div class="col-xs-8">
                 <div class="col-xs-5 no-padding">
                     <div class="input-group">
-                        <input type="text" ng-model="job.ages.s" class="form-control" numeric>
+                        <input type="text" ng-model="job.ages.s" class="form-control" numeric required>
                         <span class="input-group-addon">岁</span>
                     </div>
                 </div>
                 <div class="col-xs-2 text-center form-control-static">至</div>
                 <div class="col-xs-5 no-padding">
                     <div class="input-group">
-                        <input type="text" ng-model="job.ages.e" class="form-control" numeric>
+                        <input type="text" ng-model="job.ages.e" class="form-control" numeric required>
                         <span class="input-group-addon">岁</span>
                     </div>
                 </div>
@@ -87,10 +87,10 @@
     </div>
     <div class="form-group">
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">学历要求</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 学历要求</label>
             <div class="col-xs-8">
                 <div class="col-xs-8 no-padding-left">
-                    <select kendo-drop-down-list ng-model="job.degree" class="form-control size-full">
+                    <select kendo-drop-down-list ng-model="job.degree" class="form-control size-full" required>
                         <option value="不限">不限</option>
                         <option ng-repeat="item in data.degree" value="{{item}}">{{item}}</option>
                     </select>
@@ -104,7 +104,7 @@
             </div>
         </div>
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">性别要求</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 性别要求</label>
             <div class="col-xs-8">
                 <div class="col-xs-4 no-padding">
                     <label class="form-control-static">
@@ -138,9 +138,9 @@
             </div>
         </div>
         <div class="col-xs-6 no-padding error-box">
-            <label class="control-label col-xs-4">岗位类别</label>
+            <label class="control-label col-xs-4"><span class="red">*</span> 岗位类别</label>
             <div class="col-xs-8">
-                <select kendo-drop-down-list class="form-control size-full" ng-model="job.type">
+                <select kendo-drop-down-list class="form-control size-full" ng-model="job.type" required>
                     <option value="">请选择岗位类别...</option>
                     <option ng-repeat="item in data.type" value="{{item}}">{{item}}</option>
                 </select>

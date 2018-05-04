@@ -18,7 +18,9 @@ use App\HuntReport;
 use App\HuntResult;
 use App\HuntSelect;
 use App\HuntSuccess;
+use App\Job;
 use App\User;
+use App\ResultUser;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
@@ -67,6 +69,127 @@ class PerformanceController extends BaseController {
             ->get();
 
         return response($result);
+    }
+
+    public function getJsonPerformanceRanks() {
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        $target = request()->input('target');
+
+        if ($target == 'users') {
+            $results = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('sum(user_result) as rank_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->groupBy('result_users.user_id')->orderBy('rank_result', 'desc')->get();
+
+            $results_percent = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('sum(percent) as rank_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->groupBy('result_users.user_id')->orderBy('rank_result', 'desc')->get();
+
+            $bd = Bd::join('users', 'bd.user_id', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(bd.id) as rank_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('bd.status', '签约合作')->where('bd.date', '>=', $sdate)->where('bd.date', '<=', $edate)
+                ->groupBy('bd.user_id')->orderBy('rank_result', 'desc')->get();
+
+            $job = Job::join('users', 'jobs.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(jobs.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('jobs.created_at', '>=', $sdate)->where('jobs.created_at', '<=', $edate)
+                ->groupBy('jobs.created_by')->orderBy('rank_result', 'desc')->get();
+
+            $report = HuntReport::join('users', 'hunt_report.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_report.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_report.type', 'report')->where('hunt_report.date', '>=', $sdate)->where('hunt_report.date', '<=', $edate)
+                ->groupBy('hunt_report.created_by')->orderBy('rank_result', 'desc')->get();
+
+            $face = HuntFace::join('users', 'hunt_face.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_face.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_face.type', '一面')->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
+                ->groupBy('hunt_face.created_by')->orderBy('rank_result', 'desc')->get();
+
+            $offer = HuntReport::join('users', 'hunt_report.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_report.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_report.type', 'offer')->where('hunt_report.date', '>=', $sdate)->where('hunt_report.date', '<=', $edate)
+                ->groupBy('hunt_report.created_by')->orderBy('rank_result', 'desc')->get();
+
+            $success = HuntSuccess::join('users', 'hunt_success.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_success.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_success.date', '>=', $sdate)->where('hunt_success.date', '<=', $edate)
+                ->groupBy('hunt_success.created_by')->orderBy('rank_result', 'desc')->get();
+        } else {
+            $results = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('sum(user_result) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+
+            $results_percent = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('sum(percent) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+
+            $bd = Bd::join('users', 'bd.user_id', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(bd.id) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('bd.status', '签约合作')->where('bd.date', '>=', $sdate)->where('bd.date', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+
+            $job = Job::join('users', 'jobs.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(jobs.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('jobs.created_at', '>=', $sdate)->where('jobs.created_at', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+
+            $report = HuntReport::join('users', 'hunt_report.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_report.id) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_report.type', 'report')->where('hunt_report.date', '>=', $sdate)->where('hunt_report.date', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+
+            $face = HuntFace::join('users', 'hunt_face.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_face.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_face.type', '一面')->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+
+            $offer = HuntReport::join('users', 'hunt_report.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_report.id) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_report.type', 'offer')->where('hunt_report.date', '>=', $sdate)->where('hunt_report.date', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+
+            $success = HuntSuccess::join('users', 'hunt_success.created_by', '=', 'users.id')
+                ->join('groups', 'users.group_id', '=', 'groups.id')
+                ->join('areas', 'users.area_id', '=', 'areas.id')
+                ->select(DB::raw('count(hunt_success.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->where('hunt_success.date', '>=', $sdate)->where('hunt_success.date', '<=', $edate)
+                ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
+        }
+        return response(["result"=>$results, "result_percent"=>$results_percent, "bd"=>$bd, "job"=>$job, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success]);
     }
 
     public function getJsonPerformanceData() {

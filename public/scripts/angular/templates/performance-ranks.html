@@ -1,0 +1,112 @@
+<div class="wrapper bg-white padding-15 margin-top-20 margin-bottom-50 box-shadow">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li>绩效排行</li>
+            </ul>
+        </div>
+        <div class="row margin-bottom-10">
+            <div class="col-xs-12">
+                <div class="pull-left margin-right-10">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-default active" data-target="users">按个人排名</button>
+                        <button class="btn btn-default" data-target="groups">按项目组排名</button>
+                    </div>
+                </div>
+                <div class="pull-left margin-right-10">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-default active" data-range="本月">本月</button>
+                        <button class="btn btn-default" data-range="上月">上月</button>
+                        <button class="btn btn-default" data-range="一季度">一季度</button>
+                        <button class="btn btn-default" data-range="二季度">二季度</button>
+                        <button class="btn btn-default" data-range="三季度">三季度</button>
+                        <button class="btn btn-default" data-range="四季度">四季度</button>
+                        <button class="btn btn-default" data-range="上半年">上半年</button>
+                        <button class="btn btn-default" data-range="下半年">下半年</button>
+                        <button class="btn btn-default" data-range="今年">今年</button>
+                        <button class="btn btn-default" data-range="去年">去年</button>
+                        <button class="btn btn-default" data-range="自定义">自定义</button>
+                    </div>
+                </div>
+                <div class="pull-left" id="range_date_box" style="display: none;">
+                    <div class="pull-left margin-left-10"><input type="text" name="sdate" id="sdate" class="size-120" placeholder="开始日期"></div>
+                    <div class="pull-left margin-left-10 form-control-static"> ~ </div>
+                    <div class="pull-left margin-left-10"><input type="text" name="edate" id="edate" class="size-120" placeholder="结束日期"></div>
+                </div>
+                <div class="pull-left margin-left-10">
+                    <button class="btn btn-sm btn-primary" id="search"><i class="fa fa-search"></i> 查询</button>
+                </div>
+            </div>
+        </div>
+        <div class="row margin-top-20">
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时业绩排名TOP10</b></div>
+                    <ul class="list-group" id="rank_result">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时单数排名TOP10</b></div>
+                    <ul class="list-group" id="rank_result_percent">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时签约排名TOP10</b></div>
+                    <ul class="list-group" id="rank_bd">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时新增职位排名TOP10</b></div>
+                    <ul class="list-group" id="rank_job">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row margin-top-20">
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时推荐排名TOP10</b></div>
+                    <ul class="list-group" id="rank_report">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时面试排名TOP10</b></div>
+                    <ul class="list-group" id="rank_face">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时Offer排名TOP10</b></div>
+                    <ul class="list-group" id="rank_offer">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>实时上岗排名TOP10</b></div>
+                    <ul class="list-group" id="rank_success">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/scripts/performance/ranks.js"></script>
