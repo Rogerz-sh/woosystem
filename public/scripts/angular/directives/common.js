@@ -27,8 +27,8 @@
                         {url: '/performance/list', label: '绩效管理', power: [1,2,3,9]},
                         {url: '/performance/charts', label: '绩效图表', power: [1,2,3,9]},
                         {url: '/performance/ranks', label: '绩效排行', power: [1,2,3,9]},
-                        //{url: '/target/list', label: '目标管理', power: [1,2,3,9]},
-                        //{url: '/target/daily-report', label: '日清表', power: [1,2,3,9]},
+                        {url: '/target/list', label: '目标管理', power: [1,2,3,9]},
+                        {url: '/target/daily-report', label: '日清表', power: [1,2,3,9]},
                     ]},
                     {url: '/team/recent', label: '团队管理', power: [9], items: [
                         {url: '/team/recent', label: '团队近况', power: [9]},

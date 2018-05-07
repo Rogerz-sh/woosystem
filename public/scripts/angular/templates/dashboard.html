@@ -1,114 +1,238 @@
+<style>
+    .circle {width: 100px; height: 100px; border-radius: 50%; text-align: center; line-height: 100px; position: relative;}
+    .circle::before {content: ""; display: block; position: absolute; width: 90px; height: 90px; top: 5px; left: 5px; background: #fff; border-radius: 50%;}
+    .circle span {position: relative; font-size: 1.5em; font-weight: bold; color: #666;}
+</style>
 <div class="wrapper">
     <div class="container-fluid">
-        <div class="row margin-top-10">
+        <div class="row margin-top-20">
             <div class="col-xs-12">
-                <div class="panel bordered border-color-orange">
-                    <div class="panel-heading bg-orange white"><h5 class="panel-title">本月目标完成进度</h5></div>
-                    <div class="panel-body">
-                        <ul class="poll-results">
-                            <li>
-                                <h6>本月人选完成进度 <span class="dark-orange">{{target.person.value}} / {{target.person.target}}</span></h6>
-                                <div id="target_person" kendo-progress-bar k-options="config.progress" ng-model="target.person.progress" style="width: 100%;"></div>
-                            </li>
-                            <li>
-                                <h6>本月推荐报告完成进度 <span class="dark-orange">{{target.report.value}} / {{target.report.target}}</span></h6>
-                                <div id="target_report" kendo-progress-bar k-options="config.progress" ng-model="target.report.progress" style="width: 100%;"></div>
-                            </li>
-                            <li>
-                                <h6>本月面试完成进度 <span class="dark-orange">{{target.face.value}} / {{target.face.target}}</span></h6>
-                                <div id="target_face" kendo-progress-bar k-options="config.progress" ng-model="target.face.progress" style="width: 100%;"></div>
-                            </li>
-                            <li>
-                                <h6>本月Offer完成进度 <span class="dark-orange">{{target.offer.value}} / {{target.offer.target}}</span></h6>
-                                <div id="target_offer" kendo-progress-bar k-options="config.progress" ng-model="target.offer.progress" style="width: 100%;"></div>
-                            </li>
-                            <li>
-                                <h6>本月上岗完成进度 <span class="dark-orange">{{target.success.value}} / {{target.success.target}}</span></h6>
-                                <div id="target_success" kendo-progress-bar k-options="config.progress" ng-model="target.success.progress" style="width: 100%;"></div>
-                            </li>
-                            <li>
-                                <h6>本月KPI完成进度 <span class="dark-orange">{{target.kpi}} / 100</span></h6>
-                                <div id="target_kpi" kendo-progress-bar k-options="config.progress" ng-model="target.kpi" style="width: 100%;"></div>
-                            </li>
-                        </ul>
+                <blockquote>
+                    <p>我的实时数据</p>
+                </blockquote>
+                <div class="flex flex-row">
+                    <div class="flex-1 flex flex-col flex-v-center flex-h-center">
+                        <div class="circle bg-yellow"><span id="bd_count">0</span></div>
+                        <p class="margin-top-10 bold">BD数</p>
                     </div>
+                    <div class="flex-1 flex flex-col flex-v-center flex-h-center">
+                        <div class="circle bg-dark-yellow"><span id="person_count">0</span></div>
+                        <p class="margin-top-10 bold">录入数</p>
+                    </div>
+                    <div class="flex-1 flex flex-col flex-v-center flex-h-center">
+                        <div class="circle bg-orange"><span id="report_count">0</span></div>
+                        <p class="margin-top-10 bold">推荐数</p>
+                    </div>
+                    <div class="flex-1 flex flex-col flex-v-center flex-h-center">
+                        <div class="circle bg-orange"><span id="face_count">0</span></div>
+                        <p class="margin-top-10 bold">面试数</p>
+                    </div>
+                    <div class="flex-1 flex flex-col flex-v-center flex-h-center">
+                        <div class="circle bg-dark-yellow"><span id="offer_count">0</span></div>
+                        <p class="margin-top-10 bold">Offer数</p>
+                    </div>
+                    <div class="flex-1 flex flex-col flex-v-center flex-h-center">
+                        <div class="circle bg-yellow"><span id="success_count">0</span></div>
+                        <p class="margin-top-10 bold">上岗数</p>
+                    </div>
+                    <!--<div class="flex-1 flex flex-col flex-v-center flex-h-center">-->
+                        <!--<div class="circle bg-yellow"><span>0</span></div>-->
+                        <!--<p class="margin-top-10 bold">过保数</p>-->
+                    <!--</div>-->
                 </div>
             </div>
         </div>
-        <div class="row margin-top-10">
+        <div class="row margin-top-40">
             <div class="col-xs-12">
-                <div class="panel bordered border-color-orange">
-                    <div class="panel-heading bg-orange white"><h5 class="panel-title">最近30天的面试记录</h5></div>
-                    <div class="panel-body no-padding">
-                        <div kendo-grid k-options="config.gridFace">
-                        </div>
+                <div class="pull-left margin-right-10">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-default active" data-target="users">按个人排名</button>
+                        <button class="btn btn-default" data-target="groups">按项目组排名</button>
                     </div>
+                </div>
+                <div class="pull-left margin-left-10">
+                    <a class="btn btn-sm btn-primary" href="#/performance/ranks"><i class="fa fa-search"></i> 查看更多排名</a>
                 </div>
             </div>
         </div>
-        <div class="row margin-top-10">
-            <div class="col-xs-12">
-                <div class="panel bordered border-color-orange">
-                    <div class="panel-heading bg-orange white"><h5 class="panel-title">最近30天的Offer信息</h5></div>
-                    <div class="panel-body no-padding">
-                        <div kendo-grid k-options="config.gridOffer">
-                        </div>
-                    </div>
+        <div class="row margin-top-20">
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月业绩排名TOP5</b></div>
+                    <ul class="list-group" id="rank_result">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月单数排名TOP5</b></div>
+                    <ul class="list-group" id="rank_result_percent">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月签约排名TOP5</b></div>
+                    <ul class="list-group" id="rank_bd">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月新增职位排名TOP5</b></div>
+                    <ul class="list-group" id="rank_job">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
                 </div>
             </div>
         </div>
-        <div class="row margin-top-10">
-            <div class="col-xs-12">
-                <div class="panel bordered border-color-orange">
-                    <div class="panel-heading bg-orange white"><h5 class="panel-title">最近30天的上岗信息</h5></div>
-                    <div class="panel-body no-padding">
-                        <div kendo-grid k-options="config.gridSuccess">
-                        </div>
-                    </div>
+        <div class="row margin-top-20">
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月推荐排名TOP5</b></div>
+                    <ul class="list-group" id="rank_report">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月面试排名TOP5</b></div>
+                    <ul class="list-group" id="rank_face">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月Offer排名TOP5</b></div>
+                    <ul class="list-group" id="rank_offer">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <div class="panel bordered border-color-dark-yellow">
+                    <div class="panel-heading bg-dark-yellow white"><b>当月上岗排名TOP5</b></div>
+                    <ul class="list-group" id="rank_success">
+                        <li class="list-group-item text-center">暂无排名数据</li>
+                    </ul>
                 </div>
             </div>
         </div>
-        <div class="row margin-top-10">
-            <div class="col-xs-12">
-                <div class="panel bordered border-color-orange">
-                    <div class="panel-heading bg-orange white"><h5 class="panel-title">最近操作过的职位</h5></div>
-                    <div class="panel-body no-padding">
-                        <div kendo-grid k-options="config.grid">
-                            <div k-detail-template>
-                                <div class="bordered border-color-gray"><div kendo-grid k-options="config.gridDetail(dataItem)"></div></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row margin-top-10">
-            <div class="col-xs-12">
-                <div class="panel bordered border-color-orange">
-                    <div class="panel-heading bg-orange white"><h5 class="panel-title">最近联系过的候选人</h5></div>
-                    <div class="panel-body no-padding">
-                        <div kendo-grid k-options="config.gridPerson"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div kendo-window="win4" k-title="'候选人信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
-         k-on-open="win4visible = true" k-on-close="win4visible = false">
-        <div class="container-fluid">
-            <resume-info id="{{hunt.person_id}}"></resume-info>
-        </div>
-    </div>
-    <div kendo-window="win5" k-title="'岗位信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
-         k-on-open="win5visible = true" k-on-close="win5visible = false">
-        <div class="container-fluid">
-            <job-info id="{{hunt.job_id}}"></job-info>
-        </div>
-    </div>
-    <div kendo-window="win6" k-title="'企业信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
-         k-on-open="win6visible = true" k-on-close="win6visible = false">
-        <div class="container-fluid">
-            <company-info id="{{hunt.company_id}}"></company-info>
-        </div>
-    </div>
+        <!--<div class="row margin-top-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="panel bordered border-color-orange">-->
+                    <!--<div class="panel-heading bg-orange white"><h5 class="panel-title">本月目标完成进度</h5></div>-->
+                    <!--<div class="panel-body">-->
+                        <!--<ul class="poll-results">-->
+                            <!--<li>-->
+                                <!--<h6>本月人选完成进度 <span class="dark-orange">{{target.person.value}} / {{target.person.target}}</span></h6>-->
+                                <!--<div id="target_person" kendo-progress-bar k-options="config.progress" ng-model="target.person.progress" style="width: 100%;"></div>-->
+                            <!--</li>-->
+                            <!--<li>-->
+                                <!--<h6>本月推荐报告完成进度 <span class="dark-orange">{{target.report.value}} / {{target.report.target}}</span></h6>-->
+                                <!--<div id="target_report" kendo-progress-bar k-options="config.progress" ng-model="target.report.progress" style="width: 100%;"></div>-->
+                            <!--</li>-->
+                            <!--<li>-->
+                                <!--<h6>本月面试完成进度 <span class="dark-orange">{{target.face.value}} / {{target.face.target}}</span></h6>-->
+                                <!--<div id="target_face" kendo-progress-bar k-options="config.progress" ng-model="target.face.progress" style="width: 100%;"></div>-->
+                            <!--</li>-->
+                            <!--<li>-->
+                                <!--<h6>本月Offer完成进度 <span class="dark-orange">{{target.offer.value}} / {{target.offer.target}}</span></h6>-->
+                                <!--<div id="target_offer" kendo-progress-bar k-options="config.progress" ng-model="target.offer.progress" style="width: 100%;"></div>-->
+                            <!--</li>-->
+                            <!--<li>-->
+                                <!--<h6>本月上岗完成进度 <span class="dark-orange">{{target.success.value}} / {{target.success.target}}</span></h6>-->
+                                <!--<div id="target_success" kendo-progress-bar k-options="config.progress" ng-model="target.success.progress" style="width: 100%;"></div>-->
+                            <!--</li>-->
+                            <!--<li>-->
+                                <!--<h6>本月KPI完成进度 <span class="dark-orange">{{target.kpi}} / 100</span></h6>-->
+                                <!--<div id="target_kpi" kendo-progress-bar k-options="config.progress" ng-model="target.kpi" style="width: 100%;"></div>-->
+                            <!--</li>-->
+                        <!--</ul>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row margin-top-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="panel bordered border-color-orange">-->
+                    <!--<div class="panel-heading bg-orange white"><h5 class="panel-title">最近30天的面试记录</h5></div>-->
+                    <!--<div class="panel-body no-padding">-->
+                        <!--<div kendo-grid k-options="config.gridFace">-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row margin-top-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="panel bordered border-color-orange">-->
+                    <!--<div class="panel-heading bg-orange white"><h5 class="panel-title">最近30天的Offer信息</h5></div>-->
+                    <!--<div class="panel-body no-padding">-->
+                        <!--<div kendo-grid k-options="config.gridOffer">-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row margin-top-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="panel bordered border-color-orange">-->
+                    <!--<div class="panel-heading bg-orange white"><h5 class="panel-title">最近30天的上岗信息</h5></div>-->
+                    <!--<div class="panel-body no-padding">-->
+                        <!--<div kendo-grid k-options="config.gridSuccess">-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row margin-top-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="panel bordered border-color-orange">-->
+                    <!--<div class="panel-heading bg-orange white"><h5 class="panel-title">最近操作过的职位</h5></div>-->
+                    <!--<div class="panel-body no-padding">-->
+                        <!--<div kendo-grid k-options="config.grid">-->
+                            <!--<div k-detail-template>-->
+                                <!--<div class="bordered border-color-gray"><div kendo-grid k-options="config.gridDetail(dataItem)"></div></div>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row margin-top-10">-->
+            <!--<div class="col-xs-12">-->
+                <!--<div class="panel bordered border-color-orange">-->
+                    <!--<div class="panel-heading bg-orange white"><h5 class="panel-title">最近联系过的候选人</h5></div>-->
+                    <!--<div class="panel-body no-padding">-->
+                        <!--<div kendo-grid k-options="config.gridPerson"></div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div kendo-window="win4" k-title="'候选人信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"-->
+         <!--k-on-open="win4visible = true" k-on-close="win4visible = false">-->
+        <!--<div class="container-fluid">-->
+            <!--<resume-info id="{{hunt.person_id}}"></resume-info>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div kendo-window="win5" k-title="'岗位信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"-->
+         <!--k-on-open="win5visible = true" k-on-close="win5visible = false">-->
+        <!--<div class="container-fluid">-->
+            <!--<job-info id="{{hunt.job_id}}"></job-info>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div kendo-window="win6" k-title="'企业信息'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"-->
+         <!--k-on-open="win6visible = true" k-on-close="win6visible = false">-->
+        <!--<div class="container-fluid">-->
+            <!--<company-info id="{{hunt.company_id}}"></company-info>-->
+        <!--</div>-->
+    <!--</div>-->
 </div>
+<script src="/scripts/dashboard/ranks.js"></script>

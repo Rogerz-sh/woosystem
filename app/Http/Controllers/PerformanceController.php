@@ -197,6 +197,7 @@ class PerformanceController extends BaseController {
         $edate = request()->input('edate').' 23:59:59';
         $result = DB::table('users')
             ->select(DB::raw('users.id, users.name, users.nickname,
+            (select count(id) from bd where bd.user_id = users.id and bd.status = "签约合作" and bd.date >= "'.$sdate.'" and bd.date <= "'.$edate.'") as bd_count,
             (select count(id) from person where person.created_by = users.id and person.created_at >= "'.$sdate.'" and person.created_at <= "'.$edate.'" and deleted_at is null) as person_count,
             (select count(distinct hunt_id) from hunt_face where hunt_face.type = "一面" and (hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) and hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
             (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.is_confirm = 1 and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and deleted_at is null) as report_count,

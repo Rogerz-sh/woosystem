@@ -12,6 +12,7 @@
     //controller for dashboard
     app.controller('dashboardController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {
 
+        /*
         $scope.config = {
             grid: {
                 dataSource: {
@@ -345,6 +346,7 @@
                 $scope.win4.center().open();
             });
         };
+        */
     }]);
 
     //controllers for company

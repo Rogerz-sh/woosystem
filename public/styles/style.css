@@ -2039,3 +2039,5 @@ input[type=radio]:checked + .text:before { background: #173E75; background-clip:
 .flex-3 {flex: 3;}
 .flex-4 {flex: 4;}
 .flex-5 {flex: 5;}
+.flex-v-center {align-items: center;}
+.flex-h-center {justify-content: center;}
