@@ -29,7 +29,9 @@ class UserController extends Controller {
 
     public function getJsonUserInfo() {
         $id = Session::get('id');
-        $user = User::find($id);
+        $user = User::join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+        ->where('users.id', $id)->first();
         return response($user);
     }
 

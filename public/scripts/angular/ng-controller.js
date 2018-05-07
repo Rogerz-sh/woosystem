@@ -3155,6 +3155,20 @@
                 scrollable: false,
                 pageable: true,
             },
+            jobs: {
+                dataSource: {
+                    data: [
+                        "助理顾问",
+                        "顾问",
+                        "项目经理",
+                        "项目总监",
+                        "城市总经理",
+                        "大区总经理",
+                        "合伙人",
+                    ]
+                },
+                optionLabel: '请选择职位',
+            },
             list: {
                 dataSource: {
                     transport: {
@@ -3537,7 +3551,8 @@
                 name: user.name,
                 nickname: user.nickname,
                 date: user.date ? user.date.split(' ').shift() : '',
-                group: user.group,
+                group_name: user.group_name,
+                area_name: user.area_name,
                 job: user.job
             };
         });

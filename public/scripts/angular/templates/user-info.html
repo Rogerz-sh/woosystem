@@ -28,9 +28,15 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-4">所属部门：</label>
+                        <label class="control-label col-xs-4">所属项目组：</label>
                         <div class="col-xs-8 form-control-static">
-                            <span class="text-info bold" ng-bind="view.group"></span>
+                            <span class="text-info bold" ng-bind="view.group_name"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4">所属区域：</label>
+                        <div class="col-xs-8 form-control-static">
+                            <span class="text-info bold" ng-bind="view.area_name"></span>
                         </div>
                     </div>
                     <div class="form-group">
@@ -41,7 +47,7 @@
                     </div>
                     <div class="form-group">
                         <div class="col-xs-8 col-xs-offset-3">
-                            <button class="btn btn-primary btn-sm margin-left-10" ng-click="editInfo()">编辑资料</button>
+                            <!--<button class="btn btn-primary btn-sm margin-left-10" ng-click="editInfo()">编辑资料</button>-->
                             <button class="btn btn-warning btn-sm margin-left-10" ng-click="editPassword()">修改密码</button>
                             <button class="btn btn-default btn-sm margin-left-10" ng-click="operation = 'pic'">上传头像</button>
                         </div>
@@ -65,35 +71,33 @@
                     <div class="form-group">
                         <label class="control-label col-xs-4"><span class="red">*</span> 入职日期：</label>
                         <div class="col-xs-8">
-                            <input type="text" name="date" ng-model="user.date" class="form-control" kendo-date-picker k-options="config.date" required />
+                            <span class="red bold" ng-bind="user.date"></span>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-4"><span class="red">*</span> 所属部门：</label>
+                        <label class="control-label col-xs-4"><span class="red">*</span> 所属项目组：</label>
                         <div class="col-xs-8">
-                            <select name="group" ng-model="user.group" kendo-drop-down-list k-options="config.select" required>
-                                <option value="" selected>请选择所属部门</option>
-                                <option value="项目一部">项目一部</option>
-                                <option value="项目二部">项目二部</option>
-                            </select>
+                            <span class="red bold" ng-bind="user.group_name"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4"><span class="red">*</span> 所属区域：</label>
+                        <div class="col-xs-8">
+                            <span class="red bold" ng-bind="user.area_name"></span>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="control-label col-xs-4"><span class="red">*</span> 职位：</label>
                         <div class="col-xs-8">
-                            <select name="job" ng-model="user.job" kendo-drop-down-list k-options="config.select" required>
-                                <option value="" selected>请选择所属职位</option>
-                                <option value="项目经理">项目经理</option>
-                                <option value="助理顾问">助理顾问</option>
-                            </select>
+                            <span class="red bold" ng-bind="user.job"></span>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="col-xs-8 col-xs-offset-3">
-                            <button class="btn btn-primary btn-sm margin-left-10" ng-disabled="formEdit.$invalid" ng-click="saveInfo()">保存</button>
-                            <button class="btn btn-warning btn-sm margin-left-10" ng-click="quitInfo()">取消</button>
-                        </div>
-                    </div>
+                    <!--<div class="form-group">-->
+                        <!--<div class="col-xs-8 col-xs-offset-3">-->
+                            <!--<button class="btn btn-primary btn-sm margin-left-10" ng-disabled="formEdit.$invalid" ng-click="saveInfo()">保存</button>-->
+                            <!--<button class="btn btn-warning btn-sm margin-left-10" ng-click="quitInfo()">取消</button>-->
+                        <!--</div>-->
+                    <!--</div>-->
                 </form>
             </div>
             <div class="col-xs-6" ng-show="operation == 'password'">

@@ -38,7 +38,7 @@
                     <div class="form-group">
                         <label class="control-label col-xs-3">职位名称</label>
                         <div class="col-xs-9">
-                            <input type="text" class="form-control" ng-model="user.job" style="width:175px;" />
+                            <select ng-model="user.job" kendo-drop-down-list k-options="config.jobs" required></select>
                         </div>
                     </div>
                     <div class="form-group">
@@ -96,7 +96,7 @@
                     <div class="form-group">
                         <label class="control-label col-xs-3">职位名称</label>
                         <div class="col-xs-9">
-                            <input type="text" class="form-control" ng-model="user.job" style="width:175px;" />
+                            <select ng-model="user.job" kendo-drop-down-list k-options="config.jobs" required></select>
                         </div>
                     </div>
                     <div class="form-group">
