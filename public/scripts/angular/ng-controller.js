@@ -1298,6 +1298,14 @@
                     $scope.success.date = this.value().format();
                 }
             },
+            protectedDate: {
+                culture: 'zh-CN',
+                value: new Date(),
+                format: 'yyyy-MM-dd',
+                change: function () {
+                    $scope.success.proctected = this.value().format();
+                }
+            },
             resultDate: {
                 culture: 'zh-CN',
                 value: new Date(),
