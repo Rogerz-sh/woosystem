@@ -81,14 +81,14 @@ class PerformanceController extends BaseController {
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('sum(user_result) as rank_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->where('result_users.status', 1)->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
                 ->groupBy('result_users.user_id')->orderBy('rank_result', 'desc')->get();
 
             $results_percent = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('sum(percent) as rank_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->where('result_users.status', 1)->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
                 ->groupBy('result_users.user_id')->orderBy('rank_result', 'desc')->get();
 
             $bd = Bd::join('users', 'bd.user_id', '=', 'users.id')
@@ -137,14 +137,14 @@ class PerformanceController extends BaseController {
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('sum(user_result) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->where('result_users.status', 1)->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
                 ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
 
             $results_percent = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('sum(percent) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-                ->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
+                ->where('result_users.status', 1)->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)
                 ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
 
             $bd = Bd::join('users', 'bd.user_id', '=', 'users.id')

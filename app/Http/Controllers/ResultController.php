@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Session;
 class ResultController extends BaseController {
 
     public function getJsonResultList() {
-        $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, comment,
+        $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, status, comment,
         (select name from users where users.id = results.operator) as operator,
         (select a_name from areas where areas.id = results.area) as area_name,
         (select name from users where users.id = results.created_by) as creator'))
@@ -122,6 +122,13 @@ class ResultController extends BaseController {
         return response(1);
     }
 
+    public function postAuditResult() {
+        $result_id = request()->input('result_id');
+        Result::where('id', $result_id)->update(['status'=>1]);
+        ResultUser::where('result_id', $result_id)->update(['status'=>1]);
+        return response(1);
+    }
+
     public function getJsonResultUser() {
         $user_id = Session::get('id');
         $results = ResultUser::join('results', 'result_users.result_id', '=', 'results.id')
@@ -129,7 +136,7 @@ class ResultController extends BaseController {
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
                             sum(percent) as total_percent, sum(user_result) as total_result'))
-            ->where('user_id', $user_id)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
+            ->where('user_id', $user_id)->where('status', 1)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
 //        $results = DB::raw('select job_id, job_name, company_id, company_name, amount, name, results.date,
 //                            (select name from users where users.id = results.operator) as operator,
 //                            (select a_name from areas where areas.id = results.area) as area_name,
@@ -151,7 +158,7 @@ class ResultController extends BaseController {
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
                             sum(percent) as total_percent, sum(user_result) as total_result'))
-            ->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
+            ->where('results.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
 
         if ($user) {
             $results = $results->where('users.id', $user)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
@@ -187,25 +194,25 @@ class ResultController extends BaseController {
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
             ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-            ->where('result_users.date', '>=', $m_sdate)->where('result_users.date', '<=', $m_edate)
+            ->where('result_users.status', 1)->where('result_users.date', '>=', $m_sdate)->where('result_users.date', '<=', $m_edate)
             ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
         $result_season = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
             ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-            ->where('result_users.date', '>=', $s_sdate)->where('result_users.date', '<=', $s_edate)
+            ->where('result_users.status', 1)->where('result_users.date', '>=', $s_sdate)->where('result_users.date', '<=', $s_edate)
             ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
         $result_halfyear = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
             ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-            ->where('result_users.date', '>=', $h_sdate)->where('result_users.date', '<=', $h_edate)
+            ->where('result_users.status', 1)->where('result_users.date', '>=', $h_sdate)->where('result_users.date', '<=', $h_edate)
             ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
         $result_fullyear = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
             ->select(DB::raw('sum(user_result) as total_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-            ->where('result_users.date', '>=', $y_sdate)->where('result_users.date', '<=', $y_edate)
+            ->where('result_users.status', 1)->where('result_users.date', '>=', $y_sdate)->where('result_users.date', '<=', $y_edate)
             ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
         return response(["month"=>$result_month, "season"=>$result_season, "halfyear"=>$result_halfyear, "fullyear"=>$result_fullyear]);
     }
