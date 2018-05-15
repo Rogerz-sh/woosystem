@@ -85,9 +85,9 @@ $(function () {
         }
     };
 
-    $('#search_area').kendoDropDownList(config.area);
-    $('#search_group').kendoDropDownList(config.group);
-    $('#search_user').kendoDropDownList(config.user);
+    var ddl_area = $('#search_area').kendoDropDownList(config.area).data('kendoDropDownList');
+    var ddl_group = $('#search_group').kendoDropDownList(config.group).data('kendoDropDownList');
+    var ddl_user = $('#search_user').kendoDropDownList(config.user).data('kendoDropDownList');
 
 
     var sdate = $('#sdate').kendoDatePicker({
@@ -201,13 +201,26 @@ $(function () {
             {field: 'name', title: '款项名称'},
             {field: 'amount', title: '打款金额'},
             {field: 'date', title: '打款日期', template: '#:new Date(date).format()#'},
-            {field: 'operator', title: '操作顾问'},
+            {field: 'operator', title: '业绩归属', template: getResultTarget},
             {field: 'total_percent', title: '项目占比', template: '#:total_percent#%'},
             {field: 'total_result', title: '项目业绩', template: '#:kendo.toString(+total_result, "n0")#'},
         ],
         scrollable: false,
         pageable: true,
     }).data('kendoGrid');
+
+    function getResultTarget(item) {
+        var area = ddl_area.dataItem(), group = ddl_group.dataItem(), user = ddl_user.dataItem();
+        if (user && user.id) {
+            return user.nickname;
+        } else if (group && group.id) {
+            return '{0}[{1}]'.format(group.g_name, group.area_name);
+        } else if (area && area.id) {
+            return area.a_name;
+        } else {
+            return '全公司';
+        }
+    }
 
     $('#search').click(function () {
         var range = $('button[data-range].active').data('range'), data = {};

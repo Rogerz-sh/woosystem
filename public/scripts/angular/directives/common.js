@@ -22,17 +22,20 @@
                         {url: '/candidate/list', label: '简历库', power: [1,2,3,9]},
                     ]},
                     {url: '/bd/list', label: '客户管理', power: [1,2,3,9]},
-                    {url: '/hunt/list', label: '项目管理', power: [1,2,3,9]},
+                    {url: '/hunt/list', label: '项目管理', power: [1,2,3,9], items: [
+                        {url: '/hunt/list', label: '项目管理', power: [1,2,3,9]},
+                        {url: '/team/recent', label: '团队近况', power: [9]},
+                    ]},
                     {url: '/performance/list', label: '绩效管理', power: [1,2,3,9], items: [
                         {url: '/performance/list', label: '绩效管理', power: [1,2,3,9]},
                         {url: '/performance/charts', label: '绩效图表', power: [1,2,3,9]},
                         {url: '/performance/ranks', label: '绩效排行', power: [1,2,3,9]},
                         {url: '/target/list', label: '目标管理', power: [1,2,3,9]},
-                        {url: '/target/daily-report', label: '日清表', power: [1,2,3,9]},
+                        //{url: '/target/daily-report', label: '日清表', power: [1,2,3,9]},
                     ]},
-                    {url: '/team/recent', label: '团队管理', power: [9], items: [
-                        {url: '/team/recent', label: '团队近况', power: [9]},
-                    ]},
+                    //{url: '/team/recent', label: '团队管理', power: [9], items: [
+                    //    {url: '/team/recent', label: '团队近况', power: [9]},
+                    //]},
                     {url: '/result/list', label: '业绩管理', power: [3,9], items: [
                         {url: '/result/list', label: '业绩列表', power: [3,9]},
                         {url: '/result/count', label: '业绩统计', power: [3,9]},
@@ -1076,12 +1079,15 @@
     app.directive('powerChecker', function () {
         return {
             restrict: 'AE',
+            scope: {
+                'allowed': '='
+            },
             controller: ['$scope', '$http', 'model', function ($scope, $http, model) {
                 $scope.power = model.getUserSession().power;
             }],
             link: function (scope, element, attr) {
                 var power = scope.power;
-                if (power != 9) {
+                if ($scope.allowed.indexOf(power) < 0) {
                     element.remove();
                 }
             }

@@ -100,6 +100,7 @@ class ResultController extends BaseController {
         foreach ($data as $key => $value) {
             $result->$key = $value;
         }
+        $result->status = 0;
         $result->updated_by = Session::get('id');
         $result->save();
         ResultUser::where('result_id', $data['id'])->forceDelete();
@@ -136,7 +137,7 @@ class ResultController extends BaseController {
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
                             sum(percent) as total_percent, sum(user_result) as total_result'))
-            ->where('user_id', $user_id)->where('status', 1)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
+            ->where('user_id', $user_id)->where('result_users.status', 1)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
 //        $results = DB::raw('select job_id, job_name, company_id, company_name, amount, name, results.date,
 //                            (select name from users where users.id = results.operator) as operator,
 //                            (select a_name from areas where areas.id = results.area) as area_name,
@@ -158,7 +159,7 @@ class ResultController extends BaseController {
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
                             sum(percent) as total_percent, sum(user_result) as total_result'))
-            ->where('results.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
+            ->where('result_users.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
 
         if ($user) {
             $results = $results->where('users.id', $user)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
