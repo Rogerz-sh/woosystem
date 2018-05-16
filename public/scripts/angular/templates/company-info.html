@@ -8,17 +8,31 @@
         <span class="padding-15" ng-bind="company.scale"></span>/
         <span class="padding-15" ng-bind="company.type"></span>
     </div>
-    <div class="row">
-        <p class="padding-15 dark-gray" ng-bind="company.introduce"></p>
+    <div class="row" ng-if="company.address">
+        <p class="padding-left-15 padding-right-15 padding-top-15 bold">公司地址：</p>
+        <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="company.address"></p>
+    </div>
+    <div class="row" ng-if="company.introduce">
+        <p class="padding-left-15 padding-right-15 padding-top-15 bold">企业简介：</p>
+        <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="company.introduce"></p>
+    </div>
+    <div class="row" ng-if="company.website">
+        <p class="padding-left-15 padding-right-15 padding-top-15 bold">公司主页：</p>
+        <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="company.website"></p>
+    </div>
+    <div class="row" ng-if="company.advantage">
+        <p class="padding-left-15 padding-right-15 padding-top-15 bold">企业优势：</p>
+        <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="company.advantage"></p>
     </div>
     <hr>
-    <div class="row">
+    <div class="row" power-checker allowed="3,9" cond="{{company.created_by == session.id}}">
         <span class="padding-15"><i class="orange fa fa-user"></i> <span ng-bind="company.contact"></span></span>/
         <span class="padding-15"><i class="orange fa fa-mobile"></i> <span ng-bind="company.tel"></span></span>/
         <span class="padding-15"><i class="orange fa fa-envelope"></i> <span ng-bind="company.email"></span></span>/
         <span class="padding-15"><i class="orange fa fa-info-circle"></i> <span ng-bind="company.other"></span></span>
     </div>
-    <div class="row">
-        <p class="padding-15 text-info" ng-bind="company.description"></p>
+    <div class="row" power-checker allowed="3,9" cond="{{company.created_by == session.id}}" ng-if="company.description">
+        <p class="padding-left-15 padding-right-15 padding-top-15 bold">备注信息：</p>
+        <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="company.description"></p>
     </div>
 </div>

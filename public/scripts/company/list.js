@@ -2,6 +2,11 @@
  * Created by roger on 15/12/8.
  */
 $(function () {
+    var session = {
+        id: $('meta[name="_sessionId"]').attr('content'),
+        power: $('meta[name="_sessionPower"]').attr('content')
+    }
+
     $('#grid').kendoGrid({
         dataSource: {
             data: [],
@@ -16,19 +21,30 @@ $(function () {
         columns: [
             //{field: 'id', title: 'ID'},
             {field: 'name', title: '企业名称'},
-            {field: 'contact', title: '联系人'},
-            {field: 'tel', title: '联系电话'},
+            //{field: 'contact', title: '联系人'},
+            //{field: 'tel', title: '联系电话'},
             {field: 'area', title: '所在地区', template: '#:area.split("-")[1]#'},
             {field: 'industry', title: '所属行业'},
-            {title: '操作', template: '<a href="\\#/company/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
-            '<a href="\\#/company/detail/#:id#" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
-            '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
+            {field: 'scale', title: '企业规模'},
+            {field: 'type', title: '企业性质'},
+            {field: 'found', title: '成立时间'},
+            {title: '操作', template: getButtons, width: 140}
         ],
         filterable: {mode: 'row'},
         scrollable: false,
         pageable: true,
 
     });
+
+    function getButtons(item) {
+        var disabled = 'disabled';
+        if (['3','9'].indexOf(session.power) > -1 || session.id == item.created_by) {
+            disabled = '';
+        }
+        return ('<a href="#/company/edit/{0}" class="btn btn-default btn-sm" {1}><i class="fa fa-pencil"></i></a> ' +
+            '<a href="#/company/detail/{0}" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
+            '<a data-id="{0}" class="btn btn-danger btn-sm" {1}><i class="fa fa-trash-o"></i></a>').format(item.id, disabled)
+    }
 
     $('#grid').delegate('.btn-danger', 'click', function (e) {
         var id = $(this).data('id');

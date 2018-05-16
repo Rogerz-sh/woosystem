@@ -5,9 +5,9 @@
     var app = window.RZ.app;
 
     //temp controller for route
-    app.controller('routeTempController', function ($scope) {
-
-    });
+    app.controller('routeTempController', ['$scope', 'model', function ($scope, model) {
+        $scope.session = model.getUserSession();
+    }]);
 
     //controller for dashboard
     app.controller('dashboardController', ['$scope', '$http', '$routeParams', 'model', 'token', function ($scope, $http, $routeParams, model, token) {

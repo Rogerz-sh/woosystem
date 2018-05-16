@@ -67,6 +67,40 @@
             scope: {},
             templateUrl: '/scripts/angular/templates/company-form.html',
             controller: ['$scope', '$http', 'model', '$routeParams', function ($scope, $http, model, $routeParams) {
+
+                $scope.locationData = {
+                    p: new kendo.data.DataSource(),
+                    t: new kendo.data.DataSource(), //temp data
+                    c: new kendo.data.DataSource(),
+                    change: function (e) {
+                        var p = this.dataItem();
+                        $scope.locationData.t.filter({field: 'provinceId', operator: 'eq', value: p.id});
+                        var citys = $scope.locationData.t.view().toJSON();
+                        $scope.locationData.c.data(citys);
+                    }
+                };
+
+                function renderAreaSelect(location) {
+                    var p = location.p, c = location.c, pList = $scope.locationData.p.data(), cList = [], pItem = null, cItem = null, cIdx = -1;
+                    for (var i = 0, l = pList.length; i < l; i++) {
+                        if (p == pList[i].name) {
+                            pItem = pList[i];
+                            break;
+                        }
+                    }
+                    if (pItem) {
+                        $scope.locationData.t.filter({field: 'provinceId', operator: 'eq', value: pItem.id});
+                        cList = $scope.locationData.t.view().toJSON();
+                        for (var i = 0, l = cList.length; i < l; i++) {
+                            if (cList[i].name == c) {
+                                cIdx = i;
+                                break;
+                            }
+                        }
+                        $scope.locationData.c.data(cList);
+                    }
+                }
+
                 $scope.kendoConfig = {
                     companyAutoComplete: {
                         dataSource: {
@@ -83,6 +117,28 @@
                         delay: 500,
                         dataTextField: 'name',
                         dataValueField: 'name',
+                    },
+                    location: {
+                        p: {
+                            dataSource: $scope.locationData.p,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择',
+                            change: $scope.locationData.change
+                        },
+                        c: {
+                            dataSource: $scope.locationData.c,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择'
+                        }
+                    },
+                    yearSelector: {
+                        culture: 'zh-CN',
+                        depth: 'decade',
+                        start: 'decade',
+                        value: new Date(),
+                        format: 'yyyy'
                     }
                 };
 
@@ -121,23 +177,13 @@
                     ]
                 };
 
-                $scope.locationData = {
-                    p: new kendo.data.DataSource(),
-                    c: new kendo.data.DataSource(),
-                    change: function (e) {
-                        var p = this.dataItem();
-                        $scope.locationData.c.filter({field: 'provinceId', operator: 'eq', value: p.id});
-
-                    }
-                };
-
                 $http.get('/data/location.json').success(function (res) {
                     $scope.locationData.p.data(res.province);
                     var citys = [];
                     for (c in res.citys) {
                         citys.push(res.citys[c]);
                     }
-                    $scope.locationData.c.data(citys);
+                    $scope.locationData.t.data(citys);
                 });
 
                 if ($routeParams.company_id) {
@@ -148,6 +194,7 @@
                             p: area[0],
                             c: area[1]
                         }
+                        renderAreaSelect($scope.company.location);
                     });
                 } else {
                     $scope.company = model.getNewCompany();
@@ -184,7 +231,7 @@
             },
             templateUrl: '/scripts/angular/templates/company-info.html',
             controller: ['$scope', '$http', 'model', '$routeParams', function ($scope, $http, model) {
-
+                $scope.session = model.getUserSession();
                 model.getCompanyInfo(~~$scope.id, function (res) {
                     $scope.company = res;
                 });
@@ -1080,16 +1127,24 @@
         return {
             restrict: 'AE',
             scope: {
-                'allowed': '='
+                'allowed': '@',
+                'cond': '@'
             },
             controller: ['$scope', '$http', 'model', function ($scope, $http, model) {
-                $scope.power = model.getUserSession().power;
+                $scope.session = model.getUserSession();
             }],
             link: function (scope, element, attr) {
-                var power = scope.power;
-                if ($scope.allowed.indexOf(power) < 0) {
-                    element.remove();
+                var power = scope.session.power, allowed = scope.allowed === 'all' ? 'all' : scope.allowed.split(',');
+                if (allowed === 'all') {
+                    if (scope.cond === false || scope.cond === 'false') {
+                        element.remove();
+                    }
+                } else {
+                    if (allowed.indexOf(power) < 0) {
+                        element.remove();
+                    }
                 }
+
             }
         }
     })

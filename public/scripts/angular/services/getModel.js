@@ -92,18 +92,22 @@
                 //id: '',
                 name: '',
                 location: {
-                    p: '上海',
-                    c: '上海'
+                    p: '',
+                    c: ''
                 },
                 scale: '',
                 industry: '',
                 type: '',
                 introduce: '',
+                advantage: '',
+                address: '',
+                found: '',
+                website: '',
+                description: '',
                 contact: '',
                 tel: '',
                 email: '',
                 other: '',
-                description: ''
             }
         };
 
