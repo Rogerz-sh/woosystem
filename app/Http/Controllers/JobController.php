@@ -9,6 +9,7 @@ namespace App\Http\Controllers;
 use Illuminate\Routing\Controller as BaseController;
 use App\Job;
 use App\Company;
+use App\JobDynamic;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -60,6 +61,13 @@ class JobController extends BaseController {
     public function getJobJsonData () {
         $id = request()->input('id');
         $job = Job::find($id);
+        $aggregate = Job::select(DB::raw('jobs.id, jobs.name,
+            (select count(hunt_report.id) from hunt_report where hunt_report.job_id = jobs.id and type = "report" and deleted_at is null) as report_count,
+            (select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and deleted_at is null) as face_count,
+            (select count(hunt_report.id) from hunt_report where hunt_report.job_id = jobs.id and type = "offer" and deleted_at is null) as offer_count,
+            (select count(hunt_success.id) from hunt_success where hunt_success.job_id = jobs.id and deleted_at is null) as success_count'))
+            ->where('jobs.id', $id)->first();
+        $job->aggregates = $aggregate;
         return response($job);
     }
 
@@ -92,5 +100,30 @@ class JobController extends BaseController {
         $job = Job::find($id);
         $job->delete();
         return response($job->id);
+    }
+
+    //job dynamics operations
+    public function getJsonJobDynamicData() {
+        $job_id = request()->input('job_id');
+        $dynamics = JobDynamic::where('job_id', $job_id)->get();
+        return response($dynamics);
+    }
+
+    public function postAddJobDynamic() {
+        $newDynamic = request()->input('dynamic');
+        $dynamic = new JobDynamic();
+        foreach ($newDynamic as $key => $value) {
+            $dynamic->$key = $value;
+        }
+        $dynamic->created_by = Session::get('id');
+        $dynamic->save();
+        return response($dynamic->id);
+    }
+
+    public function postDelJobDynamic () {
+        $id = request()->input('id');
+        $dynamic = JobDynamic::find($id);
+        $dynamic->delete();
+        return response($dynamic->id);
     }
 }

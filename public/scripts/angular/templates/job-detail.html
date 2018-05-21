@@ -1,3 +1,9 @@
+<style>
+    .circle {width: 70px; height: 70px; border-radius: 50%; text-align: center; line-height: 70px; position: relative;}
+    .circle::before {content: ""; display: block; position: absolute; width: 60px; height: 60px; top: 5px; left: 5px; background: #fff; border-radius: 50%;}
+    .circle span {position: relative; font-size: 1.5em; font-weight: bold; color: #666;}
+    input[type=checkbox] + .text:before, input[type=radio] + .text:before {width: 10px; height: 10px;}
+</style>
 <div class="wrap bg-white padding-15 margin-top-20 margin-bottom-50 bordered border-color-orange">
     <div class="container-fluid">
         <div class="row">

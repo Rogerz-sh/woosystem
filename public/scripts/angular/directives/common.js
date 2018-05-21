@@ -494,6 +494,40 @@
             scope: {},
             templateUrl: '/scripts/angular/templates/job-form.html',
             controller: ['$scope', '$http', 'model', '$routeParams', function ($scope, $http, model, $routeParams) {
+
+                $scope.locationData = {
+                    p: new kendo.data.DataSource(),
+                    t: new kendo.data.DataSource(), //temp data
+                    c: new kendo.data.DataSource(),
+                    change: function (e) {
+                        var p = this.dataItem();
+                        $scope.locationData.t.filter({field: 'provinceId', operator: 'eq', value: p.id});
+                        var citys = $scope.locationData.t.view().toJSON();
+                        $scope.locationData.c.data(citys);
+                    }
+                };
+
+                function renderAreaSelect(location) {
+                    var p = location.p, c = location.c, pList = $scope.locationData.p.data(), cList = [], pItem = null, cItem = null, cIdx = -1;
+                    for (var i = 0, l = pList.length; i < l; i++) {
+                        if (p == pList[i].name) {
+                            pItem = pList[i];
+                            break;
+                        }
+                    }
+                    if (pItem) {
+                        $scope.locationData.t.filter({field: 'provinceId', operator: 'eq', value: pItem.id});
+                        cList = $scope.locationData.t.view().toJSON();
+                        for (var i = 0, l = cList.length; i < l; i++) {
+                            if (cList[i].name == c) {
+                                cIdx = i;
+                                break;
+                            }
+                        }
+                        $scope.locationData.c.data(cList);
+                    }
+                }
+
                 $scope.kendoConfig = {
                     companyDropDownList: {
                         dataSource: {
@@ -512,6 +546,21 @@
                         change: function () {
                             var item = this.dataItem();
                             $scope.job.company_name = item.name;
+                        }
+                    },
+                    location: {
+                        p: {
+                            dataSource: $scope.locationData.p,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择',
+                            change: $scope.locationData.change
+                        },
+                        c: {
+                            dataSource: $scope.locationData.c,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择'
                         }
                     }
                 };
@@ -538,27 +587,20 @@
                     ]
                 };
 
-                $scope.locationData = {
-                    p: new kendo.data.DataSource(),
-                    c: new kendo.data.DataSource(),
-                    change: function (e) {
-                        var p = this.dataItem();
-                        $scope.locationData.c.filter({field: 'provinceId', operator: 'eq', value: p.id});
-                    }
-                };
-
                 $http.get('/data/location.json').success(function (res) {
                     $scope.locationData.p.data(res.province);
                     var citys = [];
                     for (c in res.citys) {
                         citys.push(res.citys[c]);
                     }
-                    $scope.locationData.c.data(citys);
+                    $scope.locationData.t.data(citys);
                 });
 
                 if ($routeParams.job_id) {
                     model.getJobInfo(~~$routeParams.job_id, function (data) {
                         $scope.job = data;
+                        delete $scope.job.aggregates;
+                        renderAreaSelect($scope.job.location);
                     });
                 } else {
                     $scope.job = model.getNewJob();
@@ -611,10 +653,62 @@
                     $scope.job.year = res.years.s + '-' + res.years.e + '年';
                 }
 
+                $scope.session = model.getUserSession();
+
                 model.getJobInfo(~~$scope.id, function (res) {
                     $scope.job = res;
                     rebuild(res);
                 });
+
+                function getNewDynamic() {
+                    return {
+                        id: '',
+                        text: '',
+                        state: 0,
+                    }
+                }
+
+                $scope.dynamics = [];
+
+                $http.get('/job/json-job-dynamic-data/', {params: {job_id: $scope.id}}).success(function (res) {
+                    res.forEach(function (v) {
+                        v.date = new Date(v.date).format('yyyy-mm-dd hh:MM');
+                    });
+                    $scope.dynamics = res;
+                });
+
+                $scope.dynamic = getNewDynamic();
+
+                $scope.addDynamic = function () {
+                    $scope.dynamic.job_id = $scope.job.id;
+                    $scope.dynamic.date = new Date().format('yyyy-mm-dd hh:MM');
+                    $http.post('/job/add-job-dynamic', {dynamic: $scope.dynamic}).success(function (id) {
+                        if (id > 0) {
+                            $.$modal.alert('添加成功!');
+                            $scope.dynamic.id = id;
+                            $scope.dynamics.push($scope.dynamic);
+                            $scope.dynamic = getNewDynamic();
+                        } else {
+                            $.$modal.alert('添加失败!');
+                        }
+                    });
+                };
+
+                $scope.delDynamic = function (id) {
+                    $.$modal.confirm('确定要删除吗？', function (isOk) {
+                        if (!isOk) return;
+                        if ($scope.dynamics.has({id: id})) {
+                            $http.post('/job/del-job-dynamic', {id: id}).success(function (res) {
+                                if (res > 0) {
+                                    $.$modal.alert('删除成功!');
+                                    $scope.dynamics.splice($scope.dynamics.at({id: id}), 1);
+                                } else {
+                                    $.$modal.alert('删除失败!');
+                                }
+                            });
+                        }
+                    });
+                };
 
                 $scope.$on('refresh.job-info', function (e, id, callback) {
                     model.getJobInfo(~~id, function (res) {

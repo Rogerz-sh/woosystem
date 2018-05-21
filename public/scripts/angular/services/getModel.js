@@ -126,8 +126,8 @@
                 company_id: 0,
                 company_name: '',
                 location: {
-                    p: '上海',
-                    c: '上海'
+                    p: '',
+                    c: ''
                 },
                 salarys: {
                     s: '',
@@ -142,11 +142,16 @@
                     e: ''
                 },
                 degree: '',
-                sex: '女',
+                sex: '不限',
                 number: '',
                 type: '',
                 duty: '',
-                request: ''
+                request: '',
+                department: '',
+                sellpoint: '',
+                reason: '',
+                keypoint: '',
+                preference: ''
             }
         };
 
