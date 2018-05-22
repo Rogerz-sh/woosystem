@@ -167,6 +167,7 @@ $(function () {
             result = +$('#amount').val(),
             comment = $('#comment').val(),
             operator = $('#operator').val(),
+            ext = $('input[name="ext"]:checked').val() || 0,
             area = $('#area').val();
         if (!name || !date || !job_id || !amount || !result) invalid = true;
 
@@ -197,7 +198,13 @@ $(function () {
             result: result,
             operator: operator,
             area: area,
-            comment: comment
+            comment: comment,
+            ext: ext
+        };
+
+        if (ext != 0 && comment.trim() == '') {
+            $.$modal.alert('请在备注中填写抵扣或替补业绩的详细说明');
+            return;
         }
 
         if (invalid) {

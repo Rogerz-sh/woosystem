@@ -28,7 +28,7 @@ $(function () {
         columns: [
             {field: 'company_name', title: '打款客户'},
             {field: 'job_name', title: '上岗职位'},
-            {field: 'name', title: '款项名称'},
+            {field: 'name', title: '款项名称', template: getName},
             {field: 'amount', title: '打款金额', width: 100},
             {field: 'date', title: '打款日期', template: '#:new Date(date).format()#', width: 90},
             {field: 'operator', title: '操作顾问'},
@@ -79,6 +79,16 @@ $(function () {
             });
         }
     }).data('kendoGrid');
+
+    function getName(item) {
+        if (item.ext == '-1') {
+            return '<i class="fa fa-arrow-circle-o-down red" title="抵扣业绩"></i> ' + item.name;
+        } else if (item.ext == '1') {
+            return '<i class="fa fa-arrow-circle-o-up dark-yellow" title="替补业绩"></i> ' + item.name;
+        } else {
+            return item.name;
+        }
+    }
 
     function getStatus(item) {
         return item.status == 1 ? '<span class="green">已审核</span>' : '<span class="dark-gray">未审核</span>'
