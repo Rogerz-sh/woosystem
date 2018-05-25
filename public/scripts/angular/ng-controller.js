@@ -1109,21 +1109,21 @@
             filter: {field: 'deleted', operator: 'neq', value: true}
         });
 
-        var dsResult = new kendo.data.DataSource({
-            transport: {
-                read: {
-                    url: '/hunt/result-list',
-                    data: {hunt_id: $routeParams.hunt_id}
-                }
-            },
-            pageSize: 10,
-            schema: {
-                model: {
-                    id: 'id'
-                }
-            },
-            filter: {field: 'deleted', operator: 'neq', value: true}
-        });
+        //var dsResult = new kendo.data.DataSource({
+        //    transport: {
+        //        read: {
+        //            url: '/hunt/result-list',
+        //            data: {hunt_id: $routeParams.hunt_id}
+        //        }
+        //    },
+        //    pageSize: 10,
+        //    schema: {
+        //        model: {
+        //            id: 'id'
+        //        }
+        //    },
+        //    filter: {field: 'deleted', operator: 'neq', value: true}
+        //});
 
         $scope.file = model.getRecordFile();
         $scope.report = model.getRecordReport();
@@ -1199,18 +1199,18 @@
                 scrollable: false,
                 pageable: true,
             },
-            grid_result: {
-                dataSource: dsResult,
-                columns: [
-                    {field: 'id', title: 'ID'},
-                    {field: 'date', title: '打款日期', template: '#:Date.format(date)#'},
-                    {field: 'amount', title: '打款金额', template: '#:kendo.toString(amount, "n2")#'},
-                    {field: 'type', title: '类型'},
-                    {title: '操作', template: '<a ng-click="editResult(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteResult(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
-                ],
-                scrollable: false,
-                pageable: true,
-            },
+            //grid_result: {
+            //    dataSource: dsResult,
+            //    columns: [
+            //        {field: 'id', title: 'ID'},
+            //        {field: 'date', title: '打款日期', template: '#:Date.format(date)#'},
+            //        {field: 'amount', title: '打款金额', template: '#:kendo.toString(amount, "n2")#'},
+            //        {field: 'type', title: '类型'},
+            //        {title: '操作', template: '<a ng-click="editResult(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteResult(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
+            //    ],
+            //    scrollable: false,
+            //    pageable: true,
+            //},
             file: {
                 async: {
                     saveUrl: '/file/upload?_token='+token.getCsrfToken(),
@@ -1303,7 +1303,7 @@
                 value: new Date(),
                 format: 'yyyy-MM-dd',
                 change: function () {
-                    $scope.success.proctected = this.value().format();
+                    $scope.success.protected = this.value().format();
                 }
             },
             resultDate: {
@@ -1588,62 +1588,62 @@
             });
         }
 
-        $scope.makeResult = function () {
-            $scope.result = model.getRecordResult();
-            $scope.result.hunt_id = $routeParams.hunt_id;
-            $scope.result.person_id = $scope.hunt.person_id;
-            $scope.result.person_name = $scope.hunt.person_name;
-            $scope.result.job_id = $scope.hunt.job_id;
-            $scope.result.job_name = $scope.hunt.job_name;
-            $scope.win11.open();
-        };
-
-        $scope.saveResult = function () {
-            var result = $scope.result;
-            result.hunt_id = $routeParams.hunt_id;
-            result.job_id = $scope.hunt.job_id;
-            result.job_name = $scope.hunt.job_name;
-            result.company_id = $scope.hunt.company_id;
-            result.company_name = $scope.hunt.company_name;
-            result.person_id = $scope.hunt.person_id;
-            result.person_name = $scope.hunt.person_name;
-
-            $http.post('/hunt/save-result', {result: result}).success(function (res) {
-                if (~~res > 0) {
-                    $scope.win11.close();
-                    dsResult.read();
-                    $.$modal.alert('业绩保存成功');
-                } else if (res == -1) {
-                    $.$modal.alert(result['type'] + '打款信息重复');
-                } else {
-                    $.$modal.alert('保存失败');
-                }
-            });
-        };
-
-        $scope.editResult = function (id) {
-            var result = dsResult.get(id).toJSON();
-            $scope.result = angular.extend({}, result);
-            $scope.result.hunt_id = $routeParams.hunt_id;
-            $scope.result.person_id = $scope.hunt.person_id;
-            $scope.result.person_name = $scope.hunt.person_name;
-            $scope.result.job_id = $scope.hunt.job_id;
-            $scope.result.job_name = $scope.hunt.job_name;
-            $scope.win11.open();
-        };
-
-        $scope.deleteResult = function (id) {
-            $.$modal.confirm('确认要删除吗？', function (isOk) {
-                if (isOk) {
-                    $http.post('/hunt/delete-result', {id: id}).success(function (res) {
-                        if (~~res) {
-                            dsResult.read();
-                            $.$modal.alert('业绩信息已删除！');
-                        }
-                    });
-                }
-            });
-        }
+        //$scope.makeResult = function () {
+        //    $scope.result = model.getRecordResult();
+        //    $scope.result.hunt_id = $routeParams.hunt_id;
+        //    $scope.result.person_id = $scope.hunt.person_id;
+        //    $scope.result.person_name = $scope.hunt.person_name;
+        //    $scope.result.job_id = $scope.hunt.job_id;
+        //    $scope.result.job_name = $scope.hunt.job_name;
+        //    $scope.win11.open();
+        //};
+        //
+        //$scope.saveResult = function () {
+        //    var result = $scope.result;
+        //    result.hunt_id = $routeParams.hunt_id;
+        //    result.job_id = $scope.hunt.job_id;
+        //    result.job_name = $scope.hunt.job_name;
+        //    result.company_id = $scope.hunt.company_id;
+        //    result.company_name = $scope.hunt.company_name;
+        //    result.person_id = $scope.hunt.person_id;
+        //    result.person_name = $scope.hunt.person_name;
+        //
+        //    $http.post('/hunt/save-result', {result: result}).success(function (res) {
+        //        if (~~res > 0) {
+        //            $scope.win11.close();
+        //            dsResult.read();
+        //            $.$modal.alert('业绩保存成功');
+        //        } else if (res == -1) {
+        //            $.$modal.alert(result['type'] + '打款信息重复');
+        //        } else {
+        //            $.$modal.alert('保存失败');
+        //        }
+        //    });
+        //};
+        //
+        //$scope.editResult = function (id) {
+        //    var result = dsResult.get(id).toJSON();
+        //    $scope.result = angular.extend({}, result);
+        //    $scope.result.hunt_id = $routeParams.hunt_id;
+        //    $scope.result.person_id = $scope.hunt.person_id;
+        //    $scope.result.person_name = $scope.hunt.person_name;
+        //    $scope.result.job_id = $scope.hunt.job_id;
+        //    $scope.result.job_name = $scope.hunt.job_name;
+        //    $scope.win11.open();
+        //};
+        //
+        //$scope.deleteResult = function (id) {
+        //    $.$modal.confirm('确认要删除吗？', function (isOk) {
+        //        if (isOk) {
+        //            $http.post('/hunt/delete-result', {id: id}).success(function (res) {
+        //                if (~~res) {
+        //                    dsResult.read();
+        //                    $.$modal.alert('业绩信息已删除！');
+        //                }
+        //            });
+        //        }
+        //    });
+        //}
 
         $scope.offerInfo = {};
         model.getHuntOfferInfo(~~$routeParams.hunt_id, function (res) {
@@ -1661,13 +1661,13 @@
             }
         });
 
-        $scope.resultInfo = {};
-        model.getHuntResultInfo(~~$routeParams.hunt_id, function (res) {
-            console.log(res);
-            if (res.id) {
-                $scope.resultInfo = res;
-            }
-        });
+        //$scope.resultInfo = {};
+        //model.getHuntResultInfo(~~$routeParams.hunt_id, function (res) {
+        //    console.log(res);
+        //    if (res.id) {
+        //        $scope.resultInfo = res;
+        //    }
+        //});
 
         $scope.showPersonHuntList = function () {
             dsPerson.read({person_id: $scope.hunt.person_id});
@@ -1695,15 +1695,66 @@
             edate: $scope.search.edate
         };
 
+        $scope.team = {
+            _area: '',
+            _group: '',
+            _user: ''
+        };
+
+        $scope.quickIndex = 0;
+
+        var dsArea = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $http.get('/performance/json-area-list').success(function(res) {
+                        //res.unshift({id: '', a_name: '全国'});
+                        options.success(res);
+                    });
+                }
+            }
+        });
+
+        var dsGroup = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $http.get('/performance/json-group-list').success(function(res) {
+                        //res.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
+                        options.success(res);
+                    });
+                }
+            }
+        });
+
+        var dsUser = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $http.get('/performance/json-user-list').success(function(res) {
+                        //res.unshift({id: '', nickname: '全体成员', area_id: 0, group_id: 0});
+                        options.success(res);
+                    });
+                }
+            }
+        });
+        var init = false;
         var gridData = new kendo.data.DataSource({
             transport: {
-                read: {
-                    url: '/performance/json-performance-list-data',
-                    dataType: 'json',
-                    data: {sdate: $scope.search.sdate, edate: $scope.search.edate}
+                read: function (option) {
+                    if (init) {
+                        $.$ajax({
+                            url: '/performance/json-performance-list-data',
+                            dataType: 'json',
+                            data: Object.assign($scope.search, $scope.team),
+                            success: function (res) {
+                                option.success(res);
+                            }
+                        });
+                    } else {
+                        option.success([]);
+                        init = true;
+                    }
                 }
             },
-            pageSize: 10,
+            pageSize: 20,
             schema: {
                 model: {
                     id: 'id'
@@ -1735,19 +1786,21 @@
         $scope.config = {
             grid: {
                 dataSource: gridData,
-                filterable: {mode: 'row'},
+                //filterable: {mode: 'row'},
                 columns: [
-                    {field: 'id', title: 'ID', sortable: false, filterable: false},
-                    {field: 'name', title: '账号', sortable: false},
+                    //{field: 'id', title: 'ID', sortable: false},
+                    //{field: 'name', title: '账号', sortable: false},
                     {field: 'nickname', title: '顾问', sortable: false},
-                    {field: 'bd_count', title: 'BD', filterable: false, template: getCountColor('bd')},
-                    {field: 'person_count', title: '人选', filterable: false, template: getCountColor('person')},
-                    {field: 'report_count', title: '报告', filterable: false, template: getCountColor('report')},
-                    {field: 'face_count', title: '面试', filterable: false, template: getCountColor('face')},
-                    {field: 'offer_count', title: 'Offer', filterable: false, template: getCountColor('offer')},
-                    {field: 'success_count', title: '上岗', filterable: false, template: getCountColor('success')},
-                    {field: 'result_count', title: '业绩', filterable: false, template: getCountColor('result')},
-                    {title: 'KPI', filterable: false, template: getKpi}
+                    {field: 'group_name', title: '所属项目组', sortable: false},
+                    {field: 'area_name', title: '所属区域', sortable: false},
+                    {field: 'bd_count', title: 'BD', template: getCountColor('bd')},
+                    {field: 'person_count', title: '人选', template: getCountColor('person')},
+                    {field: 'report_count', title: '报告', template: getCountColor('report')},
+                    {field: 'face_count', title: '面试', template: getCountColor('face')},
+                    {field: 'offer_count', title: 'Offer', template: getCountColor('offer')},
+                    {field: 'success_count', title: '上岗', template: getCountColor('success')},
+                    {field: 'result_count', title: '业绩', template: getCountColor('result')},
+                    {title: 'KPI', template: getKpi}
                 ],
                 sortable: true,
                 scrollable: false,
@@ -1756,14 +1809,22 @@
             sdate: {
                 culture: 'zh-CN',
                 format: 'yyyy-MM-dd',
-                max: Date.translate('now').format(),
-                value: $scope.search.sdate
+                //max: Date.translate('now').format(),
+                value: $scope.search.sdate,
+                change: function () {
+                    $scope.quickIndex = 0;
+                    $scope.$apply();
+                }
             },
             edate: {
                 culture: 'zh-CN',
                 format: 'yyyy-MM-dd',
-                max: Date.translate('now').format(),
-                value: $scope.search.edate
+                //max: Date.translate('now').format(),
+                value: $scope.search.edate,
+                change: function () {
+                    $scope.quickIndex = 0;
+                    $scope.$apply();
+                }
             },
             gridDetail: {
                 dataSource: detailData,
@@ -1774,6 +1835,43 @@
                     {filed: 'updated_at', title: '提交日期', template: getDetailTime},
                     {title: '操作', template: getDetailOperator}
                 ]
+            },
+            area: {
+                dataSource: dsArea,
+                dataTextField: 'a_name',
+                dataValueField: 'id',
+                optionLabel: '全部区域',
+                change: function () {
+                    $scope.team._area = ~~this.value();
+                    $scope.team._group = '';
+                    $scope.team._user = '';
+                    dsGroup.filter({field: 'area_id', operator: 'eq', value: $scope.team._area});
+                    dsUser.filter({field: 'area_id', operator: 'eq', value: $scope.team._area});
+                    //search();
+                }
+            },
+            group: {
+                dataSource: dsGroup,
+                dataTextField: 'g_name',
+                dataValueField: 'id',
+                optionLabel: '全部项目组',
+                template: '#:g_name##:area_name ? " [" + area_name + "]" : ""#',
+                change: function () {
+                    $scope.team._group = ~~this.value();
+                    $scope.team._user = '';
+                    dsUser.filter({field: 'group_id', operator: 'eq', value: $scope.team._group});
+                    //search();
+                }
+            },
+            user: {
+                dataSource: dsUser,
+                dataTextField: 'nickname',
+                dataValueField: 'id',
+                optionLabel: '全体成员',
+                change: function () {
+                    $scope.team._user = ~~this.value();
+                    //search();
+                }
             }
         };
 
@@ -1784,6 +1882,7 @@
             kpi.face = item.face_count > 18 ? 36 : item.face_count * 2;
             kpi.offer = item.offer_count * 5;
             result = kpi.person.plus(kpi.report).plus(kpi.face).plus(kpi.offer);
+            result = kendo.toString(result, 'n1');
             if (result < 60) {
                 return '<span class="bold red">{0}</span>'.format(result);
             } else if (result >= 60 && result < 80) {
@@ -1918,17 +2017,11 @@
         };
 
         $scope.customSearch = function () {
-            gridData.read($scope.search).then(function () {
-                $scope.searched = {
-                    type: '自定义',
-                    sdate: $scope.search.sdate,
-                    edate: $scope.search.edate
-                }
-                $scope.$apply();
-            });
+            //$scope.searched.type = '自定义';
+            search();
         }
 
-        $scope.quickSearch = function (type) {
+        $scope.quickSearch = function (type, index) {
             var date = {sdate: '', edate: ''};
             switch (type) {
                 case '本周':
@@ -1975,12 +2068,16 @@
                     return;
                     break;
             }
-            gridData.read(date).then(function () {
-                $scope.searched = {
-                    type: type,
-                    sdate: date.sdate,
-                    edate: date.edate
-                }
+            $scope.search.sdate = date.sdate;
+            $scope.search.edate = date.edate;
+            $scope.quickIndex = index;
+            //$scope.$apply();
+        }
+
+        function search() {
+            gridData.read(Object.assign($scope.search, $scope.team)).then(function () {
+                $scope.searched.sdate = $scope.search.sdate;
+                $scope.searched.edate = $scope.search.edate;
                 $scope.$apply();
             });
         }

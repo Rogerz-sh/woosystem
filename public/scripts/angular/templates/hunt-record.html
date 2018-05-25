@@ -95,7 +95,7 @@
                                 <button class="btn btn-primary" ng-click="addFaceView()">面试通知</button>
                                 <button class="btn btn-success" ng-click="makeOffer()">Offer</button>
                                 <button class="btn btn-warning" ng-click="makeSuccess()">上岗</button>
-                                <button class="btn btn-danger" ng-click="makeResult()">业绩</button>
+                                <!--<button class="btn btn-danger" ng-click="makeResult()">业绩</button>-->
                             </div>
                             <button class="btn btn-default" ng-disabled="recForm.$invalid" ng-click="addRecord()">添加记录</button>
                         </div>
@@ -129,7 +129,7 @@
                 <p class="indent">备注信息： <span class="text-info">{{offerInfo.desc}}</span></p>
             </div>
             <div class="clearfix"></div>
-            <blockquote ng-if="resultInfo.id>0">
+            <blockquote ng-if="successInfo.id>0">
                 <p>上岗</p>
             </blockquote>
             <div class="col-xs-12" ng-if="successInfo.id>0">
@@ -138,19 +138,19 @@
                     <a ng-click="deleteSuccess(successInfo.id)" class="red"><i class="fa fa-times"></i> 删除</a>
                 </p>
             </div>
-            <div class="clearfix"></div>
-            <blockquote>
-                <p>业绩</p>
-            </blockquote>
+            <!--<div class="clearfix"></div>-->
+            <!--<blockquote>-->
+                <!--<p>业绩</p>-->
+            <!--</blockquote>-->
             <!--<div class="col-xs-12">-->
                 <!--<p class="indent">-->
                     <!--打款日期： {{resultInfo.date}}, 业绩额度: {{resultInfo.amount}}-->
                     <!--<a ng-click="deleteResult(resultInfo.id)" class="red"><i class="fa fa-times"></i> 删除</a>-->
                 <!--</p>-->
             <!--</div>-->
-            <div class="col-xs-12 bordered border-color-gray no-padding margin-bottom-10">
-                <div kendo-grid k-options="config.grid_result"></div>
-            </div>
+            <!--<div class="col-xs-12 bordered border-color-gray no-padding margin-bottom-10">-->
+                <!--<div kendo-grid k-options="config.grid_result"></div>-->
+            <!--</div>-->
             <div class="clearfix"></div>
             <blockquote>
                 <p>附件列表</p>
@@ -410,42 +410,42 @@
                 </div>
             </div>
         </div>
-        <div kendo-window="win11" k-title="'业绩'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
-             k-on-open="win11visible = true" k-on-close="win11visible = false">
-            <div class="container-fluid">
-                <div class="row">
-                    <form name="successForm" class="form form-horizontal" onsubmit="return false" novalidate>
-                        <div class="form-group">
-                            <label class="control-label col-xs-2"><span class="red">*</span> 打款日期</label>
-                            <div class="col-xs-10">
-                                <input kendo-date-picker k-options="config.resultDate" ng-model="result.date" type="file" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-xs-2"><span class="red">*</span> 业绩额度</label>
-                            <div class="col-xs-10">
-                                <input kendo-numeric-text-box k-options="config.numeric" ng-model="result.amount" type="text" class="input-size-normal" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-xs-2"><span class="red">*</span> 类型</label>
-                            <div class="col-xs-10">
-                                <select kendo-drop-down-list ng-model="result.type" class="full-width">
-                                    <option value="一期">一期</option>
-                                    <option value="二期">二期</option>
-                                    <option value="三期">三期</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-xs-10 col-xs-offset-2">
-                                <button class="btn btn-success col-xs-2" ng-click="saveResult()" ng-disabled="successForm.$invalid">保存</button>
-                                <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win11.close()">取消</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <!--<div kendo-window="win11" k-title="'业绩'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"-->
+             <!--k-on-open="win11visible = true" k-on-close="win11visible = false">-->
+            <!--<div class="container-fluid">-->
+                <!--<div class="row">-->
+                    <!--<form name="successForm" class="form form-horizontal" onsubmit="return false" novalidate>-->
+                        <!--<div class="form-group">-->
+                            <!--<label class="control-label col-xs-2"><span class="red">*</span> 打款日期</label>-->
+                            <!--<div class="col-xs-10">-->
+                                <!--<input kendo-date-picker k-options="config.resultDate" ng-model="result.date" type="file" class="form-control" required>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--<div class="form-group">-->
+                            <!--<label class="control-label col-xs-2"><span class="red">*</span> 业绩额度</label>-->
+                            <!--<div class="col-xs-10">-->
+                                <!--<input kendo-numeric-text-box k-options="config.numeric" ng-model="result.amount" type="text" class="input-size-normal" required>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--<div class="form-group">-->
+                            <!--<label class="control-label col-xs-2"><span class="red">*</span> 类型</label>-->
+                            <!--<div class="col-xs-10">-->
+                                <!--<select kendo-drop-down-list ng-model="result.type" class="full-width">-->
+                                    <!--<option value="一期">一期</option>-->
+                                    <!--<option value="二期">二期</option>-->
+                                    <!--<option value="三期">三期</option>-->
+                                <!--</select>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--<div class="form-group">-->
+                            <!--<div class="col-xs-10 col-xs-offset-2">-->
+                                <!--<button class="btn btn-success col-xs-2" ng-click="saveResult()" ng-disabled="successForm.$invalid">保存</button>-->
+                                <!--<button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win11.close()">取消</button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</form>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
     </div>
 </div>
