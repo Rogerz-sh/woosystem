@@ -45,6 +45,29 @@ $(function () {
             }
         });
 
+        $('#pay_percent').kendoNumericTextBox({
+            spinners: false,
+            min: 0,
+            format: 'n0',
+            value: res.pay_percent
+        });
+
+        $('#type').kendoDropDownList({
+            dataSource: ['全款', '首款', '尾款'],
+            optionLabel: '请选择付款类型',
+            value: res.type
+        });
+
+        var person = $('#person_id').kendoDropDownList({
+            dataSource: [],
+            dataTextField: 'person_name',
+            dataValueField: 'person_id',
+            optionLabel: '请选择上岗候选人',
+            template: '#:person_name#  <small class="dark-gray">[入职日期：#:new Date(date).format()#]</small>',
+            valueTemplate: '#:person_name#  <small class="dark-gray">[入职日期：#:new Date(date).format()#]</small>',
+            value: res.person_id
+        }).data('kendoDropDownList');
+
         $('#area').kendoDropDownList({
             dataSource: {
                 transport: {
@@ -60,7 +83,7 @@ $(function () {
             value: res.area
         });
 
-        $('#name').val(res.name);
+        //$('#name').val(res.name);
         $('#comment').val(res.comment);
         $('#created_by').text(res.creator.name);
         $('input[name="ext"][value="'+res.ext+'"]').prop('checked', true);
@@ -88,10 +111,28 @@ $(function () {
                     e.preventDefault();
                 }
             },
+            change: function () {
+                var item = this.dataItem();
+                $.$ajax({
+                    url: '/result/json-job-person-list',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {job_id: item.job_id},
+                    success: function (r) {
+                        person.dataSource.data(r);
+                        person.select(function(dataItem) {
+                            return dataItem.person_id === res.person_id;
+                        })
+                    }
+                });
+            },
             dataBound: function () {
                 if (!initDDL && this.dataItems().length) {
-                    ddl.select(1);
+                    ddl.select(function (dataItem) {
+                        return dataItem.job_id = res.job_id;
+                    });
                     initDDL = true;
+                    ddl.trigger('change');
                 }
             }
         }).data('kendoDropDownList');
@@ -183,20 +224,25 @@ $(function () {
 
     $('#save').click(function () {
         var invalid = false;
-        var name = $('#name').val().trim(),
+        var item = $('#job_id').data('kendoDropDownList').dataItem(),
+            _item = $('#person_id').data('kendoDropDownList').dataItem(),
             date = $('#date').val().trim(),
-            item = $('#job_id').data('kendoDropDownList').dataItem(),
             job_id = item.job_id,
             company_id = item.company_id,
+            person_id = _item.person_id,
             job_name = item.job_name,
             company_name = item.company_name,
+            person_name = _item.person_name,
+            type = $('#type').val(),
+            pay_percent = +$('#pay_percent').val(),
             amount = +$('#amount').val(),
             result = +$('#amount').val(),
             comment = $('#comment').val(),
             operator = $('#operator').val(),
             ext = $('input[name="ext"]:checked').val() || 0,
             area = $('#area').val();
-        if (!name || !date || !job_id || typeof(amount) != 'number') invalid = true;
+        var name = '{0}({1}{2}%)'.format(person_name, type, pay_percent);
+        if (!name || !date || !job_id || !person_id || !type || !pay_percent || typeof(amount) != 'number') invalid = true;
 
         var users = [], totalPercent = 0, totalResult = 0;
         typeList.forEach(function (v) {
@@ -220,8 +266,12 @@ $(function () {
             date: date,
             job_id: job_id,
             company_id: company_id,
+            person_id: person_id,
             job_name: job_name,
             company_name: company_name,
+            person_name: person_name,
+            type: type,
+            pay_percent: pay_percent,
             amount: amount,
             result: result,
             operator: operator,

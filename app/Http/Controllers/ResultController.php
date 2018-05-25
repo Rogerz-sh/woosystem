@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 
+use App\Hunt;
 use App\Result;
 use App\ResultUser;
 use App\User;
@@ -43,6 +44,15 @@ class ResultController extends BaseController {
         $result->users = $users;
         $result->creator = $creator;
         return response($result);
+    }
+
+    public function getJsonJobPersonList() {
+        $job_id = request()->input('job_id');
+        $hunts = Hunt::join('hunt_success', 'hunt.id', '=', 'hunt_success.hunt_id')
+            ->select('hunt.person_id', 'hunt.person_name', 'hunt_success.date')
+            ->where('hunt_success.deleted_at', null)
+            ->where('hunt.job_id', $job_id)->get();
+        return response($hunts);
     }
 
     public function getSearchJobWithCompany() {
