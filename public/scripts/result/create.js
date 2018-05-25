@@ -169,7 +169,7 @@ $(function () {
             operator = $('#operator').val(),
             ext = $('input[name="ext"]:checked').val() || 0,
             area = $('#area').val();
-        if (!name || !date || !job_id || !amount || !result) invalid = true;
+        if (!name || !date || !job_id || typeof(amount) != 'number') invalid = true;
 
         var users = [], totalPercent = 0, totalResult = 0;
         typeList.forEach(function (v) {

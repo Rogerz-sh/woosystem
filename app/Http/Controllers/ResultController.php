@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Session;
 class ResultController extends BaseController {
 
     public function getJsonResultList() {
-        $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, status, comment,
+        $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, status, ext, comment,
         (select name from users where users.id = results.operator) as operator,
         (select a_name from areas where areas.id = results.area) as area_name,
         (select name from users where users.id = results.created_by) as creator'))
