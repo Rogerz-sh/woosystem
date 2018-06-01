@@ -194,7 +194,7 @@ class CandidateController extends BaseController {
         foreach ($person as $key => $value) {
             $candidate->$key = $value;
         }
-        $candidate->created_by = Session::get('id');
+        $candidate->updated_by = Session::get('id');
         $candidate->save();
 
         if ($person['type'] == 'basic') {

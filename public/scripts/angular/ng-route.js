@@ -154,6 +154,10 @@
                 templateUrl: '/scripts/angular/templates/user-info.html',
                 controller: 'userInfoController'
             })
+            .when('/personal/favorite', {
+                templateUrl: '/scripts/angular/templates/personal-favorite.html',
+                controller: 'routeTempController'
+            })
             .otherwise({
                 redirectTo: '/'
             });

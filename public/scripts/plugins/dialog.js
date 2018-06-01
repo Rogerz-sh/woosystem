@@ -5,7 +5,7 @@
       <div class="modal-content">\
         <div class="modal-header">\
           <button type="button" class="close dlg-btn-close-icon" data-dismiss="modal"><span>&times;</span></button>\
-          <h4 class="modal-title"></h4>\
+          <h5 class="modal-title"></h5>\
         </div>\
         <div class="modal-body">\
         </div>\
@@ -16,9 +16,9 @@
   </div>';
 
   var BUTTONS = {
-    'ok': '<button type="button" class="btn btn-primary dlg-btn-ok">确定</button>',
-    'cancel': '<button type="button" class="btn btn-default dlg-btn-cancel">取消</button>',
-    'close': '<button type="button" class="btn btn-danger dlg-btn-cancel">关闭</button>'
+    'ok': '<button type="button" class="btn btn-sm btn-primary dlg-btn-ok">确定</button>',
+    'cancel': '<button type="button" class="btn btn-sm btn-default dlg-btn-cancel">取消</button>',
+    'close': '<button type="button" class="btn btn-sm btn-danger dlg-btn-cancel">关闭</button>'
   }
 
   var Dialog = function (option) {

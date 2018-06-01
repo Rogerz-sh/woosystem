@@ -45,7 +45,10 @@
                         {url: '/team/groups', label: '项目组管理', power: [2,9]},
                         {url: '/team/areas', label: '区域管理', power: [2,9]},
                     ]},
-                    {url: '/result/user', label: '我的业绩', power: [1,2,3,9]}
+                    {url: '/result/user', label: '个人管理', power: [1,2,3,9], items: [
+                        {url: '/result/user', label: '我的业绩', power: [1,2,3,9]},
+                        {url: '/personal/favorite', label: '我的收藏', power: [1,2,3,9]},
+                    ]}
                 ];
                 $scope.changeSubNav = function (idx) {
                     $scope.navIndex = idx;
@@ -1241,6 +1244,6 @@
 
             }
         }
-    })
+    });
 
 })(window, angular);

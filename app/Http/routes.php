@@ -46,4 +46,6 @@ Route::group(['middleware' => 'login'], function () {
 
     Route::controller('team', 'TeamController');
 
+    Route::controller('personal', 'PersonalController');
+
 });
