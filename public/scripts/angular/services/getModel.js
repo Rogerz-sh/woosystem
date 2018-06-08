@@ -21,12 +21,12 @@
                 degree: '',
                 marry: '单身',
                 location: {
-                    p: '上海',
-                    c: '上海'
+                    p: '',
+                    c: ''
                 },
                 belong: {
-                    p: '上海',
-                    c: '上海'
+                    p: '',
+                    c: ''
                 },
                 companys: [],
                 schools: [],

@@ -35,7 +35,7 @@ class HuntController extends BaseController {
         if (Session::get('power') == 9) {
             $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
                 ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.salary_month', 'hunt.salary_year', 'hunt.description')
-                ->orderBy('hunt.updated_at', 'desc')->get();
+                ->orderBy('hunt.updated_at', 'desc')->limit(1000)->get();
         } else {
             $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
                 ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.salary_month', 'hunt.salary_year', 'hunt.description')

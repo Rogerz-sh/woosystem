@@ -260,6 +260,53 @@
             scope: {},
             templateUrl: '/scripts/angular/templates/resume-form.html',
             controller: ['$scope', '$http', 'model', 'token', '$routeParams', function ($scope, $http, model, token, $routeParams) {
+
+                $scope.locationData = {
+                    p: new kendo.data.DataSource(),
+                    t: new kendo.data.DataSource(), //temp data
+                    c: new kendo.data.DataSource(),
+                    change: function (e) {
+                        var p = this.dataItem();
+                        $scope.locationData.t.filter({field: 'provinceId', operator: 'eq', value: p.id});
+                        var citys = $scope.locationData.t.view().toJSON();
+                        $scope.locationData.c.data(citys);
+                    }
+                };
+
+                $scope.belongData = {
+                    p: new kendo.data.DataSource(),
+                    t: new kendo.data.DataSource(), //temp data
+                    c: new kendo.data.DataSource(),
+                    change: function (e) {
+                        var p = this.dataItem();
+                        $scope.belongData.t.filter({field: 'provinceId', operator: 'eq', value: p.id});
+                        var citys = $scope.belongData.t.view().toJSON();
+                        $scope.belongData.c.data(citys);
+                    }
+                };
+
+                function renderAreaSelect(location, ds) {
+                    var p = location.p, c = location.c, pList = $scope[ds].p.data(), cList = [], pItem = null, cItem = null, cIdx = -1;
+                    for (var i = 0, l = pList.length; i < l; i++) {
+                        if (p == pList[i].name) {
+                            pItem = pList[i];
+                            break;
+                        }
+                    }
+                    if (pItem) {
+                        $scope[ds].t.filter({field: 'provinceId', operator: 'eq', value: pItem.id});
+                        cList = $scope[ds].t.view().toJSON();
+                        for (var i = 0, l = cList.length; i < l; i++) {
+                            if (cList[i].name == c) {
+                                cIdx = i;
+                                break;
+                            }
+                        }
+                        $scope[ds].c.data(cList);
+                    }
+                }
+
+
                 $scope.kendoConfig = {
                     monthPicker: {
                         culture: 'zh-CN',
@@ -331,6 +378,36 @@
                         delay: 500,
                         dataTextField: 'name',
                         dataValueField: 'name',
+                    },
+                    location: {
+                        p: {
+                            dataSource: $scope.locationData.p,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择',
+                            change: $scope.locationData.change
+                        },
+                        c: {
+                            dataSource: $scope.locationData.c,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择'
+                        }
+                    },
+                    belong: {
+                        p: {
+                            dataSource: $scope.belongData.p,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择',
+                            change: $scope.belongData.change
+                        },
+                        c: {
+                            dataSource: $scope.belongData.c,
+                            dataTextField: 'name',
+                            dataValueField: 'name',
+                            optionLabel: '请选择'
+                        }
                     }
                 };
 
@@ -358,24 +435,6 @@
 
                 $scope.person_id = $routeParams.person_id;
 
-                $scope.locationData = {
-                    p: new kendo.data.DataSource(),
-                    c: new kendo.data.DataSource(),
-                    change: function (e) {
-                        var p = this.dataItem();
-                        $scope.locationData.c.filter({field: 'provinceId', operator: 'eq', value: p.id});
-                    }
-                };
-
-                $scope.belongData = {
-                    p: new kendo.data.DataSource(),
-                    c: new kendo.data.DataSource(),
-                    change: function (e) {
-                        var p = this.dataItem();
-                        $scope.belongData.c.filter({field: 'provinceId', operator: 'eq', value: p.id});
-                    }
-                };
-
                 $http.get('/data/location.json').success(function (res) {
                     $scope.locationData.p.data(res.province);
                     $scope.belongData.p.data(res.province);
@@ -383,13 +442,15 @@
                     for (c in res.citys) {
                         citys.push(res.citys[c]);
                     }
-                    $scope.locationData.c.data(citys);
-                    $scope.belongData.c.data(citys);
+                    $scope.locationData.t.data(citys);
+                    $scope.belongData.t.data(citys);
                 });
 
                 if ($scope.person_id) {
                     model.getPersonInfo(~~$scope.person_id, function (data) {
                         $scope.person = data;
+                        renderAreaSelect($scope.person.location, 'locationData');
+                        renderAreaSelect($scope.person.belong, 'belongData');
                     });
                 } else {
                     $scope.person = model.getNewPerson();
@@ -399,6 +460,8 @@
                     $scope.person_id = person_id;
                     model.getPersonInfo(~~$scope.person_id, function (data) {
                         $scope.person = data;
+                        renderAreaSelect($scope.person.location, 'locationData');
+                        renderAreaSelect($scope.person.belong, 'belongData');
                         if (typeof callback === 'function') callback();
                     });
                 });
@@ -440,8 +503,12 @@
                         console.log(person, company, school, training);
                         var url = !$scope.person_id ? '/candidate/save-new' : '/candidate/save-edit';
                         $http.post(url, {person: person, company: company, school: school, training: training}).success(function (res) {
-                            $scope.$emit('saved.resume', res, $scope.person);
-                            $scope.person = model.getNewPerson();
+                            if (res == -1) {
+                                $.$modal.alert('手机号码已被录入！');
+                            } else {
+                                $scope.$emit('saved.resume', res, $scope.person);
+                                $scope.person = model.getNewPerson();
+                            }
                         });
                     },
                     quit: function () {

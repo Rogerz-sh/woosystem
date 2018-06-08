@@ -102,46 +102,52 @@ class CandidateController extends BaseController {
         $school = request()->input('school');
         $training = request()->input('training');
 
-        $candidate = new Candidate();
-        foreach ($person as $key => $value) {
-            $candidate->$key = $value;
-        }
-        $candidate->created_by = Session::get('id');
-        $candidate->save();
+        $exist = Candidate::where('tel', $person['tel'])->first();
 
-        if ($person['type'] == 'basic') {
-            for ($c = 0; $c < count($company); $c++) {
-                $com = $company[$c];
-                $perCom = new PersonCompany();
-                foreach ($com as $key => $value) {
-                    $perCom->$key = $value;
-                }
-                $perCom->person_id = $candidate->id;
-                $perCom->created_by = Session::get('id');
-                $perCom->save();
+        if ($exist) {
+            return response(-1);
+        } else {
+            $candidate = new Candidate();
+            foreach ($person as $key => $value) {
+                $candidate->$key = $value;
             }
-            for ($s = 0; $s < count($school); $s++) {
-                $scl = $school[$s];
-                $perS = new PersonSchool();
-                foreach ($scl as $key => $value) {
-                    $perS->$key = $value;
+            $candidate->created_by = Session::get('id');
+            $candidate->save();
+
+            if ($person['type'] == 'basic') {
+                for ($c = 0; $c < count($company); $c++) {
+                    $com = $company[$c];
+                    $perCom = new PersonCompany();
+                    foreach ($com as $key => $value) {
+                        $perCom->$key = $value;
+                    }
+                    $perCom->person_id = $candidate->id;
+                    $perCom->created_by = Session::get('id');
+                    $perCom->save();
                 }
-                $perS->person_id = $candidate->id;
-                $perS->created_by = Session::get('id');
-                $perS->save();
-            }
-            for ($t = 0; $t < count($training); $t++) {
-                $tr = $training[$t];
-                $perTr = new PersonTraining();
-                foreach ($tr as $key => $value) {
-                    $perTr->$key = $value;
+                for ($s = 0; $s < count($school); $s++) {
+                    $scl = $school[$s];
+                    $perS = new PersonSchool();
+                    foreach ($scl as $key => $value) {
+                        $perS->$key = $value;
+                    }
+                    $perS->person_id = $candidate->id;
+                    $perS->created_by = Session::get('id');
+                    $perS->save();
                 }
-                $perTr->person_id = $candidate->id;
-                $perTr->created_by = Session::get('id');
-                $perTr->save();
+                for ($t = 0; $t < count($training); $t++) {
+                    $tr = $training[$t];
+                    $perTr = new PersonTraining();
+                    foreach ($tr as $key => $value) {
+                        $perTr->$key = $value;
+                    }
+                    $perTr->person_id = $candidate->id;
+                    $perTr->created_by = Session::get('id');
+                    $perTr->save();
+                }
             }
+            return response($candidate->id);
         }
-        return response($candidate->id);
     }
 
     public function getEdit($id) {
@@ -190,60 +196,67 @@ class CandidateController extends BaseController {
         $school = request()->input('school');
         $training = request()->input('training');
 
-        $candidate = Candidate::find($person['id']);
-        foreach ($person as $key => $value) {
-            $candidate->$key = $value;
-        }
-        $candidate->updated_by = Session::get('id');
-        $candidate->save();
+        $exist = Candidate::where('tel', $person['tel'])->where('id', '<>', $person['id'])->first();
 
-        if ($person['type'] == 'basic') {
-            PersonCompany::where('person_id', $person['id'])->delete();
-            for ($c = 0; $c < count($company); $c++) {
-                $com = $company[$c];
-                $perCom = new PersonCompany();
-                foreach ($com as $key => $value) {
-                    if ($key != 'id') {
-                        $perCom->$key = $value;
-                    }
-                }
-                $perCom->person_id = $candidate->id;
-                $perCom->created_by = Session::get('id');
-                $perCom->save();
+        if ($exist) {
+            return response(-1);
+        } else {
+
+            $candidate = Candidate::find($person['id']);
+            foreach ($person as $key => $value) {
+                $candidate->$key = $value;
             }
-            PersonSchool::where('person_id', $person['id'])->delete();
-            for ($s = 0; $s < count($school); $s++) {
-                $scl = $school[$s];
-                $perS = new PersonSchool();
-                foreach ($scl as $key => $value) {
-                    if ($key != 'id') {
-                        $perS->$key = $value;
+            $candidate->updated_by = Session::get('id');
+            $candidate->save();
+
+            if ($person['type'] == 'basic') {
+                PersonCompany::where('person_id', $person['id'])->delete();
+                for ($c = 0; $c < count($company); $c++) {
+                    $com = $company[$c];
+                    $perCom = new PersonCompany();
+                    foreach ($com as $key => $value) {
+                        if ($key != 'id') {
+                            $perCom->$key = $value;
+                        }
                     }
+                    $perCom->person_id = $candidate->id;
+                    $perCom->created_by = Session::get('id');
+                    $perCom->save();
                 }
-                $perS->person_id = $candidate->id;
-                $perS->created_by = Session::get('id');
-                $perS->save();
-            }
-            PersonTraining::where('person_id', $person['id'])->delete();
-            for ($t = 0; $t < count($training); $t++) {
-                $tr = $training[$t];
-                $perTr = new PersonTraining();
-                foreach ($tr as $key => $value) {
-                    if ($key != 'id') {
-                        $perTr->$key = $value;
+                PersonSchool::where('person_id', $person['id'])->delete();
+                for ($s = 0; $s < count($school); $s++) {
+                    $scl = $school[$s];
+                    $perS = new PersonSchool();
+                    foreach ($scl as $key => $value) {
+                        if ($key != 'id') {
+                            $perS->$key = $value;
+                        }
                     }
+                    $perS->person_id = $candidate->id;
+                    $perS->created_by = Session::get('id');
+                    $perS->save();
                 }
-                $perTr->person_id = $candidate->id;
-                $perTr->created_by = Session::get('id');
-                $perTr->save();
+                PersonTraining::where('person_id', $person['id'])->delete();
+                for ($t = 0; $t < count($training); $t++) {
+                    $tr = $training[$t];
+                    $perTr = new PersonTraining();
+                    foreach ($tr as $key => $value) {
+                        if ($key != 'id') {
+                            $perTr->$key = $value;
+                        }
+                    }
+                    $perTr->person_id = $candidate->id;
+                    $perTr->created_by = Session::get('id');
+                    $perTr->save();
+                }
             }
+            Hunt::where('person_id', $candidate->id)->update(['person_id' => $candidate->id, 'person_name' => $candidate->name]);
+            HuntReport::where('person_id', $candidate->id)->update(['person_id' => $candidate->id, 'person_name' => $candidate->name]);
+            HuntFace::where('person_id', $candidate->id)->update(['person_id' => $candidate->id, 'person_name' => $candidate->name]);
+            HuntSuccess::where('person_id', $candidate->id)->update(['person_id' => $candidate->id, 'person_name' => $candidate->name]);
+            HuntResult::where('person_id', $candidate->id)->update(['person_id' => $candidate->id, 'person_name' => $candidate->name]);
+            return response($candidate->id);
         }
-        Hunt::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
-        HuntReport::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
-        HuntFace::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
-        HuntSuccess::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
-        HuntResult::where('person_id', $candidate->id)->update(['person_id'=>$candidate->id, 'person_name'=>$candidate->name]);
-        return response($candidate->id);
     }
 
     public function getHuntList() {

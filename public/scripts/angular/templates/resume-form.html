@@ -165,12 +165,12 @@
                 <label class="control-label col-xs-4">居住地</label>
                 <div class="col-xs-8">
                     <div class="col-xs-6 no-padding-left">
-                        <select kendo-drop-down-list ng-model="person.location.p" name="location-province" k-data-source="locationData.p" k-data-text-field="'name'" k-data-value-field="'name'" k-change="locationData.change" class="form-control size-full">
+                        <select kendo-drop-down-list ng-model="person.location.p" name="location-province" k-options="kendoConfig.location.p" class="form-control size-full" required>
                             <option value="-1" disabled>-- 请选择 --</option>
                         </select>
                     </div>
                     <div class="col-xs-6 no-padding-right">
-                        <select kendo-drop-down-list ng-model="person.location.c" name="location-city" k-data-source="locationData.c" k-data-text-field="'name'" k-data-value-field="'name'" class="form-control size-full">
+                        <select kendo-drop-down-list ng-model="person.location.c" name="location-city" k-options="kendoConfig.location.c" class="form-control size-full">
 
                         </select>
                     </div>
@@ -180,12 +180,12 @@
                 <label class="control-label col-xs-4">户籍所在地</label>
                 <div class="col-xs-8">
                     <div class="col-xs-6 no-padding-left">
-                        <select kendo-drop-down-list ng-model="person.belong.p" name="belong-province" k-data-source="belongData.p" k-data-text-field="'name'" k-data-value-field="'name'" k-change="belongData.change" class="form-control size-full">
+                        <select kendo-drop-down-list ng-model="person.belong.p" name="belong-province" k-options="kendoConfig.belong.p" class="form-control size-full">
                             <option value="-1" disabled>-- 请选择 --</option>
                         </select>
                     </div>
                     <div class="col-xs-6 no-padding-right">
-                        <select kendo-drop-down-list ng-model="person.belong.c" name="belong-city" k-data-source="belongData.c" k-data-text-field="'name'" k-data-value-field="'name'" class="form-control size-full">
+                        <select kendo-drop-down-list ng-model="person.belong.c" name="belong-city" k-options="kendoConfig.belong.c" class="form-control size-full">
 
                         </select>
                     </div>
