@@ -140,7 +140,7 @@
                         culture: 'zh-CN',
                         depth: 'decade',
                         start: 'decade',
-                        value: new Date(),
+                        //value: new Date(),
                         format: 'yyyy'
                     }
                 };

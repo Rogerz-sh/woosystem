@@ -3764,7 +3764,7 @@
         };
 
         function getTop10Rank() {
-            var d = new Date(), year = d.getFullYear(), month = d.getMonth(), day = d.getDate(), season = Math.floor((month + 1) / 3) * 3, half = Math.floor((month + 1) / 6) * 6;
+            var d = new Date(), year = d.getFullYear(), month = d.getMonth(), day = d.getDate(), season = Math.floor(month / 3) * 3, half = Math.floor(month / 6) * 6;
             var dates = {
                 m_sdate: new Date(year, month, 1).format('yyyy-mm-dd 00:00:00'),
                 m_edate: new Date(year, month + 1, 0).format('yyyy-mm-dd 00:00:00'),
