@@ -529,4 +529,35 @@ class HuntController extends BaseController {
         $rst = HuntResult::where('hunt_id', $hunt_id)->get();
         return response($rst);
     }
+
+    public function postJoinHuntSelect() {
+        $job_id = request()->input('job_id');
+        $job_name = request()->input('job_name');
+        $company_id = request()->input('company_id');
+        $company_name = request()->input('company_name');
+        $user_id = Session::get('id');
+        $user_name = Session::get('nickname');
+
+        $exist = HuntSelect::where('job_id', $job_id)->first();
+        if ($exist) {
+            $exist->user_ids = $exist->user_ids.','.$user_id;
+            $exist->user_names = $exist->user_names.','.$user_name;
+            $exist->save();
+
+            return response($exist);
+        } else {
+            $hs = new HuntSelect();
+            $hs->job_id = $job_id;
+            $hs->job_name = $job_name;
+            $hs->company_id = $company_id;
+            $hs->company_name = $company_name;
+            $hs->user_ids = $user_id;
+            $hs->user_names = $user_name;
+            $hs->type = '一级';
+            $hs->status = '进行中';
+            $hs->save();
+
+            return response($hs);
+        }
+    }
 }

@@ -25,7 +25,11 @@ class JobController extends BaseController {
     }
 
     public function getJsonJobListData () {
-        $data = Job::orderBy('created_at', 'desc')->get();
+        $data = Job::join('company', 'jobs.company_id', '=', 'company.id')
+            ->leftJoin('hunt_select', 'jobs.id', '=', 'hunt_select.job_id')
+            ->select('jobs.id', 'jobs.name', 'jobs.company_id', 'jobs.company_name', 'company.industry', 'jobs.salary', 'jobs.area', 'jobs.sellpoint', 'jobs.created_at', 'jobs.updated_at', 'hunt_select.user_names', 'hunt_select.user_ids', 'hunt_select.status')
+            //->whereNotNull('hunt_select.status')
+            ->orderBy('jobs.created_at', 'desc')->get();
         return response($data);
     }
 

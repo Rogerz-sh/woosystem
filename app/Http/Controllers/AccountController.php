@@ -6,6 +6,7 @@
  * Time: 下午4:08
  */
 namespace App\Http\Controllers;
+use App\Logs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -21,12 +22,16 @@ class AccountController extends BaseController {
         $user = User::where('name', $name)->where('password', md5($password))->first();
 
         if ($user) {
-
             if ($user->status == 1) {
                 Session::set('id', $user->id);
                 Session::set('name', $user->name);
                 Session::set('nickname', $user->nickname);
                 Session::set('power', $user->power);
+                $log = new Logs();
+                $log->type = 'login';
+                $log->detail = request()->ip();
+                $log->created_by = Session::get('id');
+                $log->save();
                 return response(['status' => 1, 'err_code' => '-1', 'err_msg' => '']);
             } else {
                 return response(['status'=>0, 'err_code'=>'forbid', 'err_msg'=>'账户已被禁用']);
