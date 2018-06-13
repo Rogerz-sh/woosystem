@@ -243,15 +243,18 @@ $(function () {
             {field: 'name', title: '姓名', template: getName},
             {field: 'job', title: '目前职位'},
             {field: 'company', title: '所在公司'},
-            {field: 'source', title: '简历来源'},
+            {field: 'year', title: '工作年限'},
+            {field: 'location', title: '居住地'},
             {field: 'tel', title: '电话'},
-            //{field: 'user_name', title: '录入人'},
             {field: 'created_at', title: '录入时间', template: getDate, filterable: false, width: 150},
+            {field: 'dynamic', title: '寻访记录', template: '<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" title="#:dynamic || \'\'#">#:dynamic || "无"#</div>', filterable: false, width: 200},
             {
                 title: '操作',
-                template: '<a href="\\#/candidate/detail/#:person_id#" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-search"></i></a>' +
-                '<a data-id="#:id#" class="btn btn-danger btn-xs margin-left-10"><i class="fa fa-trash-o"></i></a>',
-                width: 80
+                template: '<a href="\\#/candidate/detail/#:person_id#" target="_blank" class="btn btn-info btn-xs" title="查看简历"><i class="fa fa-search"></i></a>' +
+                '<a data-id="#:id#" class="btn btn-danger btn-xs margin-left-10 _delete" title="从收藏夹删除"><i class="fa fa-trash-o"></i></a>' +
+                '<a data-id="#:id#" class="btn btn-primary btn-xs margin-left-10 _view" title="查看收藏信息"><i class="fa fa-book"></i></a>' +
+                '<a data-id="#:id#" class="btn btn-primary btn-xs margin-left-10 _edit" title="编辑收藏信息"><i class="fa fa-edit"></i></a>',
+                width: 150
             }
         ],
         //filterable: {mode: 'row'},
@@ -272,7 +275,7 @@ $(function () {
         return item.type === 'basic' ? '常规简历' : '附件简历';
     }
 
-    $('#grid').delegate('.btn-danger', 'click', function (e) {
+    $('#grid').delegate('._delete', 'click', function (e) {
         var id = $(this).data('id');
         $.$modal.confirm('确定要从该收藏夹中删除吗?', function (isOk) {
             if (!isOk) return;
@@ -284,6 +287,259 @@ $(function () {
                 }
             })
         })
+    });
+
+    $('#grid').delegate('._view', 'click', function (e) {
+        var id = $(this).data('id'), item = grid.dataSource.get(id).toJSON();
+        console.log(item);
+        $.$modal.dialog({
+            title: '查看收藏信息',
+            destroy: true,
+            size: 'lg',
+            content: '' +
+            '<div class="flex flex-row" id="favorite_info">' +
+                '<div style="width: 400px; padding: 10px; border-right: 1px dashed #aaa;">' +
+                    '<h3 class="margin-top-5">{{person.name}} <small>{{person.sex == "男" ? "先生" : item.sex == "女" ? "女士" : ""}}</small></h3>' +
+                    '<p><span v-if="person.age" class="margin-right-10"><span class="blue">{{person.age}}</span>岁</span> / <span v-if="person.year" class="margin-left-10">工作年限：<span class="blue">{{person.year}}</span>年</span></p>' +
+                    '<p><span v-if="person.location" class="margin-right-10">居住地：<span class="blue">{{person.location}}</span></span> / <span v-if="person.tel" class="margin-left-10">手机：<span class="blue">{{person.tel}}</span></span></p>' +
+                    '<p v-if="person.job">目前职位：<span class="blue">{{person.job}}</span></p>' +
+                    '<p v-if="person.company">所在公司：<span class="blue">{{person.company}}</span></p>' +
+                    '<hr>' +
+                    '<p v-if="salary_now">目前月薪：<span class="blue">{{salary_now}}</span>元</p>' +
+                    '<p v-if="salary_year">目前年薪：<span class="blue">{{salary_year}}</span></p>' +
+                    '<p v-if="salary_wish">期望薪资：<span class="blue">{{salary_wish}}</span></p>' +
+                    '<p v-if="target_company">目标公司：<span class="blue">{{target_company}}</span></p>' +
+                '</div>' +
+                '<div class="flex-1 flex flex-col" style="background: #fdfce7; border-radius: 5px; padding: 0 10px;">' +
+                    '<div class="flex-1"><div style="max-height: 500px; overflow-y: auto;"><div class="dark-gray text-center margin-top-5" v-if="dynamics.length == 0">暂时没有寻访记录</div><favorite-dynamic v-for="dynamic in dynamics" :dynamic="dynamic"></favorite-dynamic></div></div>' +
+                    '<div class="margin-top-10"><div><textarea class="form-control" rows="3" style="resize: none; font-size: 12px;" v-model="dynamic_text"></textarea></div><div><a class="btn btn-sm btn-info width-200 margin-top-5" v-on:click="addDynamic()">添加寻访记录</a></div></div>' +
+                '</div>' +
+            '</div>',
+            footer: null,
+            onLoaded: function() {
+                var self = this, dom = self.dom;
+                dom.find('#favorite_info').closest('.modal').width(1200);
+                var eventBus = new Vue();
+                Vue.component('favorite-dynamic', {
+                    props: ['dynamic'],
+                    methods: {
+                        deleteDynamic: function (id) {
+                            var _this = this;
+                            $.$modal.confirm(['删除寻访记录', '确认要删除这条记录吗？'], function (isOk) {
+                                if (!isOk) return;
+                                eventBus.$emit('delete-dynamic', id);
+                            });
+                        }
+                    },
+                    template: '' +
+                    '<div class="flex flex-col border-radius-5 margin-top-5 padding-10 bg-dark-yellow white">' +
+                        '<p class="flex-1">{{dynamic.text}}</p>' +
+                        '<div class="border-top border-color-yellow dark-gray padding-top-5">' +
+                            '<span class="margin-bottom-5">{{new Date(dynamic.date).format("yyyy-mm-dd hh:MM")}}</span>' +
+                            '<span class="pull-right"><i class="fa fa-edit blue margin-right-10 pointer hidden" title="编辑"></i><i class="fa fa-trash-o red pointer" title="删除" v-on:click="deleteDynamic(dynamic.id)"></i></span>' +
+                        '</div>' +
+                    '</div>'
+                });
+                var vue = new Vue({
+                    el: '#favorite_info',
+                    data: {
+                        salary_now: '',
+                        salary_year: '',
+                        salary_wish: '',
+                        target_company: '',
+                        person: item,
+                        dynamics: [],
+                        dynamic_text: ''
+                    },
+                    methods: {
+                        addDynamic: function () {
+                            var _this = this, date = new Date().format('yyyy-mm-dd hh:MM');
+                            $.$ajax({
+                                url: '/personal/add-favorite-dynamic',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {fav_tar_id: item.id, text: _this.dynamic_text, date: date},
+                                success: function (res) {
+                                    if (res > 0) {
+                                        _this.dynamics.unshift({id: res, fav_tar_id: item.id, text: _this.dynamic_text, date: date});
+                                        _this.dynamic_text = '';
+                                    } else {
+                                        $.$modal.alert('保存失败！');
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    created: function () {
+                        var _this = this;
+                        var getInfo = function () {
+                            return new Promise(function (resolve, reject) {
+                                $.$ajax({
+                                    url: '/personal/json-favorite-info',
+                                    type: 'GET',
+                                    dataType: 'json',
+                                    data: {fav_tar_id: item.id},
+                                    success: function (res) {
+                                        if (res) {
+                                            _this.salary_now = res.salary_now || '';
+                                            _this.salary_year = res.salary_year || '';
+                                            _this.salary_wish = res.salary_wish || '';
+                                            _this.target_company = res.target_company || '';
+                                            resolve();
+                                        } else {
+                                            reject();
+                                        }
+                                    },
+                                    error: function (e) {
+                                        reject(e);
+                                    }
+                                });
+                            });
+                        }
+                        var getDynamic = function () {
+                            return new Promise(function (resolve, reject) {
+                                $.$ajax({
+                                    url: '/personal/json-favorite-dynamic',
+                                    type: 'GET',
+                                    dataType: 'json',
+                                    data: {fav_tar_id: item.id},
+                                    success: function (res) {
+                                        if (res) {
+                                            _this.dynamics = res;
+                                            resolve();
+                                        } else {
+                                            reject();
+                                        }
+                                    },
+                                    error: function (e) {
+                                        reject(e);
+                                    }
+                                });
+                            });
+                        }
+                        Promise.all([getInfo(), getDynamic()]).then(function() {
+                            self.show();
+                        }).catch(function(e) {
+                            console.log(e);
+                        });
+                        eventBus.$on('delete-dynamic', function (id) {
+                            $.$ajax({
+                                url: '/personal/delete-favorite-dynamic',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {id: id},
+                                success: function (res) {
+                                    if (res > 0) {
+                                        var idx = _this.dynamics.at({id: id});
+                                        if (idx > -1) _this.dynamics.splice(idx, 1);
+                                    } else {
+                                        $.$modal.alert('删除失败！');
+                                    }
+                                }
+                            });
+                        })
+                    }
+                });
+            }
+        });
+    });
+
+    $('#grid').delegate('._edit', 'click', function (e) {
+        var id = $(this).data('id'), item = grid.dataSource.get(id);
+        console.log(item);
+        $.$modal.dialog({
+            title: '编辑收藏信息',
+            destroy: true,
+            content: '<form class="form form-horizontal" id="form">' +
+            '<div class="form-group">' +
+            '<label class="control-label col-xs-3">候选人姓名：</label>' +
+            '<div class="col-xs-9 form-control-static"><span id="person_name" class="blue bold"></span></div>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label class="control-label col-xs-3"><span class="red">*</span> 目前月薪：</label>' +
+            '<div class="col-xs-8 form-control-static"><div class="input-group"><input type="text" class="form-control" id="salary_now" v-model="salary_now"><span class="input-group-addon">元</span></div></div>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label class="control-label col-xs-3">目前年薪：</label>' +
+            '<div class="col-xs-8 form-control-static"><input type="text" class="form-control" v-model="salary_year"></div>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label class="control-label col-xs-3">期望薪资：</label>' +
+            '<div class="col-xs-8 form-control-static"><input type="text" class="form-control" v-model="salary_wish"></div>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label class="control-label col-xs-3">目标公司：</label>' +
+            '<div class="col-xs-8 form-control-static"><input type="text" class="form-control" v-model="target_company"></div>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label class="control-label col-xs-3"></label>' +
+            '<div class="col-xs-8"><div class="btn btn-sm btn-success col-xs-2" v-on:click="submit()" :disabled="!is_valid">确定</div><div class="btn btn-sm btn-success col-xs-2 margin-left-10" v-on:click="cancel()">取消</div></div>' +
+            '</div>' +
+            '</form>',
+            footer: null,
+            onLoaded: function() {
+                var self = this, dom = self.dom;
+                $('#person_name', dom).html('{0} <small class="dark-gray">{1}</small>'.format(item.name, item.sex == '男' ? '先生' : item.sex == '女' ? '女士' : ''));
+                var vue = new Vue({
+                    el: '#form',
+                    data: {
+                        salary_now: '',
+                        salary_year: '',
+                        salary_wish: '',
+                        target_company: ''
+                    },
+                    computed: {
+                        is_valid: function () {
+                            return this.salary_now.toString().trim() !== ''
+                        }
+                    },
+                    methods: {
+                        submit: function () {
+                            var _this = this;
+                            $.$ajax({
+                                url: '/personal/edit-favorite-info',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {fav_tar_id: item.id, salary_now: _this.salary_now, salary_year: _this.salary_year, salary_wish: _this.salary_wish, target_company: _this.target_company},
+                                success: function (res) {
+                                    if (res > 0) {
+                                        $.$modal.alert('保存成功！');
+                                        self.hide();
+                                    } else {
+                                        $.$modal.alert('保存失败！');
+                                    }
+                                }
+                            });
+                        },
+                        cancel: function () {
+                            self.hide();
+                        }
+                    },
+                    created: function () {
+                        var _this = this;
+                        $.$ajax({
+                            url: '/personal/json-favorite-info',
+                            type: 'GET',
+                            dataType: 'json',
+                            data: {fav_tar_id: item.id},
+                            success: function (res) {
+                                _this.salary_now = res.salary_now || '';
+                                _this.salary_year = res.salary_year || '';
+                                _this.salary_wish = res.salary_wish || '';
+                                _this.target_company = res.target_company || '';
+                                $('#salary_now', dom).kendoNumericTextBox({
+                                    spinners: false,
+                                    min: 0,
+                                    format: '',
+                                    value: _this.salary_now
+                                });
+                                self.show();
+                            }
+                        });
+                    }
+                });
+            }
+        });
     });
 
     $('#add').click(function () {

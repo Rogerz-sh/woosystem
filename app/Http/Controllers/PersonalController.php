@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 use App\Areas;
 use App\Favorite;
 use App\FavoriteTarget;
+use App\FavoriteTargetDynamic;
 use App\Groups;
 use App\User;
 use Illuminate\Routing\Controller as BaseController;
@@ -81,7 +82,15 @@ class PersonalController extends BaseController {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')
                 ->whereRaw('favorite_targets.favorite_id in (select favorites.id from favorites where favorites.id = ' . $favorite_id . ' or favorites.parent_id = ' . $favorite_id . ')');
         }
-        $favorite_targets = $favorite_targets->select('favorite_targets.id', 'person.id as person_id', 'person.name', 'person.age', 'person.sex', 'person.degree', 'person.job', 'person.company', 'person.tel', 'person.source', 'person.created_at', 'person.updated_at')->get();
+        $favorite_targets = $favorite_targets->select(DB::raw('favorite_targets.id,
+        person.id as person_id,
+        person.name, person.age,
+        person.year, person.sex,
+        person.degree, person.job,
+        person.company, person.tel,
+        person.location, person.source,
+        person.created_at, person.updated_at,
+        (select text from favorite_target_dynamics where favorite_target_dynamics.fav_tar_id = favorite_targets.id and deleted_at is null order by date desc limit 1) as dynamic'))->get();
         return response($favorite_targets);
     }
 
@@ -155,6 +164,58 @@ class PersonalController extends BaseController {
         } else {
             return response(0);
         }
+    }
+
+    public function getJsonFavoriteInfo() {
+        $id = request()->input('fav_tar_id');
+        $fav_tar = FavoriteTarget::find($id);
+        return response($fav_tar);
+    }
+
+    public function getJsonFavoriteDynamic() {
+        $id = request()->input('fav_tar_id');
+        $dynamics = FavoriteTargetDynamic::where('fav_tar_id', $id)->orderBy('date', 'desc')->get();
+        return response($dynamics);
+    }
+
+    public function postEditFavoriteInfo() {
+        $id = request()->input('fav_tar_id');
+        $salary_now = request()->input('salary_now');
+        $salary_year = request()->input('salary_year');
+        $salary_wish = request()->input('salary_wish');
+        $target_company = request()->input('target_company');
+
+        $fav_tar = FavoriteTarget::find($id);
+        $fav_tar->salary_now = $salary_now;
+        $fav_tar->salary_year = $salary_year;
+        $fav_tar->salary_wish = $salary_wish;
+        $fav_tar->target_company = $target_company;
+        $fav_tar->save();
+
+        return response(1);
+    }
+
+    public function postAddFavoriteDynamic() {
+        $fav_tar_id = request()->input('fav_tar_id');
+        $text = request()->input('text');
+        $date = request()->input('date');
+
+        $dynamic = new FavoriteTargetDynamic();
+        $dynamic->fav_tar_id = $fav_tar_id;
+        $dynamic->text = $text;
+        $dynamic->date = $date;
+        $dynamic->save();
+
+        return response($dynamic->id);
+    }
+
+    public function postDeleteFavoriteDynamic() {
+        $id = request()->input('id');
+
+        $dynamic = FavoriteTargetDynamic::find($id);
+        $dynamic->delete();
+
+        return response($dynamic->id);
     }
 
 }

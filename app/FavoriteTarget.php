@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FavoriteTarget extends Model
 {
-    //use SoftDeletes;
+    use SoftDeletes;
 
     protected $table = 'favorite_targets';
 }

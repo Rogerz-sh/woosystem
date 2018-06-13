@@ -127,7 +127,9 @@ class PerformanceController extends BaseController {
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('count(hunt_face.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-                ->where('hunt_face.type', '一面')->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
+                ->where('hunt_face.type', '一面')
+                ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                ->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
                 ->groupBy('hunt_face.created_by')->orderBy('rank_result', 'desc')->get();
 
             $offer = HuntReport::join('users', 'hunt_report.created_by', '=', 'users.id')
@@ -183,7 +185,9 @@ class PerformanceController extends BaseController {
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('count(hunt_face.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
-                ->where('hunt_face.type', '一面')->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
+                ->where('hunt_face.type', '一面')
+                ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                ->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
                 ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
 
             $offer = HuntReport::join('users', 'hunt_report.created_by', '=', 'users.id')
