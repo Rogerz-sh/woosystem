@@ -59,9 +59,9 @@ class CandidateController extends BaseController {
             if (isset($filter['tel'])) {
                 $whereStr = $whereStr.' and tel like "%'.$filter['tel'].'%"';
             }
-            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name from person'.$whereStr.' order by created_at desc limit 1000');
+            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name, (select count(hunt.id) from hunt where hunt.person_id = person.id) as hunt_count from person'.$whereStr.' order by created_at desc limit 1000');
         } else {
-            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name from person order by created_at desc limit 1000');
+            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name, (select count(hunt.id) from hunt where hunt.person_id = person.id) as hunt_count from person order by created_at desc limit 1000');
         }
         return response([$candidate, $filter]);
     }

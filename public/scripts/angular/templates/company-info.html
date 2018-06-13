@@ -25,13 +25,13 @@
         <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="company.advantage"></p>
     </div>
     <hr>
-    <div class="row" power-checker allowed="3,9" cond="{{company.created_by == session.id}}">
+    <div class="row" power-checker allowed="9" cond="{{company.created_by == session.id}}">
         <span class="padding-15"><i class="orange fa fa-user"></i> <span ng-bind="company.contact"></span></span>/
         <span class="padding-15"><i class="orange fa fa-mobile"></i> <span ng-bind="company.tel"></span></span>/
         <span class="padding-15"><i class="orange fa fa-envelope"></i> <span ng-bind="company.email"></span></span>/
         <span class="padding-15"><i class="orange fa fa-info-circle"></i> <span ng-bind="company.other"></span></span>
     </div>
-    <div class="row" power-checker allowed="3,9" cond="{{company.created_by == session.id}}" ng-if="company.description">
+    <div class="row" power-checker allowed="9" cond="{{company.created_by == session.id}}" ng-if="company.description">
         <p class="padding-left-15 padding-right-15 padding-top-15 bold">备注信息：</p>
         <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="company.description"></p>
     </div>

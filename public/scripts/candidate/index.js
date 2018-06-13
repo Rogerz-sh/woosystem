@@ -88,8 +88,31 @@ $(function () {
         })
     });
 
+    $('#grid').delegate('.badge', 'click', function (e) {
+        var id = $(this).data('id'), item = $('#grid').data('kendoGrid').dataSource.get(id);
+        $.$ajax({
+            url: '/candidate/hunt-list',
+            type: 'GET',
+            dataType: 'json',
+            data: {id: id},
+            success: function (res) {
+                var list = [];
+                res.forEach(function (v) {
+                    list.push('<p>{0} -- <small class="dark-gray">{1}</small></p>'.format(v.job_name, v.company_name));
+                });
+                $.$modal.dialog({
+                    title: '[<b class="blue">{0}</b>]已推荐岗位'.format(item.name),
+                    content: list.join(''),
+                    destroy: true,
+                    footer: null
+                }).show();
+            }
+        });
+    });
+
     function getName(item) {
-        return '<span class="person-{0}">{1} <small class="dark-gray">{2}</small> </span>'.format(item.type, item.name, item.sex=="男"?"先生":"女士");
+        var icon = item.hunt_count > 0 ? '<span class="badge pointer bg-dark-yellow" data-id="{0}" title="已推荐{1}个职位，点击可查看">{1}</span>'.format(item.id, item.hunt_count) : ''
+        return '<span class="person-{0}">{1} <small class="dark-gray">{2}</small> </span> {3}'.format(item.type, item.name, item.sex=="男"?"先生":"女士", icon);
     }
 
     function getDate(item) {

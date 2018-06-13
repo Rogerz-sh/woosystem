@@ -837,9 +837,9 @@
         };
 
         function getJobName(item) {
-            var types = {'三级': '<i class="fa fa-exclamation-circle dark-gray" title="重要程度：三级"></i>', '二级': '<i class="fa fa-exclamation-circle yellow" title="重要程度：二级"></i>', '一级': '<i class="fa fa-exclamation-circle red" title="重要程度：一级"></i>'},
-                status = {'已停止': '<i class="fa fa-times-circle dark-gray" title="状态：已停止"></i>', '已暂停': '<i class="fa fa-minus-circle yellow" title="状态：已暂停"></i>', '进行中': '<i class="fa fa-check-circle green" title="状态：进行中"></i>'};
-            return '{2} {3} {1} <a ng-click="viewJob({0})"><i class="fa fa-search pointer"></i></a>'.format(item.job_id, item.job_name, types[item.type], status[item.status]);
+            //var types = {'三级': '<i class="fa fa-exclamation-circle dark-gray" title="重要程度：三级"></i>', '二级': '<i class="fa fa-exclamation-circle yellow" title="重要程度：二级"></i>', '一级': '<i class="fa fa-exclamation-circle red" title="重要程度：一级"></i>'},
+            //    status = {'已停止': '<i class="fa fa-times-circle dark-gray" title="状态：已停止"></i>', '已暂停': '<i class="fa fa-minus-circle yellow" title="状态：已暂停"></i>', '进行中': '<i class="fa fa-check-circle green" title="状态：进行中"></i>'};
+            return '{1} <a ng-click="viewJob({0})"><i class="fa fa-search pointer"></i></a>'.format(item.job_id, item.job_name);
         }
 
         function getName(item) {

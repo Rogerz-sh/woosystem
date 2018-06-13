@@ -2,7 +2,75 @@
  * Created by roger on 15/12/8.
  */
 $(function () {
-    $('#grid').kendoGrid({
+    var sessionId = $('meta[name="_sessionId"]').attr('content');
+
+    var optionList = {
+        industry: [
+            "互联网•游戏•软件",
+            "电子•通信•硬件",
+            "房地产•建筑•物业",
+            "金融",
+            "广告•传媒•教育•文化",
+            "制药•医疗,消费品",
+            "汽车•机械•制造",
+            "服务•外包•中介",
+            "交通•贸易•物流",
+            "能源•化工•环保",
+            "政府•农林牧渔•其他"
+        ],
+        type: [
+            "高级管理",
+            "投资类",
+            "财务类",
+            "技术类",
+            "市场营销类",
+            "销售/客服",
+            "法务/风控类",
+            "人力资源/行政类"
+        ],
+        status: ['进行中','已暂停','已停止','已上岗'],
+        created_at: [
+            { value: '10', text: '最近10天' },
+            { value: '30', text: '最近30天' },
+            { value: '60', text: '最近60天' },
+        ]
+    };
+
+    $('#industry,#type,#status').each(function (i, ele) {
+        var id = $(ele).attr('id');
+        $(ele).kendoDropDownList({
+            dataSource: optionList[id],
+            optionLabel: '全部'
+        });
+    });
+
+    $('#created_at').kendoDropDownList({
+        dataSource: optionList['created_at'],
+        dataTextField: 'text',
+        dataValueField: 'value',
+        optionLabel: '全部'
+    });
+
+    $('#search').click(function () {
+        var data = {}, filters = [];
+        ['name', 'company_name', 'industry', 'type', 'area', 'status', 'created_at'].map(function(v){data[v] = $('#'+v).val().trim()});
+
+        for (var n in data) {
+            if (data[n]) {
+                if ($('#'+n).is('input')) {
+                    filters.push({field: n, operator: 'contains', value: data[n]});
+                } else if (n == 'created_at') {
+                    filters.push({field: n, operator: 'gte', value: Date.translate('now-' + data[n]).format()});
+                } else {
+                    filters.push({field: n, operator: 'eq', value: data[n]});
+                }
+            }
+        }
+
+        $('#grid').data('kendoGrid').dataSource.filter(filters);
+    });
+
+    var grid = $('#grid').kendoGrid({
         dataSource: {
             data: [],
             pageSize: 10,
@@ -19,16 +87,19 @@ $(function () {
             {field: 'company_name', title: '所属企业'},
             {field: 'area', title: '工作地点'},
             {field: 'salary', title: '岗位薪资'},
-            {field: 'updated_at', title: '更新时间', template: getDate},
-            {title: '操作', template: '<a href="\\#/job/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
-            '<a href="\\#/job/detail/#:id#" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
-            '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140}
+            {field: 'sellpoint', title: '职位卖点', template: '<div style="width: 200px; overflow-x: hidden; text-overflow: ellipsis; "><span style="white-space: nowrap;" title="#:sellpoint#">#:sellpoint#</span></div>'},
+            {field: 'created_at', title: '发布时间', template: getDate},
+            {field: 'status', title: '职位状态', template: getStatus},
+            {title: '操作', template: '<a href="\\#/job/edit/#:id#" class="btn btn-default btn-xs" title="编辑"><i class="fa fa-pencil"></i></a> ' +
+            '<a href="\\#/job/detail/#:id#" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a> ' +
+            '<a data-id="#:id#" class="btn btn-success btn-xs" title="加入我的项目"><i class="fa fa-plus-circle"></i></a> ' +
+            '<a data-id="#:id#" class="btn btn-danger btn-xs" title="删除"><i class="fa fa-trash-o"></i></a>', width: 120}
         ],
-        filterable: {mode: 'row'},
+        //filterable: {mode: 'row'},
         scrollable: false,
         pageable: true,
 
-    });
+    }).data('kendoGrid');
 
     $('#grid').delegate('.btn-danger', 'click', function (e) {
         var id = $(this).data('id');
@@ -42,8 +113,53 @@ $(function () {
         })
     });
 
+    $('#grid').delegate('.btn-success', 'click', function (e) {
+        var id = $(this).data('id'), item = grid.dataSource.get(id), user_ids = (item.user_ids || '').split(','), pushType = '';
+        $.$modal.confirm(['加入项目', '确定要加入到项目中吗？'], function (isOk) {
+            if (!isOk) return;
+
+            if (user_ids.length > 0) {
+                if (user_ids.indexOf(sessionId) > -1) {
+                    $.$modal.alert('你已经参与在项目中了!');
+                    return;
+                } else {
+                    pushType = 'join'
+                }
+            } else {
+                pushType = 'new'
+            }
+
+            $.$ajax({
+                url: '/hunt/join-hunt-select',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    job_id: item.id,
+                    job_name: item.job_name,
+                    company_id: item.company_id,
+                    company_name: item.company_name
+                },
+                success: function (res) {
+                    if (res && res.user_ids && res.user_names) {
+                        grid.dataSource.pushUpdate({id: item.id, user_ids: res.user_ids, user_names: res.user_names, status: res.status})
+                    } else {
+                        $.$modal.alert('操作失败');
+                    }
+                }
+            });
+        });
+    });
+
+    function getStatus(item) {
+        if (item.status) {
+            return item.status;
+        } else {
+            return '<span class="dark-gray">尚未加入项目</span>';
+        }
+    }
+
     function getDate(item) {
-        return new Date(item.updated_at.replace(/-/g, '/')).format();
+        return new Date(item.created_at.replace(/-/g, '/')).format();
     }
 
     $.$ajax.get('/job/json-job-list-data', function (res) {
