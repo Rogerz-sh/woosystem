@@ -47,8 +47,12 @@
                     <li>职位动态</li>
                 </ul>
                 <div>
+                    <div class="row" ng-if="job.duty">
+                        <p class="padding-left-15 padding-right-15 padding-top-15 bold">岗位职责：</p>
+                        <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="job.duty"></p>
+                    </div>
                     <div class="row">
-                        <p class="padding-left-15 padding-right-15 padding-top-15 bold">岗位职责及要求：</p>
+                        <p class="padding-left-15 padding-right-15 padding-top-15 bold">任职要求：</p>
                         <p class="padding-left-15 padding-right-15 dark-gray indent" ng-bind="job.request"></p>
                     </div>
                     <div class="row" ng-if="job.department">

@@ -698,6 +698,7 @@
                             var type = {'三级': 1, '二级': 2, '一级': 3};
                             return type[a.type] < type[b.type] ? -1 : type[a.type] === type[b.type] ? 0 : 1;
                         }},
+                        {field: 'updated_at', dir: 'desc'},
                     ]
                 },
                 filterable: {mode: 'row'},

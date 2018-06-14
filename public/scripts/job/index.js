@@ -2,7 +2,7 @@
  * Created by roger on 15/12/8.
  */
 $(function () {
-    var sessionId = $('meta[name="_sessionId"]').attr('content');
+    var sessionId = $('meta[name="_sessionId"]').attr('content'), sessionPower = $('meta[name="_sessionPower"]').attr('content');
 
     var optionList = {
         industry: [
@@ -90,16 +90,25 @@ $(function () {
             {field: 'sellpoint', title: '职位卖点', template: '<div style="width: 200px; overflow-x: hidden; text-overflow: ellipsis; "><span style="white-space: nowrap;" title="#:sellpoint#">#:sellpoint#</span></div>'},
             {field: 'created_at', title: '发布时间', template: getDate},
             {field: 'status', title: '职位状态', template: getStatus},
-            {title: '操作', template: '<a href="\\#/job/edit/#:id#" class="btn btn-default btn-xs" title="编辑"><i class="fa fa-pencil"></i></a> ' +
-            '<a href="\\#/job/detail/#:id#" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a> ' +
-            '<a data-id="#:id#" class="btn btn-success btn-xs" title="加入我的项目"><i class="fa fa-plus-circle"></i></a> ' +
-            '<a data-id="#:id#" class="btn btn-danger btn-xs" title="删除"><i class="fa fa-trash-o"></i></a>', width: 120}
+            {title: '操作', template: getButtons, width: 120}
         ],
         //filterable: {mode: 'row'},
         scrollable: false,
         pageable: true,
 
     }).data('kendoGrid');
+
+    function getButtons(item) {
+        if (['3', '9'].indexOf(sessionPower) > -1) {
+            return '<a href="#/job/edit/{0}" class="btn btn-default btn-xs" title="编辑"><i class="fa fa-pencil"></i></a>\
+                    <a href="#/job/detail/{0}" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a>\
+                    <a data-id="{0}" class="btn btn-success btn-xs" title="加入我的项目"><i class="fa fa-plus-circle"></i></a>\
+                    <a data-id="{0}" class="btn btn-danger btn-xs" title="删除"><i class="fa fa-trash-o"></i></a>'.format(item.id);
+        } else {
+            return '<a href="#/job/detail/{0}" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a>\
+                    <a data-id="{0}" class="btn btn-success btn-xs" title="加入我的项目"><i class="fa fa-plus-circle"></i></a>'.format(item.id);
+        }
+    }
 
     $('#grid').delegate('.btn-danger', 'click', function (e) {
         var id = $(this).data('id');
@@ -135,7 +144,7 @@ $(function () {
                 dataType: 'json',
                 data: {
                     job_id: item.id,
-                    job_name: item.job_name,
+                    job_name: item.name,
                     company_id: item.company_id,
                     company_name: item.company_name
                 },

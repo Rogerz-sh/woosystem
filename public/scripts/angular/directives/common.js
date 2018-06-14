@@ -18,7 +18,7 @@
                     {url: '/', label: '首页', power: [1,2,3,9]},
                     {url: '#', label: '数据管理', power: [1,2,3,9], items: [
                         {url: '/company/list', label: '企业库', power: [9]},
-                        {url: '/job/list', label: '职位库', power: [9]},
+                        {url: '/job/list', label: '职位库', power: [1,2,3,9]},
                         {url: '/candidate/list', label: '简历库', power: [1,2,3,9]},
                     ]},
                     {url: '/bd/list', label: '客户管理', power: [1,2,3,9]},
