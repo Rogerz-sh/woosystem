@@ -59,9 +59,9 @@ class CandidateController extends BaseController {
             if (isset($filter['tel'])) {
                 $whereStr = $whereStr.' and tel like "%'.$filter['tel'].'%"';
             }
-            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name, (select count(hunt.id) from hunt where hunt.person_id = person.id) as hunt_count from person'.$whereStr.' order by created_at desc limit 1000');
+            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name, (select count(hunt_report.id) from hunt_report where hunt_report.person_id = person.id and hunt_report.type = "report" and hunt_report.deleted_at is null) as hunt_count from person'.$whereStr.' order by created_at desc limit 1000');
         } else {
-            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name, (select count(hunt.id) from hunt where hunt.person_id = person.id) as hunt_count from person order by created_at desc limit 1000');
+            $candidate = DB::select('select *, (select nickname from users where users.id = person.created_by) as user_name, (select count(hunt_report.id) from hunt_report where hunt_report.person_id = person.id and hunt_report.type = "report" and hunt_report.deleted_at is null) as hunt_count from person order by created_at desc limit 1000');
         }
         return response([$candidate, $filter]);
     }
@@ -263,5 +263,11 @@ class CandidateController extends BaseController {
         $id = request()->input('id');
         $hunt = DB::table('hunt')->select('id', 'job_name', 'company_name')->where('person_id', $id)->where('deleted_at', null)->get();
         return response($hunt);
+    }
+
+    public function getReportList() {
+        $id = request()->input('id');
+        $report = HuntReport::select('id', 'job_name', 'company_name')->where('person_id', $id)->where('type', 'report')->get();
+        return response($report);
     }
 }

@@ -62,7 +62,8 @@ $(function () {
             {field: 'name', title: '姓名', template: getName},
             {field: 'job', title: '目前职位'},
             {field: 'company', title: '所在公司'},
-            {field: 'source', title: '简历来源'},
+            {field: 'year', title: '工作年限', template: '#:year ? year + "年" : ""#'},
+            {field: 'location', title: '现居住地', template: getLocation},
             {field: 'tel', title: '电话'},
             {field: 'user_name', title: '录入人'},
             {field: 'created_at', title: '录入时间', template: getDate, filterable: false, width: 150},
@@ -91,7 +92,7 @@ $(function () {
     $('#grid').delegate('.badge', 'click', function (e) {
         var id = $(this).data('id'), item = $('#grid').data('kendoGrid').dataSource.get(id);
         $.$ajax({
-            url: '/candidate/hunt-list',
+            url: '/candidate/report-list',
             type: 'GET',
             dataType: 'json',
             data: {id: id},
@@ -117,6 +118,19 @@ $(function () {
 
     function getDate(item) {
         return new Date(item.updated_at.replace(/-/g, '/')).format('yyyy-mm-dd hh:MM');
+    }
+
+    function getLocation(item) {
+        if (item.location) {
+            var arr = item.location.split('-');
+            if (arr[1] && arr[1] != arr[0]) {
+                return arr.slice(0, 2).join('-');
+            } else {
+                return arr[0];
+            }
+        } else {
+            return '';
+        }
     }
 
     function getType(item) {
