@@ -99,11 +99,32 @@ $(function () {
             success: function (res) {
                 var list = [];
                 res.forEach(function (v) {
-                    list.push('<p>{0} -- <small class="dark-gray">{1}</small></p>'.format(v.job_name, v.company_name));
+                    var state = '已加入', date = v.date;
+                    if (v.success_date) {
+                        state = '已上岗';
+                        date = v.success_date;
+                    } else if (v.offer_date) {
+                        state = '已发Offer';
+                        date = v.offer_date;
+                    } else if (v.face_date) {
+                        state = '已面试';
+                        date = v.face_date;
+                    } else if (v.report_date) {
+                        state = '已推荐';
+                        date = v.report_date;
+                    }
+                    list.push('<tr><td>{0}</td><td class="dark-gray">{1}</td><td>{2}</td><td>{3}</td></tr>'.format(v.job_name, v.company_name, state, new Date(date).format()));
                 });
                 $.$modal.dialog({
-                    title: '[<b class="blue">{0}</b>]已推荐岗位'.format(item.name),
-                    content: list.join(''),
+                    title: '[<b class="blue">{0}</b>]的项目信息'.format(item.name),
+                    content: '<table class="table table-bordered">' +
+                                '<thead>' +
+                                    '<tr>' +
+                                        '<th>项目名称</th><th>所属企业</th><th>项目状态</th><th>日期</th>' +
+                                    '</tr>' +
+                                '</thead>' +
+                                '<tbody>{0}</tbody>'.format(list.join('')) +
+                            '</table>',
                     destroy: true,
                     footer: null
                 }).show();
@@ -112,7 +133,7 @@ $(function () {
     });
 
     function getName(item) {
-        var icon = item.hunt_count > 0 ? '<span class="badge pointer bg-dark-yellow" data-id="{0}" title="已推荐{1}个职位，点击可查看">{1}</span>'.format(item.id, item.hunt_count) : ''
+        var icon = item.hunt_count > 0 ? '<span class="badge pointer bg-dark-yellow" data-id="{0}" title="已加入{1}个项目，点击可查看">{1}</span>'.format(item.id, item.hunt_count) : ''
         return '<span class="person-{0}">{1} <small class="dark-gray">{2}</small> </span> {3}'.format(item.type, item.name, item.sex=="男"?"先生":"女士", icon);
     }
 
