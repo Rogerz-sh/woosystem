@@ -350,7 +350,9 @@
     }]);
 
     //controllers for company
-    app.controller('companyController', ['$scope', '$http', '$routeParams', '$location', function ($scope, $http, $routeParams, $location) {
+    app.controller('companyController', ['$scope', '$http', '$routeParams', '$location', 'model', 'token', function ($scope, $http, $routeParams, $location, model, token) {
+        $scope.session = model.getUserSession();
+
         $scope.$on('saved.company', function (e, res) {
             if (~~res > 0) {
                 $.$modal.alert('保存成功！', function () {
@@ -368,9 +370,90 @@
         $scope.company_id = $routeParams.company_id;
 
         if ($location.path() == '/company/detail/'+$routeParams.company_id) {
+
+            var dsFile = new kendo.data.DataSource({
+                transport: {
+                    read: function (option) {
+                        $http.get('/company/file-list', {params: {id: $routeParams.company_id}}).success(function (res) {
+                            option.success(res);
+                        });
+                    }
+                },
+                schema: {
+                    model: {
+                        id: 'id'
+                    }
+                },
+                pageSize: 10
+            });
+
+            $scope.config = {
+                grid: {
+                    dataSource: dsFile,
+                    pageable: true,
+                    scrollable: false,
+                    columns: [
+                        {field: 'name', title: '名称'},
+                        {field: 'filename', title: '文件名'},
+                        {field: 'created_at', title: '上传日期', template: '#:new Date(created_at).format()#'},
+                        {title: '操作', template: '<a href="/file/download-file/?path=#:filepath#&name=#:filename#&coded=1" class="btn btn-info btn-xs"><i class="fa fa-download"></i></a>' +
+                        '<a class="btn btn-danger btn-xs margin-left-5" ng-click="deleteFile(#:id#)" power-checker allowed="all" cond="session.id==#:created_by#"><i class="fa fa-trash-o"></i></a>', width: 75},
+                    ]
+                },
+                file: {
+                    async: {
+                        saveUrl: '/file/upload?_token='+token.getCsrfToken(),
+                        saveField: 'file',
+                    },
+                    success: function (e) {
+                        console.log(e);
+                        $scope.file.filepath = e.response;
+                        $scope.file.filename = e.files[0].name;
+                        //$scope.file.coded = 1;
+                        $scope.$apply();
+                    },
+                    complete: function (e) {
+                        console.log('complete');
+                    }
+                },
+            };
+
+            $scope.file = {
+                name: '',
+                filename: '',
+                filepath: ''
+            };
+
             $http.get('/company/job-list', {params: {id: $routeParams.company_id}}).success(function (res) {
                 $scope.jobs = res;
             });
+
+            $http.get('/company/company-json-data', {params: {id: $routeParams.company_id}}).success(function (res) {
+                $scope.company = res;
+            });
+
+            $scope.saveFile = function () {
+                $http.post('/company/save-file', {name: $scope.file.name, filename: $scope.file.filename, filepath: $scope.file.filepath, company_id: $routeParams.company_id}).success(function (res) {
+                    console.log(res);
+                    dsFile.read();
+                    $scope.win1.close();
+                    $scope.file = {
+                        name: '',
+                        filename: '',
+                        filepath: ''
+                    };
+                });
+            }
+
+            $scope.deleteFile = function (id) {
+                $.$modal.confirm(['删除文件', '确认要删除该文件吗？'], function (isOk) {
+                    if (!isOk) return;
+                    $http.post('/company/delete-file', {id: id}).success(function (res) {
+                        console.log(res);
+                        dsFile.read();
+                    });
+                });
+            }
         }
     }]);
 

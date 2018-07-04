@@ -15,5 +15,43 @@
         <div class="row">
             <div class="col-xs-3 text-center" ng-repeat="job in jobs"><a href="#/job/detail/{{job.id}}" ng-bind="job.name"></a></div>
         </div>
+        <blockquote>
+            <p>文件列表</p>
+        </blockquote>
+        <div class="row">
+            <div class="col-xs-12 margin-bottom-10" power-checker allowed="all" cond="session.id==company.created_by || session.id==9">
+                <div class="btn btn-success btn-xs" ng-click="win1.center().open()"><i class="fa fa-upload"></i> 上传文件</div>
+            </div>
+            <div class="col-xs-12">
+                <div kendo-grid k-options="config.grid"></div>
+            </div>
+        </div>
+    </div>
+    <div kendo-window="win1" k-title="'上传文件'" k-width="900" k-visible="false" k-modal="true" k-position="{top: '100px'}"
+         k-options="config.rptWin">
+        <div class="container-fluid">
+            <div class="row">
+                <form name="fileForm" class="form form-horizontal" onsubmit="return false" novalidate>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2"><span class="red">*</span> 文件名称</label>
+                        <div class="col-xs-10">
+                            <input ng-model="file.name" type="text" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-2"><span class="red">*</span> 上传文件</label>
+                        <div class="col-xs-10">
+                            <input kendo-upload k-options="config.file" type="file" class="form-control"><input type="hidden" ng-model="file.filepath" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-10 col-xs-offset-2">
+                            <button class="btn btn-success col-xs-2" ng-click="saveFile()" ng-disabled="fileForm.$invalid">保存</button>
+                            <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="win1.close()">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>

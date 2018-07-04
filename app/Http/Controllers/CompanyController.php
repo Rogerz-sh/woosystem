@@ -6,6 +6,7 @@
  * Time: 下午4:08
  */
 namespace App\Http\Controllers;
+use App\File;
 use Illuminate\Routing\Controller as BaseController;
 use App\Company;
 use Illuminate\Support\Facades\DB;
@@ -96,5 +97,36 @@ class CompanyController extends BaseController {
         $company = Company::find($id);
         $company->delete();
         return response($company->id);
+    }
+
+    public function getFileList() {
+        $id = request()->input('id');
+        $file = File::where('fk_id', $id)->where('type', 'company')->get();
+        return response($file);
+    }
+
+    public function postSaveFile() {
+        $fk_id = request()->input('company_id');
+        $name = request()->input('name');
+        $filename = request()->input('filename');
+        $filepath = request()->input('filepath');
+
+        $file = new File();
+        $file->type = "company";
+        $file->fk_id = $fk_id;
+        $file->created_by = Session::get('id');
+        $file->name = $name;
+        $file->filename = $filename;
+        $file->filepath = $filepath;
+        $file->save();
+
+        return response($file->id);
+    }
+
+    public function postDeleteFile() {
+        $id = request()->input('id');
+        $file = File::find($id);
+        $file->delete();
+        return response($file->id);
     }
 }
