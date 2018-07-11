@@ -577,6 +577,18 @@
                     }
                 };
 
+                $scope.typeData = {
+                    a: new kendo.data.DataSource(),
+                    t: new kendo.data.DataSource(), //temp data
+                    b: new kendo.data.DataSource(),
+                    change: function (e) {
+                        var a = this.dataItem();
+                        $scope.typeData.t.filter({field: 'parentid', operator: 'eq', value: a.id});
+                        var b = $scope.typeData.t.view().toJSON();
+                        $scope.typeData.b.data(b);
+                    }
+                };
+
                 function renderAreaSelect(location) {
                     var p = location.p, c = location.c, pList = $scope.locationData.p.data(), cList = [], pItem = null, cItem = null, cIdx = -1;
                     for (var i = 0, l = pList.length; i < l; i++) {
@@ -595,6 +607,27 @@
                             }
                         }
                         $scope.locationData.c.data(cList);
+                    }
+                }
+
+                function renderTypesSelect(type) {
+                    var a = type.a, b = type.b, aList = $scope.typeData.a.data(), bList = [], aItem = null, bItem = null, bIdx = -1;
+                    for (var i = 0, l = aList.length; i < l; i++) {
+                        if (a == aList[i].id) {
+                            aItem = aList[i];
+                            break;
+                        }
+                    }
+                    if (aItem) {
+                        $scope.typeData.t.filter({field: 'parentid', operator: 'eq', value: aItem.id});
+                        bList = $scope.typeData.t.view().toJSON();
+                        for (var i = 0, l = bList.length; i < l; i++) {
+                            if (bList[i].id == b) {
+                                bIdx = i;
+                                break;
+                            }
+                        }
+                        $scope.typeData.b.data(bList);
                     }
                 }
 
@@ -632,6 +665,25 @@
                             dataValueField: 'name',
                             optionLabel: '请选择'
                         }
+                    },
+                    types: {
+                        a: {
+                            dataSource: $scope.typeData.a,
+                            dataTextField: 'name',
+                            dataValueField: 'id',
+                            optionLabel: '请选择',
+                            template: '<span style="font-size:10px;">#:name#</span>',
+                            valueTemplate: '<span style="font-size:10px;">#:name#</span>',
+                            change: $scope.typeData.change
+                        },
+                        b: {
+                            dataSource: $scope.typeData.b,
+                            dataTextField: 'name',
+                            dataValueField: 'id',
+                            optionLabel: '请选择',
+                            template: '<span style="font-size:10px;">#:name#</span>',
+                            valueTemplate: '<span style="font-size:10px;">#:name#</span>'
+                        }
                     }
                 };
 
@@ -666,11 +718,25 @@
                     $scope.locationData.t.data(citys);
                 });
 
+                $http.get('/job/json-types-list').success(function (res) {
+                    var a = [], t = [];
+                    res.forEach(function (v) {
+                        if (v.parentid == 0) {
+                            a.push(v);
+                        } else {
+                            t.push(v);
+                        }
+                    });
+                    $scope.typeData.a.data(a);
+                    $scope.typeData.t.data(t);
+                });
+
                 if ($routeParams.job_id) {
                     model.getJobInfo(~~$routeParams.job_id, function (data) {
                         $scope.job = data;
                         delete $scope.job.aggregates;
                         renderAreaSelect($scope.job.location);
+                        renderTypesSelect($scope.job.types);
                     });
                 } else {
                     $scope.job = model.getNewJob();
@@ -682,11 +748,15 @@
                     job.salary = job.salarys.s + '-' + job.salarys.e;
                     job.year = job.years.s + '-' + job.years.e;
                     job.age = job.ages.s + '-' + job.ages.e;
+                    job.type_id = job.types.b;
 
                     delete job.location;
                     delete job.salarys;
                     delete job.years;
                     delete job.ages;
+                    delete job.types;
+
+                    console.log(job);
 
                     var url = !$routeParams.job_id ? '/job/save-new' : '/job/save-edit'
                     $http.post(url, {job: job}).success(function (res) {

@@ -36,12 +36,53 @@ $(function () {
         ]
     };
 
-    $('#industry,#type,#status').each(function (i, ele) {
+    $('#industry,#status').each(function (i, ele) {
         var id = $(ele).attr('id');
         $(ele).kendoDropDownList({
             dataSource: optionList[id],
             optionLabel: '全部'
         });
+    });
+
+    $('#type_parent').kendoDropDownList({
+        dataSource: [],
+        dataTextField: 'name',
+        dataValueField: 'id',
+        optionLabel: '全部',
+        change: function () {
+            var item = this.dataItem();
+            if (item.id) {
+                bData.filter({field: 'parentid', operator: 'eq', value: item.id});
+                $('#type_id').data('kendoDropDownList').dataSource.data(bData.view().toJSON());
+            } else {
+                $('#type_id').data('kendoDropDownList').dataSource.data([]);
+            }
+        }
+    });
+    $('#type_id').kendoDropDownList({
+        dataSource: [],
+        dataTextField: 'name',
+        dataValueField: 'id',
+        optionLabel: '全部'
+    });
+
+    var bData = new kendo.data.DataSource();
+    $.$ajax({
+        url: '/job/json-types-list',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            var a = [], b = [];
+            res.forEach(function (v) {
+                if (v.parentid == 0) {
+                    a.push(v);
+                } else {
+                    b.push(v);
+                }
+            });
+            $('#type_parent').data('kendoDropDownList').dataSource.data(a);
+            bData.data(b);
+        }
     });
 
     $('#created_at').kendoDropDownList({
@@ -53,7 +94,9 @@ $(function () {
 
     $('#search').click(function () {
         var data = {}, filters = [];
-        ['name', 'company_name', 'industry', 'type', 'area', 'status', 'created_at'].map(function(v){data[v] = $('#'+v).val().trim()});
+        ['name', 'company_name', 'industry', 'type_id', 'type_parent', 'area', 'status', 'created_at'].map(function(v){
+            data[v] = $('#'+v).val()
+        });
 
         for (var n in data) {
             if (data[n]) {
@@ -61,6 +104,8 @@ $(function () {
                     filters.push({field: n, operator: 'contains', value: data[n]});
                 } else if (n == 'created_at') {
                     filters.push({field: n, operator: 'gte', value: Date.translate('now-' + data[n]).format()});
+                } else if (n == 'type_id' || n == 'type_parent') {
+                    filters.push({field: n, operator: 'eq', value: data[n] - 0});
                 } else {
                     filters.push({field: n, operator: 'eq', value: data[n]});
                 }

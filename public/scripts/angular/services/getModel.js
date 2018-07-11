@@ -141,6 +141,10 @@
                     s: '',
                     e: ''
                 },
+                types: {
+                    a: 0,
+                    b: 0
+                },
                 degree: '',
                 sex: '不限',
                 number: '',
@@ -173,7 +177,15 @@
                     delete data.salary;
                     delete data.year;
                     delete data.age;
-                    callback(data);
+                    if (data.type_id == 0) {
+                        data.types = {a: 0, b: 0}
+                        callback(data);
+                    } else {
+                        $http.get('/job/json-types-data/', {params: {id: data.type_id}}).success(function (type) {
+                            data.types = {a: type[0].parentid, b: type[0].id};
+                            callback(data);
+                        });
+                    }
                 });
             }
         };

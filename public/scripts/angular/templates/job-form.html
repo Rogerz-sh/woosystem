@@ -143,10 +143,12 @@
         <div class="col-xs-6 no-padding error-box">
             <label class="control-label col-xs-4"><span class="red">*</span> 岗位类别</label>
             <div class="col-xs-8">
-                <select kendo-drop-down-list class="form-control size-full" ng-model="job.type" required>
-                    <option value="">请选择岗位类别...</option>
-                    <option ng-repeat="item in data.type" value="{{item}}">{{item}}</option>
-                </select>
+                <div class="col-xs-6 no-padding-left">
+                    <select kendo-drop-down-list k-options="kendoConfig.types.a" ng-model="job.types.a" class="form-control size-full" required></select>
+                </div>
+                <div class="col-xs-6 no-padding-right">
+                    <select kendo-drop-down-list k-options="kendoConfig.types.b" ng-model="job.types.b" class="form-control size-full" required></select>
+                </div>
             </div>
         </div>
     </div>
@@ -165,7 +167,7 @@
     <div class="form-group">
         <label class="control-label col-xs-2"><span class="red">*</span> 部门信息</label>
         <div class="col-xs-10">
-            <textarea ng-model="job.department" rows="4" class="form-control" required placeholder="部⻔规模、汇报对象、下属⼈数、下属团队平均年龄/学历/背景等"></textarea>
+            <textarea ng-model="job.department" rows="4" class="form-control" required placeholder="部门规模、汇报对象、下属人数、下属团队平均年龄/学历/背景等"></textarea>
         </div>
     </div>
     <div class="form-group">
@@ -177,17 +179,17 @@
     <div class="form-group">
         <label class="control-label col-xs-2"><span class="red">*</span> 招聘原因</label>
         <div class="col-xs-10">
-            <textarea ng-model="job.reason" rows="4" class="form-control" required placeholder="新增或替代、产⽣原因等"></textarea>
+            <textarea ng-model="job.reason" rows="4" class="form-control" required placeholder="新增或替代、产生原因等"></textarea>
         </div>
     </div>
     <div class="form-group">
         <label class="control-label col-xs-2"><span class="red">*</span> 寻访重点</label>
         <div class="col-xs-10">
-            <textarea ng-model="job.keypoint" rows="4" class="form-control" required placeholder="候选⼈⽬标公司、来源地区、注意事项等"></textarea>
+            <textarea ng-model="job.keypoint" rows="4" class="form-control" required placeholder="候选人目标公司、来源地区、注意事项等"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-2"><span class="red">*</span> ⽤⼈偏好</label>
+        <label class="control-label col-xs-2"><span class="red">*</span> 用人偏好</label>
         <div class="col-xs-10">
             <textarea ng-model="job.preference" rows="4" class="form-control" required></textarea>
         </div>
