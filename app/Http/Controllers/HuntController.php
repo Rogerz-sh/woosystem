@@ -50,11 +50,17 @@ class HuntController extends BaseController {
     }
 
     public function getJsonJobListData() {
-//        $filter = request()->input('filter');
-//        $key = $filter['filters'][0]['value'];
-        $job = DB::table('jobs')->select('id', 'name', 'company_id', 'company_name')->where('deleted_at', null)
-            ->WhereRaw('jobs.id not in (select distinct(job_id) from hunt_select where (hunt_select.status = "已暂停" or hunt_select.status = "已停止"))')
-            ->orderBy('updated_at', 'desc')->get();
+        $filter = request()->input('filter');
+        if ($filter && isset($filter['filters'])) {
+            $key = $filter['filters'][0]['value'];
+            $job = DB::table('jobs')->select('id', 'name', 'company_id', 'company_name')->where('deleted_at', null)
+                ->WhereRaw('(jobs.name like ? or jobs.company_name like ?) and jobs.id not in (select distinct(job_id) from hunt_select where (hunt_select.status = "已暂停" or hunt_select.status = "已停止"))', ['%'.$key.'%', '%'.$key.'%'])
+                ->orderBy('updated_at', 'desc')->get();
+        } else {
+            $job = DB::table('jobs')->select('id', 'name', 'company_id', 'company_name')->where('deleted_at', null)
+                ->WhereRaw('jobs.id not in (select distinct(job_id) from hunt_select where (hunt_select.status = "已暂停" or hunt_select.status = "已停止"))')
+                ->orderBy('updated_at', 'desc')->limit(100)->get();
+        }
         return response($job);
     }
 
@@ -64,13 +70,13 @@ class HuntController extends BaseController {
         if ($filter) {
             $key = $filter['filters'][0]['value'];
             $job = DB::table('person')
-                ->select('id', 'name', 'real_id', 'job', 'company', 'sex', 'age')
-                ->orWhereRaw('name like ? or job like ? or company like ?', ['%'.$key.'%', '%'.$key.'%', '%'.$key.'%'])
+                ->select('id', 'name', 'real_id', 'tel', 'job', 'company', 'sex', 'age')
+                ->orWhereRaw('name like ? or tel like ? or job like ? or company like ?', ['%'.$key.'%', '%'.$key.'%', '%'.$key.'%', '%'.$key.'%'])
                 ->where('deleted_at', null)
                 ->orderBy('updated_at', 'desc');
             //return response($job);
         } else {
-            $job = DB::table('person')->select('id', 'name', 'real_id', 'job', 'company', 'sex',
+            $job = DB::table('person')->select('id', 'name', 'real_id', 'tel', 'job', 'company', 'sex',
                 'age')->where('deleted_at', null)->orderBy('updated_at', 'desc');
             //return response($job);
         }

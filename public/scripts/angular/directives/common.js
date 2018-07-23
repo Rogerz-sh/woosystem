@@ -642,7 +642,7 @@
                             }
                         },
                         optionLabel: '请选择所属企业...',
-                        filter: 'startswith',
+                        filter: 'contains',
                         delay: 500,
                         dataTextField: 'name',
                         dataValueField: 'id',
@@ -995,7 +995,7 @@
                             dataType: 'json'
                         }
                     },
-                    //serverFiltering: true
+                    serverFiltering: true
                 });
                 var dsPerson = new kendo.data.DataSource({
                     transport: {
@@ -1056,7 +1056,7 @@
                         delay: 500,
                         dataTextField: 'name',
                         dataValueField: 'id',
-                        template: '<strong>#:name#</strong> <span class="dark-gray">[ #:real_id# / #:sex# / #:age#岁 / #:job# / #:company# ]</span>',
+                        template: '<strong>#:name#</strong> <span class="dark-gray">[ #:tel# / #:sex# / #:age#岁 / #:job# / #:company# ]</span>',
                         change: function () {
                             var item = this.dataItem();
                             $scope.hunt.person_id = item.id;
