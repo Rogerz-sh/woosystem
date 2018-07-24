@@ -548,11 +548,13 @@
                     {field: 'source', title: '来源'},
                     {field: 'company_name', title: '客户名称'},
                     {field: 'contact', title: '联系人'},
+                    {field: 'industry', title: '所属行业'},
+                    {field: 'area', title: '所属地区'},
                     {field: 'user_name', title: '开发顾问'},
-                    {field: 'user_names', title: '合作顾问'},
+                    //{field: 'user_names', title: '合作顾问'},
                     {field: 'date', title: '联系日期', template: getDate},
                     {field: 'status', title: '状态'},
-                    {field: 'description', title: '沟通记录'},
+                    {field: 'description', title: '沟通记录', template: '<div style="max-width:300px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" title="#:description#"><span>#:description#</span></div>'},
                     {title: '操作', template: '<a href="\\#/bd/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
                     '<a href="\\#/bd/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
                     '<a data-id="#:id#" class="btn btn-danger btn-sm" ng-click="bdDelete(#:id#)"><i class="fa fa-trash-o"></i></a>', width: 140}
@@ -583,11 +585,13 @@
                     {field: 'source', title: '来源'},
                     {field: 'company_name', title: '客户名称'},
                     {field: 'contact', title: '联系人'},
+                    {field: 'industry', title: '所属行业'},
+                    {field: 'area', title: '所属地区'},
                     {field: 'user_name', title: '开发顾问'},
-                    {field: 'user_names', title: '合作顾问'},
+                    //{field: 'user_names', title: '合作顾问'},
                     {field: 'date', title: '联系日期', template: getDate},
                     {field: 'status', title: '状态'},
-                    {field: 'description', title: '沟通记录'},
+                    {field: 'description', title: '沟通记录', template: '<div style="max-width:300px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" title="#:description#"><span>#:description#</span></div>'},
                     {title: '操作', template: '<a href="\\#/bd/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
                     '<a href="\\#/bd/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
                     '<a data-id="#:id#" class="btn btn-danger btn-sm" ng-click="bdDelete(#:id#)"><i class="fa fa-trash-o"></i></a>', width: 140}
@@ -598,9 +602,6 @@
             }
         }
 
-        $('#grid').kendoGrid();
-
-        $('#grid2').kendoGrid();
 
         $scope.bdDelete = function (id) {
             $.$modal.confirm('确定要删除吗?', function (isOk) {

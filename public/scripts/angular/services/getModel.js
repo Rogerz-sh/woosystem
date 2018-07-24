@@ -201,6 +201,7 @@
                 type: '',
                 status: '',
                 source: '',
+                belong: '',
                 description: ''
             }
         };
