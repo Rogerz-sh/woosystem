@@ -550,6 +550,7 @@
                     {field: 'contact', title: '联系人'},
                     {field: 'industry', title: '所属行业'},
                     {field: 'area', title: '所属地区'},
+                    {field: 'belong', title: '归属公司'},
                     {field: 'user_name', title: '开发顾问'},
                     //{field: 'user_names', title: '合作顾问'},
                     {field: 'date', title: '联系日期', template: getDate},
