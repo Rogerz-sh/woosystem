@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 use App\Bd;
+use App\BdCallIn;
 use App\BdFile;
 use App\BdRecord;
 use App\Candidate;
@@ -146,5 +147,49 @@ class BdController extends BaseController {
     public function postDelete($id) {
         $bd = Bd::find($id);
         $bd->delete();
+    }
+
+    public function getJsonCallInList() {
+        $call_in = BdCallIn::get();
+        return response($call_in);
+    }
+
+    public function postSaveCallIn() {
+        $new_call_in = request()->input('call_in');
+        $exist = BdCallIn::where('company_name', $new_call_in['company_name'])->first();
+        if ($exist) {
+            return response('该企业已经录入，请不要重复操作');
+        } else {
+            $call_in = new BdCallIn();
+            foreach ($new_call_in as $key => $value) {
+                $call_in->$key = $value;
+            }
+            $call_in->created_by = Session::get('id');
+            $call_in->save();
+            return response($call_in->id);
+        }
+    }
+
+    public function postEditCallIn() {
+        $new_call_in = request()->input('call_in');
+        $exist = BdCallIn::where('company_name', $new_call_in['company_name'])->where('id', '<>', $new_call_in['id'])->first();
+        if ($exist) {
+            return response('该企业已经录入，请不要重复操作');
+        } else {
+            $call_in = BdCallIn::find($new_call_in['id']);
+            foreach ($new_call_in as $key => $value) {
+                $call_in->$key = $value;
+            }
+            $call_in->updated_by = Session::get('id');
+            $call_in->save();
+            return response($call_in->id);
+        }
+    }
+
+    public function postDeleteCallIn() {
+        $id = request()->input('id');
+        $call_in = BdCallIn::find($id);
+        $call_in->delete();
+        return response(1);
     }
 }

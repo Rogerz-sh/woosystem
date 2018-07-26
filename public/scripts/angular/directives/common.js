@@ -21,7 +21,10 @@
                         {url: '/job/list', label: '职位库', power: [1,2,3,9]},
                         {url: '/candidate/list', label: '简历库', power: [1,2,3,9]},
                     ]},
-                    {url: '/bd/list', label: '客户管理', power: [1,2,3,9]},
+                    {url: '/bd/list', label: '客户管理', power: [1,2,3,9], items: [
+                        {url: '/bd/list', label: '客户管理', power: [1,2,3,9]},
+                        {url: '/bd/call-in', label: 'CallIn管理', power: [2,9]},
+                    ]},
                     {url: '/hunt/list', label: '项目管理', power: [1,2,3,9], items: [
                         {url: '/hunt/list', label: '项目管理', power: [1,2,3,9]},
                         {url: '/team/recent', label: '团队近况', power: [9]},

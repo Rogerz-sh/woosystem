@@ -62,6 +62,10 @@
                 templateUrl: '/scripts/angular/templates/bd-list.html',
                 controller: 'bdListController'
             })
+            .when('/bd/call-in', {
+                templateUrl: '/scripts/angular/templates/bd-call-in.html',
+                controller: 'routeTempController'
+            })
             .when('/bd/create', {
                 templateUrl: '/scripts/angular/templates/bd-create.html',
                 controller: 'bdController'
