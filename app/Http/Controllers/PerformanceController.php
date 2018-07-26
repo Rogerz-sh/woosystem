@@ -31,7 +31,7 @@ use App\HuntFile;
 class PerformanceController extends BaseController {
 
     public function getJsonHuntListData() {
-        if (Session::get('power') == 9) {
+        if (Session::get('power') >= 9) {
             $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
                 ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.status')
                 ->orderBy('hunt.created_at', 'desc')->get();
@@ -295,7 +295,7 @@ class PerformanceController extends BaseController {
     }
 
     public function getJsonTargetList() {
-        if (Session::get('power') != '9') {
+        if (Session::get('power') < '9') {
             $targets = DB::table('month_target')->join('users', 'month_target.user_id', '=', 'users.id')
                 ->select('month', 'user_id', 'nickname', 'bd_target', 'person_target', 'report_target', 'face_target', 'offer_target', 'success_target', 'result_target')
                 ->where('user_id', Session::get('id'))->get();
@@ -495,7 +495,7 @@ class PerformanceController extends BaseController {
 
     public function getDailyReportList() {
         $power = Session::get('power');
-        if ($power == 9) {
+        if ($power >= 9) {
             $user = request()->input('user');
             $sdate = request()->input('sdate').' 00:00:00';
             $edate = request()->input('edate').' 23:59:59';
