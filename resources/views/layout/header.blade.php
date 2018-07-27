@@ -99,17 +99,10 @@ $sessionPower = Session::get('power');
 {{--<script src="/scripts/main.js"></script>--}}
 @yield('body-script')
 <script>
-    $(function () {
-        var navIndex = {{$navIndex}};
-        $('.nav-list>li').eq(navIndex).addClass('active');
-
-        {{--var vm = new Vue({--}}
-            {{--el: '#nav',--}}
-            {{--data: {--}}
-                {{--navIndex: {{$navIndex}}--}}
-            {{--}--}}
-        {{--});--}}
-    });
+    (function(b,a,e,h,f,c,g,s){b[h]=b[h]||function(){(b[h].c=b[h].c||[]).push(arguments)};
+        b[h].s=!!c;g=a.getElementsByTagName(e)[0];s=a.createElement(e);
+        s.src="//s.union.360.cn/"+f+".js";s.defer=!0;s.async=!0;g.parentNode.insertBefore(s,g)
+    })(window,document,"script","_qha",271375,false);
 </script>
 </body>
 </html>
