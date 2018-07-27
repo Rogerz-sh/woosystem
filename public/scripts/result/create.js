@@ -21,7 +21,6 @@ $(function () {
 
     $('#amount').kendoNumericTextBox({
         spinners: false,
-        min: 0,
         format: 'n2',
         value: 0,
         change: function () {

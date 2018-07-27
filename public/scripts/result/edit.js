@@ -33,7 +33,6 @@ $(function () {
 
         $('#amount').kendoNumericTextBox({
             spinners: false,
-            min: 0,
             format: 'n2',
             value: res.amount,
             change: function () {
