@@ -38,7 +38,7 @@ $(function () {
             {
                 title: '操作',
                 template: getButtons,
-                width: power == 9 ? 110 : 80
+                width: power == 10 ? 110 : 80
             }
         ],
         scrollable: false,
@@ -95,7 +95,7 @@ $(function () {
     }
 
     function getButtons(item) {
-        if (power == 9) {
+        if (power == 10) {
             return '<a class="btn btn-info btn-xs margin-right-5 _edit" title="编辑" href="#/result/edit?id={0}"><i class="fa fa-pencil"></i></a>\
                 <a class="btn btn-danger btn-xs margin-right-5 _delete" title="删除" data-id="{0}#"><i class="fa fa-trash-o"></i></a>\
                 <a class="btn btn-success btn-xs margin-right-5 _audit" title="审核" data-id="{0}#" {1}><i class="fa fa-check"></i></a>'.format(item.id, item.status == 1 ? "disabled" : "");
