@@ -38,7 +38,7 @@ $(function () {
 
     function getButtons(item) {
         var disabled = 'disabled';
-        if (['3','9'].indexOf(session.power) > -1 || session.id == item.created_by) {
+        if (['3','9','10'].indexOf(session.power) > -1 || session.id == item.created_by) {
             disabled = '';
         }
         return ('<a href="#/company/edit/{0}" class="btn btn-default btn-sm" {1}><i class="fa fa-pencil"></i></a> ' +

@@ -144,7 +144,7 @@ $(function () {
     }).data('kendoGrid');
 
     function getButtons(item) {
-        if (['3', '9'].indexOf(sessionPower) > -1) {
+        if (['3', '9', '10'].indexOf(sessionPower) > -1) {
             return '<a href="#/job/edit/{0}" class="btn btn-default btn-xs" title="编辑"><i class="fa fa-pencil"></i></a>\
                     <a href="#/job/detail/{0}" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a>\
                     <a data-id="{0}" class="btn btn-success btn-xs" title="加入我的项目"><i class="fa fa-plus-circle"></i></a>\
