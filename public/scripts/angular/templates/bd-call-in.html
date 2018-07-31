@@ -53,6 +53,7 @@ $(function() {
         pageable: true,
         columns: [
             {field: 'company_name', title: '客户名称'},
+            {field: 'job_need', title: '招聘职位'},
             {field: 'contact', title: '联系人'},
             {field: 'tel', title: '电话'},
             {field: 'email', title: '邮箱'},
@@ -100,6 +101,7 @@ $(function() {
     function initDialog(data) {
         var fields = [
             {id: 'company_name', is_select: 0, name: '公司名称', required: true},
+            {id: 'job_need', is_select: 0, name: '招聘职位', required: true},
             {id: 'industry', is_select: 1, name: '所属行业', required: true},
             {id: 'area_p', is_select: 1, name: '所在地区', required: true},
             {id: 'area_c', is_select: 1, name: '所在地区', required: true},
@@ -115,8 +117,14 @@ $(function() {
             content: '<div id="dlg_ctn" class="padding-right-15">' +
             '<form class="form form-horizontal">' +
                 '<div class="form-group">' +
-                    '<label class="control-label col-xs-2"><span class="red">*</span> 公司名称:</label>' +
-                    '<div class="col-xs-10"><input type="text" id="company_name" class="form-control" /></div>' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-4"><span class="red">*</span> 公司名称:</label>' +
+                        '<div class="col-xs-8"><input type="text" id="company_name" class="form-control" /></div>' +
+                    '</div>' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-4"><span class="red">*</span> 招聘职位:</label>' +
+                        '<div class="col-xs-8"><input type="text" id="job_need" class="form-control" /></div>' +
+                    '</div>' +
                 '</div>' +
                 '<div class="form-group">' +
                     '<div class="col-xs-6 no-padding">' +
@@ -193,7 +201,7 @@ $(function() {
                                     if (~~res > 0) {
                                         self.hide();
                                         grid.dataSource.read();
-                                        $.$modal.alert('添加成功');
+                                        $.$modal.alert('保存成功');
                                     } else {
                                         $.$modal.alert(res);
                                     }
