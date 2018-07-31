@@ -241,7 +241,6 @@ $(function() {
                     dataValueField: 'id',
                     dataTextField: 'name',
                     optionLabel: '请选择',
-                    value: data ? data.industry : '',
                     change: function () {
                         var id = ~~this.value(), area_c_data = $('#area_c', dom).data('kendoDropDownList').dataSource;
                         if (id) {
@@ -273,11 +272,11 @@ $(function() {
                     data.area_p = areas[0];
                     data.area_c = areas[1];
                     $('#area_p', dom).data('kendoDropDownList').select(function(item) {
-                        return item.name = data.area_p;
+                        return item.name == data.area_p;
                     });
                     $('#area_p', dom).data('kendoDropDownList').trigger('change');
                     $('#area_c', dom).data('kendoDropDownList').select(function(item) {
-                        return item.name = data.area_c;
+                        return item.name == data.area_c;
                     });
                 }
             }
