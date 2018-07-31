@@ -28,7 +28,7 @@ $(function () {
             $('#result_user tbody').find('tr').each(function (i, tr) {
                 showUserResult($(tr));
             });
-            $('#result').data('kendoNumericTextBox').value(result);
+            //$('#result').data('kendoNumericTextBox').value(result);
         }
     });
 
@@ -207,7 +207,6 @@ $(function () {
             area = $('#area').val();
         var name = '{0}({1}{2}%)'.format(person_name, type, pay_percent);
         if (!name || !date || !job_id || !person_id || !type || !pay_percent || typeof(amount) != 'number') invalid = true;
-
         var users = [], totalPercent = 0, totalResult = 0;
         typeList.forEach(function (v) {
             if (invalid) return;
@@ -218,8 +217,8 @@ $(function () {
                 percent = +$row.find('input._percent').val(),
                 user_result = +$row.find('span._result').text().replace(/,/g, ''),
                 _date = date;
-            totalPercent += percent;
-            totalResult += user_result;
+            totalPercent = totalPercent.plus(percent);
+            totalResult = totalResult.plus(user_result);
             if (!user_id || !type_id || typeof(percent) != 'number') invalid = true;
             users.push({user_id: user_id, type_id: type_id, type_name: type_name, percent: percent, user_result: user_result, date: _date});
         });

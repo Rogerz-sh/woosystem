@@ -253,8 +253,8 @@ $(function () {
                 percent = +$row.find('input._percent').val(),
                 user_result = +$row.find('span._result').text().replace(/,/g, ''),
                 _date = date;
-            totalPercent += percent;
-            totalResult += user_result;
+            totalPercent = totalPercent.plus(percent);
+            totalResult = totalResult.plus(user_result);
             if (!user_id || !type_id || typeof(percent) != 'number') invalid = true;
             users.push({result_id: result_id, user_id: user_id, type_id: type_id, type_name: type_name, percent: percent, user_result: user_result, date: _date});
         });
