@@ -146,7 +146,7 @@ class ResultController extends BaseController {
             ->select(DB::raw('job_id, job_name, company_id, company_name, amount, name, results.date,
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
-                            sum(percent) as total_percent, sum(user_result) as total_result'))
+                            sum(if(user_result<0, -percent, percent)) as total_percent, sum(user_result) as total_result'))
             ->where('user_id', $user_id)->where('result_users.status', 1)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
 //        $results = DB::raw('select job_id, job_name, company_id, company_name, amount, name, results.date,
 //                            (select name from users where users.id = results.operator) as operator,
@@ -168,7 +168,7 @@ class ResultController extends BaseController {
             ->select(DB::raw('results.job_id, results.job_name, results.company_id, results.company_name, results.amount, results.name, results.date,
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
-                            sum(percent) as total_percent, sum(user_result) as total_result'))
+                            sum(if(user_result<0, -percent, percent)) as total_percent, sum(user_result) as total_result'))
             ->where('result_users.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
 
         if ($user) {
