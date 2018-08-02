@@ -62,10 +62,31 @@ class FileController extends BaseController {
         $name = request()->input('name');
         $coded = request()->input('coded');
 
+//        if ($coded == 0) {
+//            return response()->download($path);
+//        } else {
+//            return response()->download($path, $name);
+//        }
         if ($coded == 0) {
-            return response()->download($path);
+            $name = $path;
+        }
+        if (!file_exists($path)) {
+            echo 'Not Found'.$path;
+            exit;
         } else {
-            return response()->download($path, $name);
+            header('Accept-Ranges: bytes');
+            header('Accept-Length: ' . filesize($path));
+            // It will be called
+            header('Content-Transfer-Encoding: binary');
+            header('Content-type: application/octet-stream');
+            header('Content-Disposition: attachment; filename=' . $name);
+            header('Content-Type: application/octet-stream; name=' . $name);
+            if(is_file($path) && is_readable($path)){
+                $file = fopen($path, "r");
+                echo fread($file, filesize($path));
+                fclose($file);
+            }
+            exit;
         }
     }
 }
