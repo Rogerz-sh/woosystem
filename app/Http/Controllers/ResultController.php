@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Session;
 class ResultController extends BaseController {
 
     public function getJsonResultList() {
-        $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, status, ext, comment,
+        $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, status, ext, results.order, comment,
         (select name from users where users.id = results.operator) as operator,
         (select a_name from areas where areas.id = results.area) as area_name,
         (select name from users where users.id = results.created_by) as creator'))
@@ -31,7 +31,7 @@ class ResultController extends BaseController {
         $users = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
-            ->select('result_users.id as id', 'result_users.type_name', 'result_users.percent', 'result_users.user_result', 'users.nickname as user_name', 'groups.g_name as group_name', 'areas.a_name as area_name')
+            ->select('result_users.id as id', 'result_users.type_name', 'result_users.percent', 'result_users.user_result', 'result_users.user_order', 'users.nickname as user_name', 'groups.g_name as group_name', 'areas.a_name as area_name')
             ->where('result_id', $result_id)->get();
         return response($users);
     }
@@ -146,7 +146,7 @@ class ResultController extends BaseController {
             ->select(DB::raw('job_id, job_name, company_id, company_name, amount, name, results.date,
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
-                            sum(if(user_result<0, -percent, percent)) as total_percent, sum(user_result) as total_result'))
+                            sum(if(user_result<0, -user_order, user_order)) as total_order, sum(user_result) as total_result'))
             ->where('user_id', $user_id)->where('result_users.status', 1)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
 //        $results = DB::raw('select job_id, job_name, company_id, company_name, amount, name, results.date,
 //                            (select name from users where users.id = results.operator) as operator,
@@ -168,7 +168,7 @@ class ResultController extends BaseController {
             ->select(DB::raw('results.job_id, results.job_name, results.company_id, results.company_name, results.amount, results.name, results.date,
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
-                            sum(if(user_result<0, -percent, percent)) as total_percent, sum(user_result) as total_result'))
+                            sum(if(user_result<0, -user_order, user_order)) as total_order, sum(user_result) as total_result'))
             ->where('result_users.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
 
         if ($user) {

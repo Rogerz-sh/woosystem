@@ -44,6 +44,18 @@ $(function () {
             }
         });
 
+        $('#order').kendoNumericTextBox({
+            spinners: false,
+            format: 'n2',
+            value: res.order,
+            change: function () {
+                var order = +this.value();
+                $('#result_user tbody').find('tr').each(function (i, tr) {
+                    showUserResult($(tr));
+                });
+            }
+        });
+
         $('#pay_percent').kendoNumericTextBox({
             spinners: false,
             min: 0,
@@ -164,6 +176,7 @@ $(function () {
                             <td><span class="_area">--</span></td>\
                             <td><div class="input-group" style="width:100px;"><input type="text" class="form-control _percent" value="{2}" /><span class="input-group-addon">%</span></div></td>\
                             <td><span class="_result">0.00</span></td>\
+                            <td><span class="_order">0.00</span></td>\
                            </tr>'.format(v.type_id, v.type_name, v.default));
                 });
                 $('#result_user tbody').html(rows.join(''));
@@ -204,8 +217,13 @@ $(function () {
     }
 
     function showUserResult($tr) {
-        var percent = +$tr.find('input._percent').val(), result = +$('#amount').data('kendoNumericTextBox').value(), ur = result.times(percent).divs(100);
+        var percent = +$tr.find('input._percent').val(),
+            result = +$('#amount').data('kendoNumericTextBox').value(),
+            order = +$('#order').data('kendoNumericTextBox').value(),
+            ur = result.times(percent).divs(100),
+            uo = order.times(percent).divs(100);
         $tr.find('span._result').text(kendo.toString(ur, 'n2'));
+        $tr.find('span._order').text(kendo.toString(uo, 'n3'));
     }
 
     function getTotalPercent() {
@@ -236,12 +254,13 @@ $(function () {
             pay_percent = +$('#pay_percent').val(),
             amount = +$('#amount').val(),
             result = +$('#amount').val(),
+            order = +$('#order').val(),
             comment = $('#comment').val(),
             operator = $('#operator').val(),
             ext = $('input[name="ext"]:checked').val() || 0,
             area = $('#area').val();
         var name = '{0}({1}{2}%)'.format(person_name, type, pay_percent);
-        if (!name || !date || !job_id || !person_id || !type || !pay_percent || typeof(amount) != 'number') invalid = true;
+        if (!name || !date || !job_id || !person_id || !type || !pay_percent || typeof(amount) != 'number' || typeof(order) != 'number') invalid = true;
 
         var users = [], totalPercent = 0, totalResult = 0;
         typeList.forEach(function (v) {
@@ -252,11 +271,13 @@ $(function () {
                 type_name = v.type_name,
                 percent = +$row.find('input._percent').val(),
                 user_result = +$row.find('span._result').text().replace(/,/g, ''),
+                user_order = +$row.find('span._order').text().replace(/,/g, ''),
                 _date = date;
             totalPercent = totalPercent.plus(percent);
             totalResult = totalResult.plus(user_result);
+            totalOrder = totalOrder.plus(user_order);
             if (!user_id || !type_id || typeof(percent) != 'number') invalid = true;
-            users.push({result_id: result_id, user_id: user_id, type_id: type_id, type_name: type_name, percent: percent, user_result: user_result, date: _date});
+            users.push({result_id: result_id, user_id: user_id, type_id: type_id, type_name: type_name, percent: percent, user_result: user_result, user_order: user_order, date: _date});
         });
 
         var data = {
@@ -273,6 +294,7 @@ $(function () {
             pay_percent: pay_percent,
             amount: amount,
             result: result,
+            order: order,
             operator: operator,
             area: area,
             comment: comment,
@@ -294,6 +316,10 @@ $(function () {
         }
         if (totalPercent != 100) {
             $.$modal.alert('分配总额必须等于100%');
+            return;
+        }
+        if (totalOrder != order) {
+            $.$modal.alert('计入单数合计与填写的单数不一致');
             return;
         }
 

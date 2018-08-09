@@ -98,7 +98,7 @@ class PerformanceController extends BaseController {
             $results_percent = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
-                ->select(DB::raw('sum(if(user_result<0, -percent, percent)) as rank_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->select(DB::raw('sum(if(user_result<0, -user_order, user_order)) as rank_result, max(user_id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
                 ->where('result_users.status', 1)->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)->where('result_users.deleted_at', null)
                 ->groupBy('result_users.user_id')->orderBy('rank_result', 'desc')->get();
 
@@ -156,7 +156,7 @@ class PerformanceController extends BaseController {
             $results_percent = ResultUser::join('users', 'result_users.user_id', '=', 'users.id')
                 ->join('groups', 'users.group_id', '=', 'groups.id')
                 ->join('areas', 'users.area_id', '=', 'areas.id')
-                ->select(DB::raw('sum(if(user_result<0, -percent, percent)) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
+                ->select(DB::raw('sum(if(user_result<0, -user_order, user_order)) as rank_result, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
                 ->where('result_users.status', 1)->where('result_users.date', '>=', $sdate)->where('result_users.date', '<=', $edate)->whereNull('result_users.deleted_at')
                 ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
 

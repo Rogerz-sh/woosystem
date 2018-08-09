@@ -125,7 +125,7 @@ $(function () {
             data: data,
             success: function (res) {
                 res.result_percent.forEach(function (v) {
-                    v.rank_result = kendo.toString(v.rank_result.divs(100), 'n2') - 0;
+                    v.rank_result = kendo.toString(v.rank_result, 'n3') - 0;
                 });
                 renderRankList('#rank_result', res.result, target, '元');    //业绩排名
                 renderRankList('#rank_result_percent', res.result_percent, target, '单');    //单数排名
