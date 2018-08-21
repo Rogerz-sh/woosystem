@@ -47,6 +47,7 @@
                         {url: '/team/users', label: '用户管理', power: [2,9,10]},
                         {url: '/team/groups', label: '项目组管理', power: [2,9,10]},
                         {url: '/team/areas', label: '区域管理', power: [2,9,10]},
+                        {url: '/team/powers', label: '权限管理', power: [10]},
                     ]},
                     {url: '/result/user', label: '个人管理', power: [1,2,3,9,10], items: [
                         {url: '/result/user', label: '我的业绩', power: [1,2,3,9,10]},

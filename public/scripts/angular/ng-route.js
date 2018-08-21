@@ -154,6 +154,10 @@
                 templateUrl: '/scripts/angular/templates/team-areas.html',
                 controller: 'teamAreasController'
             })
+            .when('/team/powers', {
+                templateUrl: '/scripts/angular/templates/team-powers.html',
+                controller: 'routeTempController'
+            })
             .when('/user/info', {
                 templateUrl: '/scripts/angular/templates/user-info.html',
                 controller: 'userInfoController'
