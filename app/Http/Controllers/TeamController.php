@@ -12,6 +12,7 @@ use App\Groups;
 use App\HuntFace;
 use App\HuntReport;
 use App\HuntSuccess;
+use App\Powers;
 use App\User;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
@@ -204,6 +205,32 @@ class TeamController extends BaseController {
             return response($user->id);
         } else {
             return response(-1);
+        }
+    }
+
+    public function  getJsonPowerUserListData() {
+        $user = User::join('powers', 'users.power', '=', 'powers.id')
+            ->select('users.id', 'users.name', 'users.nickname', 'users.group_name', 'users.area_name', 'users.date', 'users.created_at', 'powers.id as pow_id', 'powers.pow_name')
+            ->where('users.id', '<>', 1)
+            ->where('status', 1)->orderBy('created_at')->get();
+        return response($user);
+    }
+
+    public function getJsonPowerListData() {
+        $powers = Powers::orderBy('pow_sort')->get();
+        return response($powers);
+    }
+
+    public function postEditUserPower() {
+        $id = request()->input('id');
+        $power = request()->input('power');
+        $user = User::find($id);
+        if ($user) {
+            $user->power = $power;
+            $user->save();
+            return response(1);
+        } else {
+            return response(0);
         }
     }
 }

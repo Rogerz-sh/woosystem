@@ -9,19 +9,112 @@
 </div>
 <script>
 $(function () {
-    $('#grid').kendoGrid({
+    var dsPow = new kendo.data.DataSource({
+        transport: {
+            read: function (option) {
+                $.$ajax({
+                    url: '/team/json-power-list-data',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (res) {
+                        option.success(res);
+                    }
+                });
+            }
+        }
+    });
+
+    var grid = $('#grid').kendoGrid({
         dataSource: {
-            data: []
+            transport: {
+                read: function (option) {
+                    $.$ajax({
+                        url: '/team/json-power-user-list-data',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (res) {
+                            option.success(res);
+                        }
+                    });
+                }
+            },
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            },
+            pageSize: 10
         },
         scrollable: false,
         pageable: true,
         columns: [
-            {title: 'name'},
-            {title: 'job'},
-            {title: 'group'},
-            {title: 'area'},
-            {title: 'power'},
+            {field: 'name', title: '账号'},
+            {field: 'nickname', title: '昵称'},
+            {field: 'group_name', title: '所属项目组'},
+            {field: 'area_name', title: '所属区域'},
+            {field: 'date', title: '入职日期', template: '#:date ? new Date(date).format() : ""#'},
+            {field: 'pow_name', title: '权限级别'},
+            {title: '操作', template: '<a class="btn btn-info btn-xs margin-right-5" title="编辑" data-id="#:id#">修改权限</a>', width: 60}
         ]
+    }).data('kendoGrid');
+
+    $('#grid').delegate('a[data-id]', 'click', function () {
+        var id = ~~$(this).data('id'), item = grid.dataSource.get(id).toJSON();
+        console.log(item);
+        $.$modal.dialog({
+            title: '修改权限',
+            size: 'sm',
+            content: ' <form class="form form-horizontal">' +
+                        '<div class="form-group">' +
+                            '<label class="control-label col-xs-4">员工姓名：</label>' +
+                            '<div class="col-xs-8 form-control-static"><span id="name"></span></div>' +
+                        '</div>' +
+                        '<div class="form-group">' +
+                            '<label class="control-label col-xs-4">权限级别：</label>' +
+                            '<div class="col-xs-8 form-control-static"><select id="power"></select></div>' +
+                        '</div>' +
+                    '</form>',
+            footer: {
+                buttons: [
+                    {
+                        name: 'ok',
+                        handler: function () {
+                            var self = this, dom = self.dom, power = $('#power', dom).val();
+                            $.$ajax({
+                                url: '/team/edit-user-power',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {id: id, power: power},
+                                success: function (res) {
+                                    if (res) {
+                                        grid.dataSource.read();
+                                        self.hide();
+                                    } else {
+                                        $.$modal.alert('修改失败');
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    {
+                        name: 'cancel',
+                        handler: function () {
+                            this.hide();
+                        }
+                    }
+                ]
+            },
+            onLoaded: function () {
+                var dom = this.dom;
+                $('#name', dom).text(item.nickname);
+                $('#power', dom).kendoDropDownList({
+                    dataSource: dsPow,
+                    dataTextField: 'pow_name',
+                    dataValueField: 'id',
+                    value: item.pow_id
+                });
+            }
+        }).show();
     });
 });
 </script>
