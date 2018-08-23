@@ -8,6 +8,7 @@
 namespace App\Http\Controllers;
 
 use App\Areas;
+use App\Belongs;
 use App\Groups;
 use App\HuntFace;
 use App\HuntReport;
@@ -232,5 +233,42 @@ class TeamController extends BaseController {
         } else {
             return response(0);
         }
+    }
+
+    public function getUnlistedUserData() {
+        $user = User::where('status', 1)->where('id', '<>', 1)->whereRaw('users.id not in (select user_id from belongs)')->get();
+        return response($user);
+    }
+
+    public function getBelongListData() {
+        $belongs = Belongs::join('users', 'users.id', '=', 'belongs.user_id')
+            ->select('users.nickname', 'users.group_name', 'users.area_name', 'belongs.user_id', 'belongs.parent_id', 'belongs.depth', 'belongs.root_path')->get();
+        return response($belongs);
+    }
+
+    public function postAddBelong() {
+        $user_id = request()->input('user_id');
+        $parent_id = request()->input('parent_id');
+        $depth = request()->input('depth');
+        $root_path = request()->input('root_path');
+
+        $exist = Belongs::where('user_id', $user_id)->count();
+        if ($exist > 0) {
+            return response(0);
+        } else {
+            $belong = new Belongs();
+            $belong->user_id = $user_id;
+            $belong->parent_id = $parent_id;
+            $belong->depth = $depth;
+            $belong->root_path = $root_path;
+            $belong->save();
+            return response(1);
+        }
+    }
+
+    public function postDeleteBelong() {
+        $user_id = request()->input('user_id');
+        Belongs::where('user_id', $user_id)->delete();
+        return response(1);
     }
 }

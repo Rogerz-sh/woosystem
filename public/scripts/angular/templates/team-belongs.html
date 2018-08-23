@@ -1,3 +1,10 @@
+<style>
+.list-listed {margin: 0 10px 0 0; background: #efefef; border-radius: 5px;}
+.list-unlist {border: 1px dashed #ddd; border-radius: 5px;}
+.list-tree {margin-left: 30px;}
+.list-user {padding: 5px 7px; background: #fff; border-radius: 3px; border: 1px solid #ddd;}
+li {line-height: 30px;}
+</style>
 <div class="wrap bg-white padding-15 margin-top-20 margin-bottom-50 bordered border-color-orange">
     <div class="container-fluid">
         <div class="row">
@@ -9,8 +16,12 @@
         <div class="row margin-top-10">
             <div class="col-xs-12">
                 <div class="flex">
-                    <div class="flex-1">已分配人员</div>
-                    <div class="width-200">未分配人员</div>
+                    <div class="flex-1 list-listed padding-10" id="belongs">
+                        <p><a class="btn btn-success btn-xs margin-left-10 add" data-id="0" data-depth="0" data-path=""><i class="fa fa-plus"></i> 增加主干人员</a></p>
+                        <ul class="list-root" id="root">
+                        </ul>
+                    </div>
+                    <!--<div class="width-200 list-unlist">未分配人员</div>-->
                 </div>
             </div>
         </div>
@@ -18,6 +29,154 @@
 </div>
 <script>
 $(function () {
+    function getBelongListData() {
+        $.$ajax({
+            url: '/team/belong-list-data',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                buildTreeElement(res);
+            }
+        });
+    }
 
+    function buildTreeData(data) {
+        var sortData = data.sort(function(a, b) {return a.depth - b.depth;}), buildData = [];
+        for (var i = 0; i < sortData.length; i++) {
+            var d = sortData[i];
+            if (d.depth == 1) {
+                d.children = getChild(d, sortData, d.depth + 1);
+                buildData.push(d);
+            }
+        }
+        return buildData;
+    }
+
+    function getChild(item, data, depth) {
+        var children = [];
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            if (d.parent_id == item.user_id && d.depth == depth) {
+                d.children = getChild(d, data, d.depth + 1);
+                children.push(d);
+            }
+        }
+        return children;
+    }
+
+    function buildList(item) {
+        var children = item.children, html = '<ul class="list-tree">{0}</ul>', _list = [];
+        children.forEach(function (v) {
+            var _li = buildNode(v);
+            _list.push(_li);
+        });
+        return html.format(_list.join(''));
+    }
+
+    function buildNode(v) {
+        return '<li><span class="list-user">{3}</span>\
+                <a class="btn btn-xs btn-success margin-left-10 add" data-id="{0}" data-depth="{1}" data-path="{2}"><i class="fa fa-plus"></i></a>\
+                <a class="btn btn-xs btn-danger margin-left-10 delete" data-id="{0}"><i class="fa fa-times"></i></a>\
+                {4}</li>'.format(v.user_id, v.depth, v.root_path, '<b>{0}</b> <span class="dark-gray margin-left-5">{1} - {2}</span>'.format(v.nickname, v.group_name, v.area_name), v.children.length ? buildList(v) : '');
+    }
+
+    function buildTreeElement(data) {
+        var treeData = buildTreeData(data), $root = $('#root'), list = [];
+        treeData.forEach(function (v) {
+            var li = buildNode(v);
+            list.push(li);
+        });
+        $root.html(list.join(''));
+    }
+
+    $('#belongs').delegate('a.add', 'click', function () {
+        var id = +$(this).data('id'), depth = +$(this).data('depth'), path = $(this).data('path');
+        $.$modal.dialog({
+            title: '添加人员',
+            //size: 'sm',
+            content: ' <form class="form form-horizontal">' +
+            '<div class="form-group">' +
+            '<label class="control-label col-xs-4">员工姓名：</label>' +
+            '<div class="col-xs-8 form-control-static"><select id="users" class="width-300"></select></div>' +
+            '</div>' +
+            '</form>',
+            footer: {
+                buttons: [
+                    {
+                        name: 'ok',
+                        handler: function () {
+                            var self = this, dom = self.dom, user_id = $('#users', dom).val();
+                            $.$ajax({
+                                url: '/team/add-belong',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {user_id: user_id, parent_id: id, depth: depth + 1, root_path: path ? [path, user_id].join('-') : user_id},
+                                success: function (res) {
+                                    if (res) {
+                                        getBelongListData();
+                                        self.hide();
+                                    } else {
+                                        $.$modal.alert('添加失败');
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    {
+                        name: 'cancel',
+                        handler: function () {
+                            this.hide();
+                        }
+                    }
+                ]
+            },
+            onLoaded: function () {
+                var dom = this.dom;
+                $('#users', dom).kendoDropDownList({
+                    dataSource: {
+                        transport: {
+                            read: function (option) {
+                                $.$ajax({
+                                    url: '/team/unlisted-user-data',
+                                    type: 'GET',
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        option.success(res);
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    dataTextField: 'nickname',
+                    dataValueField: 'id',
+                    optionLabel: '请选择',
+                    template: '<strong>#:nickname#</strong> <span class="dark-gray">[ #:group_name# - #:area_name# ]</span>',
+                    valueTemplate: '<strong>#:nickname#</strong> <span class="dark-gray">[ #:group_name# - #:area_name# ]</span>'
+                });
+            }
+        }).show();
+    });
+
+    $('#belongs').delegate('a.delete', 'click', function () {
+        var id = +$(this).data('id'), $li = $(this).closest('li');
+        if ($li.find('li').length > 0) {
+            $.$modal.alert('请先删除子员工');
+        } else {
+            $.$modal.confirm(['删除分支', '确认要删除吗？'], function (isOk) {
+                if (!isOk) return;
+                $.$ajax({
+                    url: '/team/delete-belong',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {user_id: id},
+                    success: function (res) {
+                        getBelongListData();
+                    }
+                });
+            });
+        }
+    });
+
+    getBelongListData();
 });
 </script>

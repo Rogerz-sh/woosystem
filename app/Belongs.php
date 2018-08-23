@@ -9,5 +9,5 @@ class Belongs extends Model
 {
     //use SoftDeletes;
     protected $table = 'belongs';
-
+    public $timestamps = false;
 }
