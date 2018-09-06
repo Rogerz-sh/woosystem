@@ -21,8 +21,11 @@ class ResultController extends BaseController {
         $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, status, ext, results.order, comment,
         (select name from users where users.id = results.operator) as operator,
         (select a_name from areas where areas.id = results.area) as area_name,
-        (select name from users where users.id = results.created_by) as creator'))
-            ->orderBy('date', 'desc')->get();
+        (select name from users where users.id = results.created_by) as creator'));
+        if (Session::get('power') < 8) {
+            $result = $result->where('created_by', Session::get('id'));
+        }
+        $result = $result->orderBy('date', 'desc')->get();
         return response($result);
     }
 

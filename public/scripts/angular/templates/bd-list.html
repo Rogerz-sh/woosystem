@@ -7,19 +7,19 @@
             </ul>
         </div>
         <div class="row margin-bottom-10">
-            <div class="col-xs-1"><a href="#/bd/create" class="btn btn-success"><i class="fa fa-plus"></i> 新增记录</a></div>
+            <div class="col-xs-1" power-checker allowed="1,5,3,6,7,8,9,10,99"><a href="#/bd/create" class="btn btn-success"><i class="fa fa-plus"></i> 新增记录</a></div>
         </div>
         <div class="row">
             <div class="col-xs-12">
                 <div kendo-tab-strip id="tab">
                     <ul>
                         <li class="k-state-active">我的客户</li>
-                        <li power-checker allowed="9">所有客户</li>
+                        <li power-checker allowed="10,99">所有客户</li>
                     </ul>
                     <div>
                         <div kendo-grid k-options="config.grid"></div>
                     </div>
-                    <div ng-if="session.power == 9">
+                    <div power-checker allowed="10,99">
                         <div kendo-grid k-options="config.grid2"></div>
                     </div>
                 </div>
