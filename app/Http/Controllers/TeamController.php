@@ -22,19 +22,86 @@ use Illuminate\Support\Facades\Session;
 class TeamController extends BaseController {
 
     public function getRecentFaceList() {
-        $face = HuntFace::select(DB::raw('*, (select nickname from users where users.id = hunt_face.created_by) as nickname'))->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
-        return response($face);
+        $power = Session::get('power');
+        if ($power < 10) {
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids.','.$p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $face = HuntFace::select(DB::raw('*, (select nickname from users where users.id = hunt_face.created_by) as nickname'))
+                        ->whereRaw('datediff(now(), date) < 30 and hunt_face.created_by in ('.$ids.')')->orderBy('date', 'desc')->get();
+                    return response($face);
+                } else {
+                    return response([]);
+                }
+            } else {
+                return response([]);
+            }
+        } else {
+            $face = HuntFace::select(DB::raw('*, (select nickname from users where users.id = hunt_face.created_by) as nickname'))->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
+            return response($face);
+        }
     }
 
     public function getRecentOfferList() {
-        $offer = HuntReport::select(DB::raw('*, (select nickname from users where users.id = hunt_report.created_by) as nickname'))->where('type', 'offer')
-            ->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
-        return response($offer);
+        $power = Session::get('power');
+        if ($power < 10) {
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids.','.$p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $offer = HuntReport::select(DB::raw('*, (select nickname from users where users.id = hunt_report.created_by) as nickname'))->where('type', 'offer')
+                        ->whereRaw('datediff(now(), date) < 30 and hunt_report.created_by in ('.$ids.')')->orderBy('date', 'desc')->get();
+                    return response($offer);
+                } else {
+                    return response([]);
+                }
+            } else {
+                return response([]);
+            }
+        } else {
+            $offer = HuntReport::select(DB::raw('*, (select nickname from users where users.id = hunt_report.created_by) as nickname'))->where('type', 'offer')
+                ->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
+            return response($offer);
+        }
     }
 
     public function getRecentSuccessList() {
-        $offer = HuntSuccess::select(DB::raw('*, (select nickname from users where users.id = hunt_success.created_by) as nickname'))->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
-        return response($offer);
+        $power = Session::get('power');
+        if ($power < 10) {
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids.','.$p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $success = HuntSuccess::select(DB::raw('*, (select nickname from users where users.id = hunt_success.created_by) as nickname'))
+                        ->whereRaw('datediff(now(), date) < 30 and hunt_success.created_by in ('.$ids.')')->orderBy('date', 'desc')->get();
+                    return response($success);
+                } else {
+                    return response([]);
+                }
+            } else {
+                return response([]);
+            }
+        } else {
+            $success = HuntSuccess::select(DB::raw('*, (select nickname from users where users.id = hunt_success.created_by) as nickname'))
+                ->whereRaw('datediff(now(), date) < 30')->orderBy('date', 'desc')->get();
+            return response($success);
+        }
     }
 
     public function getJsonAreaList() {

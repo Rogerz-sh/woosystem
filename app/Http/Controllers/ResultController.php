@@ -11,6 +11,7 @@ use App\Hunt;
 use App\Result;
 use App\ResultUser;
 use App\User;
+use App\Belongs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -18,12 +19,30 @@ use Illuminate\Support\Facades\Session;
 class ResultController extends BaseController {
 
     public function getJsonResultList() {
+        $power = Session::get('power');
         $result = Result::select(DB::raw('id, name, amount, job_id, job_name, company_id, company_name, date, status, ext, results.order, comment,
         (select name from users where users.id = results.operator) as operator,
         (select a_name from areas where areas.id = results.area) as area_name,
         (select name from users where users.id = results.created_by) as creator'));
-        if (Session::get('power') < 8) {
+        if ($power < 8) {
             $result = $result->where('created_by', Session::get('id'));
+        } else if ($power >= 8 && $power < 10) {
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids.','.$p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $result = $result->whereRaw('created_by in ('.$ids.')');
+                } else {
+                    $result = $result->where('created_by', Session::get('id'));
+                }
+            } else {
+                $result = $result->where('created_by', Session::get('id'));
+            }
         }
         $result = $result->orderBy('date', 'desc')->get();
         return response($result);
@@ -171,7 +190,7 @@ class ResultController extends BaseController {
             ->select(DB::raw('results.job_id, results.job_name, results.company_id, results.company_name, results.amount, results.name, results.date,
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
-                            sum(if(user_result<0, -user_order, user_order)) as total_order, sum(user_result) as total_result'))
+                            sum(percent) as total_percent, sum(user_result) as total_result'))
             ->where('result_users.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
 
         if ($user) {

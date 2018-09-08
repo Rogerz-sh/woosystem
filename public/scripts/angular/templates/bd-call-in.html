@@ -19,6 +19,7 @@
 <script>
 $(function() {
     var pData = new kendo.data.DataSource(), cData = new kendo.data.DataSource();
+    var power = $('meta[name="_sessionPower"]').attr('content');
     $.$ajax.get('/data/location.json', function (res) {
         pData.data(res.province);
         var citys = [];
@@ -61,10 +62,9 @@ $(function() {
             {field: 'area', title: '所属地区'},
             {field: 'belong', title: '归属公司'},
             {field: 'description', title: '备注', template: '<div style="max-width:300px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" title="#:description#"><span>#:description#</span></div>'},
-            {field: 'created_at', title: '录入日期', template: getDate},
-            {title: '操作', template: '<a class="btn btn-default btn-xs margin-right-5 _edit" data-id="#:id#"><i class="fa fa-pencil"></i></a>\
-                                        <a class="btn btn-danger btn-xs _delete" data-id="#:id#"><i class="fa fa-trash-o"></i></a>', width: 80}
-        ]
+            {field: 'created_at', title: '录入日期', template: getDate, width: 80}
+        ].concat([2,10,99].indexOf(power) < 0 ? [] : [{title: '操作', template: '<a class="btn btn-default btn-xs margin-right-5 _edit" data-id="#:id#"><i class="fa fa-pencil"></i></a>\
+                                        <a class="btn btn-danger btn-xs _delete" data-id="#:id#"><i class="fa fa-trash-o"></i></a>', width: 80}])
     }).data('kendoGrid');
 
     function getDate(item) {
