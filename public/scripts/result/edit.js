@@ -140,7 +140,7 @@ $(function () {
             dataBound: function () {
                 if (!initDDL && this.dataItems().length) {
                     ddl.select(function (dataItem) {
-                        return dataItem.job_id = res.job_id;
+                        return dataItem.job_id == res.job_id;
                     });
                     initDDL = true;
                     ddl.trigger('change');
