@@ -428,7 +428,7 @@
     </div>
     <div class="form-group">
         <div class="col-xs-10 col-xs-offset-2">
-            <button ng-show="person.type=='basic'" class="btn btn-success col-xs-2" ng-disabled="personForm.$invalid || person.companys.length==0" ng-click="operator.savePersonData()">保存</button>
+            <button ng-show="person.type=='basic'" class="btn btn-success col-xs-2" ng-disabled="personForm.$invalid || person.companys.length==0 || person.schools.length==0" ng-click="operator.savePersonData()">保存</button>
             <button ng-show="person.type=='upload'" class="btn btn-success col-xs-2" ng-disabled="personForm.$invalid || person.file_path==''" ng-click="operator.savePersonData()">保存</button>
             <button class="btn btn-danger col-xs-2 margin-left-20" ng-click="operator.quit()">取消</button>
         </div>
