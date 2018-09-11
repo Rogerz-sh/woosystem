@@ -14,6 +14,7 @@ use App\HuntResult;
 use App\HuntSelect;
 use App\HuntSuccess;
 use App\User;
+use App\Belongs;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
@@ -32,17 +33,33 @@ class HuntController extends BaseController {
     }
 
     public function getJsonHuntListData() {
-        if (Session::get('power') >= 9) {
+        if (Session::get('power') >= 10) {
             $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
                 ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.salary_month', 'hunt.salary_year', 'hunt.description')
                 ->orderBy('hunt.updated_at', 'desc')->limit(1000)->get();
+            return response($hunt);
         } else {
-            $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
-                ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.salary_month', 'hunt.salary_year', 'hunt.description')
-                ->where('hunt.user_id', Session::get('id'))
-                ->orderBy('hunt.updated_at', 'desc')->get();
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids.','.$p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $hunt = Hunt::join('person', 'hunt.person_id', '=', 'person.id')
+                        ->select('hunt.id', 'hunt.job_name', 'hunt.company_name', 'hunt.person_name', 'hunt.name as HID', 'person.id as person_id', 'person.name as name', 'person.type', 'person.tel', 'person.email', 'person.sex', 'hunt.date', 'hunt.salary_month', 'hunt.salary_year', 'hunt.description')
+                        ->whereRaw('hunt.user_id in ('.$ids.')')
+                        ->orderBy('hunt.updated_at', 'desc')->get();
+                    return response($hunt);
+                } else {
+                    return response([]);
+                }
+            } else {
+                return response([]);
+            }
         }
-        return response($hunt);
     }
 
     public function getCreate() {
@@ -458,12 +475,36 @@ class HuntController extends BaseController {
 
     //职位分配相关操作
     public function getJsonHuntSelectListData() {
-        if (Session::get('power') >= 9) {
+        if (Session::get('power') >= 10) {
             $hs = DB::table('hunt_count')->orderBy('updated_at', 'desc')->get();
+            return response($hs);
         } else {
-            $hs = DB::table('hunt_count')->whereRaw('locate(concat(",", ?, ","), concat(",", user_ids, ",")) > 0', [Session::get('id')])->orderBy('updated_at', 'desc')->get();
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = array();
+                    foreach ($path as $p) {
+                        array_push($ids, $p->user_id);
+                    }
+                    $hunt_select = array();
+                    $hs = DB::table('hunt_count')->orderBy('updated_at', 'desc')->get();
+                    foreach($hs as $h) {
+                        $users = explode(',', $h->user_ids);
+                        foreach ($users as $u) {
+                            if (in_array($u, $ids)) {
+                                array_push($hunt_select, $h);
+                            }
+                        }
+                    }
+                    return response($hunt_select);
+                } else {
+                    return response([]);
+                }
+            } else {
+                return response([]);
+            }
         }
-        return response($hs);
     }
 
     public function getJsonHuntSelectJobData() {

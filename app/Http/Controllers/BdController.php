@@ -10,7 +10,7 @@ use App\Bd;
 use App\BdCallIn;
 use App\BdFile;
 use App\BdRecord;
-use App\Candidate;
+use App\Belongs;
 use App\User;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
@@ -30,15 +30,35 @@ class BdController extends BaseController {
 
     public function getJsonBdListData() {
         $uid = request()->input('user_id');
+        $power = Session::get('power');
+        $bd = [];
         if (isset($uid)) {
             $bd = Bd::where('bd.user_id', $uid)
                 ->select('bd.id', 'bd.name', 'bd.company_id', 'bd.company_name', 'bd.user_id', 'bd.user_name', 'bd.user_ids', 'bd.user_names', 'bd.date', 'bd.status', 'bd.type', 'bd.source', 'bd.belong', 'company.contact', 'company.industry', 'company.area', 'company.tel', 'bd.description')
                 ->join('company', 'bd.company_id', '=', 'company.id')
                 ->orderBy('bd.created_at', 'desc')->get();
         } else {
-            $bd = Bd::select('bd.id', 'bd.name', 'bd.company_id', 'bd.company_name', 'bd.user_id', 'bd.user_name', 'bd.user_ids', 'bd.user_names', 'bd.date', 'bd.status', 'bd.type', 'bd.source', 'bd.belong', 'company.contact', 'company.industry', 'company.area', 'company.tel', 'bd.description')
-                ->join('company', 'bd.company_id', '=', 'company.id')
-                ->orderBy('bd.created_at', 'desc')->get();
+            if ($power < 10) {
+                $belong = Belongs::where('user_id', Session::get('id'))->first();
+                if ($belong) {
+                    $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                    if (sizeof($path) > 0) {
+                        $ids = '';
+                        foreach ($path as $p) {
+                            $ids = $ids.','.$p->user_id;
+                        }
+                        $ids = substr($ids, 1);
+                        $bd = Bd::select('bd.id', 'bd.name', 'bd.company_id', 'bd.company_name', 'bd.user_id', 'bd.user_name', 'bd.user_ids', 'bd.user_names', 'bd.date', 'bd.status', 'bd.type', 'bd.source', 'bd.belong', 'company.contact', 'company.industry', 'company.area', 'company.tel', 'bd.description')
+                            ->join('company', 'bd.company_id', '=', 'company.id')
+                            ->whereRaw('bd.user_id in ('.$ids.')')
+                            ->orderBy('bd.created_at', 'desc')->get();
+                    }
+                }
+            } else {
+                $bd = Bd::select('bd.id', 'bd.name', 'bd.company_id', 'bd.company_name', 'bd.user_id', 'bd.user_name', 'bd.user_ids', 'bd.user_names', 'bd.date', 'bd.status', 'bd.type', 'bd.source', 'bd.belong', 'company.contact', 'company.industry', 'company.area', 'company.tel', 'bd.description')
+                    ->join('company', 'bd.company_id', '=', 'company.id')
+                    ->orderBy('bd.created_at', 'desc')->get();
+            }
         }
         return response($bd);
     }
@@ -150,7 +170,24 @@ class BdController extends BaseController {
     }
 
     public function getJsonCallInList() {
-        $call_in = BdCallIn::get();
+        $power = Session::get('power');
+        if ($power >= 10 || $power == 2) {
+            $call_in = BdCallIn::get();
+        } else if ($power == 8 || $power == 9) {
+            $user = User::find(Session::get('id'));
+            if ($user->area_id == 1) {
+                $area = '上海';
+            } else if ($user->area_id == 2) {
+                $area = '长沙';
+            } else if ($user->area_id == 3) {
+                $area = '武汉';
+            } else {
+                $area = '';
+            }
+            $call_in = BdCallIn::where('belong', $area)->get();
+        } else {
+            $call_in = [];
+        }
         return response($call_in);
     }
 
