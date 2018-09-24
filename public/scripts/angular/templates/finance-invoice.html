@@ -1,0 +1,398 @@
+<div class="wrapper bg-white padding-15 margin-top-20 margin-bottom-50">
+    <div class="container-fluid">
+        <div class="row">
+            <ul class="breadcrumb">
+                <li><a href="#/">首页</a></li>
+                <li>开票管理</li>
+            </ul>
+        </div>
+        <div class="row margin-bottom-10" power-checker allowed="2,10,99">
+            <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增开票信息</a></div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="bordered border-color-gray"><div id="grid"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(function() {
+    var pData = new kendo.data.DataSource(),
+        cData = new kendo.data.DataSource(),
+        power = +$('meta[name="_sessionPower"]').attr('content');
+
+    var grid = $('#grid').kendoGrid({
+        dataSource: {
+            transport: {
+                read: function (option) {
+                    $.$ajax({
+                        url: '/finance/invoice-json-list',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (res) {
+                            option.success(res);
+                        }
+                    })
+                }
+            },
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            },
+            pageSize: 10
+        },
+        scrollable: false,
+        pageable: true,
+        columns: [
+            {field: 'job_name', title: '职位名称'},
+            {field: 'company_name', title: '客户名称'},
+            {field: 'person_name', title: '候选人'},
+            {field: 'amount', title: '付款金额'},
+            {field: 'type', title: '款项类型'},
+            {field: 'estimate_date', title: '约定日期', template: getDate('estimate_date'), width: 80},
+            {field: 'status', title: '付款状态', template: getPayStatus},
+            {field: 'invoice_status', title: '开票状态', template: getInvoiceStatus},
+            {field: 'description', title: '备注', template: '<div style="max-width:300px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" title="#:description#"><span>#:description#</span></div>'},
+            {field: 'user_name', title: '操作顾问', width: 80},
+            {field: 'created_at', title: '录入日期', template: getDate('created_at'), width: 80},
+            {title: '操作', template: '<a class="btn btn-default btn-xs margin-right-5 _edit" data-id="#:id#"><i class="fa fa-pencil"></i></a>\
+                                        <a class="btn btn-danger btn-xs _delete" data-id="#:id#"><i class="fa fa-trash-o"></i></a>', width: 80}
+        ]
+    }).data('kendoGrid');
+
+    function getPayStatus(item) {
+        if (item.status == '已付') {
+            return '{0} <small class="dark-gray">[{1}]</small>'.format(item.status, new Date(item.pay_date).format());
+        } else {
+            return item.status;
+        }
+    }
+
+    function getInvoiceStatus(item) {
+        if (item.invoice_status == '已开') {
+            return '{0} <small class="dark-gray">[{1}]</small>'.format(item.invoice_status, new Date(item.invoice_date).format());
+        } else {
+            return item.invoice_status;
+        }
+    }
+
+    function getDate(field) {
+        return function (item) {
+            return new Date(item[field].replace(/-/g, '/')).format();
+        }
+    }
+
+    $('#add').click(function () {
+        initDialog(null);
+    });
+
+    $('#grid').delegate('a._edit', 'click', function() {
+        var id = $(this).data('id'), item = grid.dataSource.get(id);
+        initDialog(item);
+    });
+
+    $('#grid').delegate('a._delete', 'click', function() {
+        var id = $(this).data('id');
+        $.$modal.confirm('确定要删除吗？', function (isOk) {
+            if (!isOk) return;
+            $.$ajax({
+                url: '/finance/delete-invoice',
+                type: 'POST',
+                dataType: 'json',
+                data: {id: id},
+                success: function (res) {
+                    if (res > 0) {
+                        grid.dataSource.read();
+                    }
+                }
+            });
+        });
+    });
+
+    function initDialog(data) {
+        var fields = [
+            {id: 'job_id', is_select: 0, name: '公司名称', required: true},
+            {id: 'person_id', is_select: 0, name: '招聘职位', required: true},
+            {id: 'user_id', is_select: 1, name: '所属行业', required: true},
+            {id: 'type', is_select: 1, name: '所在地区', required: true},
+            {id: 'status', is_select: 1, name: '所在地区', required: true},
+            {id: 'belong', is_select: 1, name: '归属公司', required: true},
+            {id: 'contact', is_select: 0, name: '联系人', required: true},
+            {id: 'tel', is_select: 0, name: '电话', required: true},
+            {id: 'email', is_select: 0, name: '邮箱', required: true},
+            {id: 'description', is_select: 0, name: '备注', required: false},
+        ];
+        $.$modal.dialog({
+            title: '{0}开票信息'.format(data ? '编辑' : '新建'),
+            size: 'lg',
+            content: '<div id="dlg_ctn" class="padding-right-15">' +
+            '<form class="form form-horizontal">' +
+                '<div class="form-group">' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 职位名称:</label>' +
+                        '<div class="col-xs-9"><select id="job_id" class="form-control size-full"></select></div>' +
+                    '</div>' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 候选人:</label>' +
+                        '<div class="col-xs-9"><select id="person_id" class="form-control size-full"></select></div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 操作顾问:</label>' +
+                        '<div class="col-xs-9"><select id="user_id" class="form-control size-full"></select></div>' +
+                    '</div>' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 款项类型:</label>' +
+                        '<div class="col-xs-9"><select id="type" class="form-control size-full"></select></div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 付款金额:</label>' +
+                        '<div class="col-xs-9"><div class="input-group"><input type="text" id="amount" class="form-control" /><span class="input-group-addon">元</span></div></div>' +
+                    '</div>' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 约定日期:</label>' +
+                        '<div class="col-xs-9"><input type="text" id="estimate_date" class="form-control _date" /></div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 开票状态:</label>' +
+                        '<div class="col-xs-9"><select id="invoice_status" class="form-control size-full"></select></div>' +
+                    '</div>' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3">开票日期:</label>' +
+                        '<div class="col-xs-9"><input type="text" id="invoice_date" class="form-control _date" /></div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 付款状态:</label>' +
+                        '<div class="col-xs-9"><select id="status" class="form-control size-full"></select></div>' +
+                    '</div>' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3">实付日期:</label>' +
+                        '<div class="col-xs-9"><input type="text" id="pay_date" class="form-control _date" /></div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="form-group flex">' +
+                    '<label class="control-label width-110 padding-right-15">备注:</label>' +
+                    '<div class="flex-1 padding-left-15 padding-right-15">' +
+                        '<textarea id="description" class="form-control" rows="3" style="resize: none;"></textarea>' +
+                    '</div>' +
+                '</div>' +
+            '</form>' +
+            '</div>',
+            destroy: true,
+            footer: {
+                buttons: [
+                    {
+                        name: 'ok',
+                        handler: function () {
+                            var self = this, dom = self.dom, formData = {}, url = '/finance/save-invoice';
+                            var job = $('#job_id', dom).data('kendoDropDownList').dataItem();
+                            var person = $('#person_id', dom).data('kendoDropDownList').dataItem();
+                            var user = $('#user_id', dom).data('kendoDropDownList').dataItem();
+                            var invoice_date = $('#invoice_date', dom).data('kendoDatePicker').value();
+                            var estimate_date = $('#estimate_date', dom).data('kendoDatePicker').value();
+                            var pay_date = $('#pay_date', dom).data('kendoDatePicker').value();
+                            if (job && job.job_id) {
+                                formData.job_id = job.job_id;
+                                formData.job_name = job.job_name;
+                                formData.company_id = job.company_id;
+                                formData.company_name = job.company_name;
+                            }
+                            if (person && person.person_id) {
+                                formData.person_id = person.person_id;
+                                formData.person_name = person.person_name;
+                            }
+                            if (user && user.user_id) {
+                                formData.user_id = user.user_id;
+                                formData.user_name = user.user_name;
+                            }
+                            if (invoice_date) formData.invoice_date = invoice_date.format('yyyy-mm-dd');
+                            if (estimate_date) formData.estimate_date = estimate_date.format('yyyy-mm-dd');
+                            if (pay_date) formData.pay_date = pay_date.format('yyyy-mm-dd');
+
+                            formData.status = $('#status', dom).val();
+                            formData.type = $('#type', dom).val();
+                            formData.amount = $('#amount', dom).data('kendoNumericTextBox').value();
+                            formData.invoice_status = $('#invoice_status', dom).val();
+                            formData.description = $('#description', dom).val();
+                            console.log(formData);
+
+                            if (data && data.id) {
+                                url = '/finance/edit-invoice';
+                                formData.id = data.id;
+                            }
+                            $.$ajax({
+                                url: url,
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {invoice: formData},
+                                success: function (res) {
+                                    if (~~res > 0) {
+                                        self.hide();
+                                        grid.dataSource.read();
+                                        $.$modal.alert('保存成功');
+                                    } else {
+                                        $.$modal.alert(res);
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    {
+                        name: 'cancel',
+                        handler: function () {
+                            this.hide();
+                        }
+                    }
+                ]
+            },
+            onLoaded: function () {
+                var self = this, dom = self.dom;
+                var job = $('#job_id', dom).kendoDropDownList({
+                    dataSource: {
+                        transport: {
+                            read: {
+                                url: '/result/search-job-with-company'
+                            }
+                        },
+                        serverFiltering: true
+                    },
+                    dataTextField: 'job_name',
+                    dataValueField: 'job_id',
+                    template: '#:job_name#<br><small class="dark-gray">#:company_name#</small>',
+                    valueTemplate: '#:job_name# -- <small class="dark-gray">#:company_name#</small>',
+                    filter: 'contains',
+                    minLength: 2,
+                    optionLabel: '请输入岗位或企业关键字查询',
+                    popup: {
+                        appendTo: dom
+                    },
+                    filtering: function(e) {
+                        var filter = e.filter;
+                        if (!filter || !filter.value) {
+                            e.preventDefault();
+                        }
+                    },
+                    change: function () {
+                        var item = this.dataItem();
+                        $.$ajax({
+                            url: '/result/json-job-person-list',
+                            type: 'GET',
+                            dataType: 'json',
+                            data: {job_id: item.job_id},
+                            success: function (res) {
+                                person.dataSource.data(res);
+                                if (data.person_id) person.select(function(item) {
+                                    return item.person_id == data.person_id;
+                                })
+                            }
+                        });
+                    }
+                }).data('kendoDropDownList');
+
+                var person = $('#person_id', dom).kendoDropDownList({
+                    dataSource: [],
+                    dataTextField: 'person_name',
+                    dataValueField: 'person_id',
+                    optionLabel: '请选择上岗候选人',
+                    template: '#:person_name#  <small class="dark-gray">[入职日期：#:new Date(date).format()#]</small>',
+                    valueTemplate: '#:person_name#  <small class="dark-gray">[入职日期：#:new Date(date).format()#]</small>',
+                    popup: {
+                        appendTo: dom
+                    },
+                }).data('kendoDropDownList');
+
+                var user = $('#user_id', dom).kendoDropDownList({
+                    dataSource: {
+                        transport: {
+                            read: {
+                                url: '/result/json-user-list'
+                            }
+                        }
+                    },
+                    dataTextField: 'user_name',
+                    dataValueField: 'user_id',
+                    template: '<span style="font-size:12px;">#:user_name# -- #:group_name# -- #:area_name#</span>',
+                    optionLabel: '请选择操作顾问',
+                    filter: 'contains',
+                    popup: {
+                        appendTo: dom
+                    },
+                }).data('kendoDropDownList');
+
+                var amount = $('#amount').kendoNumericTextBox({
+                    spinners: false,
+                    format: 'n2'
+                }).data('kendoNumericTextBox');
+
+                var type = $('#type', dom).kendoDropDownList({
+                    dataSource: ["首款", "尾款", "其他"],
+                    optionLabel: '请选择款项类型'
+                }).data('kendoDropDownList');
+
+                var status = $('#status', dom).kendoDropDownList({
+                    dataSource: ["未付", "已付"],
+                    optionLabel: '请选择付款状态'
+                }).data('kendoDropDownList');
+
+                var invoice_status = $('#invoice_status', dom).kendoDropDownList({
+                    dataSource: ["未开", "已开"],
+                    optionLabel: '请选择开票状态'
+                }).data('kendoDropDownList');
+
+                $('._date', dom).kendoDatePicker({
+                    culture: 'zh-CN',
+                    format: 'yyyy-MM-dd'
+                });
+
+                //with edit data
+                if (data) {
+                    var inited = false;
+                    job.bind('dataBound', function () {
+                        if (!inited && this.dataItems().length) {
+                            job.select(function (item) {
+                                return item.job_id == data.job_id;
+                            });
+                            inited = true;
+                            job.trigger('change');
+                        }
+                    });
+                    person.bind('dataBound', function () {
+                        person.select(function(item) {
+                            return item.person_id == data.person_id;
+                        });
+                    });
+                    job.search(data.job_name);
+                    user.bind('dataBound', function () {
+                        user.select(function (item) {
+                            return item.user_id == data.user_id;
+                        });
+                    });
+                    type.select(function (item) {
+                        return item == data.type;
+                    });
+                    status.select(function (item) {
+                        return item == data.status;
+                    });
+                    invoice_status.select(function (item) {
+                        return item == data.invoice_status;
+                    });
+                    amount.value(data.amount);
+                    if (data.estimate_date) $('#estimate_date', dom).data('kendoDatePicker').value(new Date(data.estimate_date));
+                    if (data.invoice_date) $('#invoice_date', dom).data('kendoDatePicker').value(new Date(data.invoice_date));
+                    if (data.pay_date) $('#pay_date', dom).data('kendoDatePicker').value(new Date(data.pay_date));
+                    $('#description', dom).val(data.description);
+                }
+            }
+        }).show();
+    }
+});
+</script>

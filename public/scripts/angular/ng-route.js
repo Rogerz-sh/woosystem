@@ -162,6 +162,10 @@
                 templateUrl: '/scripts/angular/templates/team-belongs.html',
                 controller: 'routeTempController'
             })
+            .when('/finance/invoice', {
+                templateUrl: '/scripts/angular/templates/finance-invoice.html',
+                controller: 'routeTempController'
+            })
             .when('/user/info', {
                 templateUrl: '/scripts/angular/templates/user-info.html',
                 controller: 'userInfoController'

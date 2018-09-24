@@ -89,14 +89,19 @@ $sessionPower = Session::get('power');
     </div>
     {{--@yield('content')--}}
     <div ng-view></div>
+    <div class="notice-container">
+        <div class="notice-content">
+            <ul class="notice-list"></ul>
+        </div>
+        <div class="notice-handler">系<br>统<br>通<br>知</div>
+    </div>
 </div>
 <script src="/scripts/angular/ng-bootstrap.js"></script>
 <script src="/scripts/angular/ng-controller.js"></script>
 <script src="/scripts/angular/ng-route.js"></script>
 <script src="/scripts/angular/directives/common.js"></script>
 <script src="/scripts/angular/services/getModel.js"></script>
-
-{{--<script src="/scripts/main.js"></script>--}}
+<script src="/scripts/main.js"></script>
 @yield('body-script')
 </body>
 </html>

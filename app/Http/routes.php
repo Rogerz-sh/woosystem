@@ -48,4 +48,6 @@ Route::group(['middleware' => 'login'], function () {
 
     Route::controller('personal', 'PersonalController');
 
+    Route::controller('finance', 'FinanceController');
+
 });

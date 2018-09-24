@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 use App\HuntFace;
 use App\HuntReport;
 use App\HuntSuccess;
+use App\Invoice;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -54,5 +55,12 @@ class DashboardController extends BaseController {
             ->where('hunt_person_status.deleted_at', null)
             ->orderBy('hunt_person_status.updated_at', 'desc')->get();
         return response($hunt);
+    }
+
+    public function getNoticeJsonList() {
+        $user_id = Session::get('id');
+        $hunt_success = HuntSuccess::where('created_by', $user_id)->whereRaw('datediff(now(), protected) >= -7 and datediff(now(), protected) <= 0')->get();
+        $invoice = Invoice::where('user_id', $user_id)->where('status', '未付')->whereRaw('datediff(now(), estimate_date) >= -7 and datediff(now(), estimate_date) <= 30')->get();
+        return response([$hunt_success, $invoice]);
     }
 }
