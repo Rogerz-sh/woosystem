@@ -3,10 +3,6 @@
  */
 $(function () {
     var notice_cookie = $.cookie('noticed_date'), is_cookie_set = true;
-    if (getDateDiff(notice_cookie) != 0) {
-        $('.notice-container').addClass('open');
-        is_cookie_set = false;
-    }
     $('.notice-handler').click(function () {
         $('.notice-container').toggleClass('open');
         if (!is_cookie_set) {
@@ -68,10 +64,18 @@ $(function () {
                     result.push(info);
                 }
             });
-            result.sort(function (a, b) {
-                return a.diff - b.diff;
-            });
-            initNoticeList(result);
+            if (getDateDiff(notice_cookie) != 0 && result.length > 0) {
+                $('.notice-container').addClass('open');
+                is_cookie_set = false;
+            }
+            if (result.lenght > 0) {
+                result.sort(function (a, b) {
+                    return a.diff - b.diff;
+                });
+                initNoticeList(result);
+            } else {
+                $('.notice-content').html('<div class="dark-yellow" style="line-height:360px;text-align:center;">暂时没有任何消息提醒</div>');
+            }
         }
     });
 

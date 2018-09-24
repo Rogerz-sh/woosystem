@@ -93,7 +93,7 @@ $sessionPower = Session::get('power');
         <div class="notice-content">
             <ul class="notice-list"></ul>
         </div>
-        <div class="notice-handler">系<br>统<br>通<br>知</div>
+        <div class="notice-handler">消<br>息<br>提<br>醒</div>
     </div>
 </div>
 <script src="/scripts/angular/ng-bootstrap.js"></script>
