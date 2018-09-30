@@ -7,16 +7,58 @@
  */
 namespace App\Http\Controllers;
 
+use App\User;
+use App\Groups;
+use App\Areas;
 use App\Hunt;
 use App\Result;
 use App\ResultUser;
-use App\User;
 use App\Belongs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class ResultController extends BaseController {
+
+    public function getJsonAreaGroupUserData() {
+        $power = Session::get('power');
+        if ($power >= 10) {
+            $area = Areas::select('id', 'a_name')->get();
+            $group = Groups::select('id', 'g_name', 'area_id', 'area_name')->get();
+            $user = User::select('id', 'nickname', 'area_id', 'group_id')->where('status', '1')->orderBy('id', 'desc')->get();
+        } else {
+            $users = User::select('id', 'nickname', 'group_id', 'group_name', 'area_id', 'area_name')->where('status', 1);
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')')->get();
+                } else {
+                    $users = $users->where('id', Session::get('id'))->get();
+                }
+            } else {
+                $users = $users->where('id', Session::get('id'))->get();
+            }
+            $user = array(); $group = array(); $area = array(); $gids = array(); $aids = array();
+            foreach($users as $u) {
+                array_push($user, $u);
+                if (!in_array($u->group_id, $gids)) {
+                    array_push($gids, $u->group_id);
+                    array_push($group, ["id"=>$u->group_id, "g_name"=>$u->group_name, "area_id"=>$u->area_id, "area_name"=>$u->area_name]);
+                }
+                if (!in_array($u->area_id, $aids)) {
+                    array_push($aids, $u->area_id);
+                    array_push($area, ["id"=>$u->area_id, "a_name"=>$u->area_name]);
+                }
+            }
+        }
+        return response(["users"=>$user, "groups"=>$group, "areas"=>$area]);
+    }
 
     public function getJsonResultList() {
         $power = Session::get('power');

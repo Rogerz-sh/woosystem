@@ -4,35 +4,34 @@
 $(function () {
 
     var dsArea = new kendo.data.DataSource({
-        transport: {
-            read: function (options) {
-                $.$ajax.get('/performance/json-area-list', function(res) {
-                    //res.unshift({id: '', a_name: '全国'});
-                    options.success(res);
-                });
-            }
-        }
+        dataSource: []
     });
 
     var dsGroup = new kendo.data.DataSource({
-        transport: {
-            read: function (options) {
-                $.$ajax.get('/performance/json-group-list', function(res) {
-                    //res.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
-                    options.success(res);
-                });
-            }
-        }
+        dataSource: []
     });
 
     var dsUser = new kendo.data.DataSource({
-        transport: {
-            read: function (options) {
-                $.$ajax.get('/performance/json-user-list', function(res) {
-                    //res.unshift({id: '', nickname: '全体成员', area_id: 0, group_id: 0});
-                    options.success(res);
-                });
-            }
+        dataSource: []
+    });
+
+
+    var ddl_area, ddl_group, ddl_user;
+    $.$ajax({
+        url: '/result/json-area-group-user-data',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            console.log(res);
+            if (res.areas.length > 1) res.areas.unshift({id: '', a_name: '全部区域'});
+            if (res.groups.length > 1) res.groups.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
+            if (res.users.length > 1) res.users.unshift({id: '', nickname: '全体成员', area_id: 0, area_name: '', group_id: 0, group_name: ''});
+            dsArea.data(res.areas);
+            dsGroup.data(res.groups);
+            dsUser.data(res.users);
+            ddl_area = $('#search_area').kendoDropDownList(config.area).data('kendoDropDownList');
+            ddl_group = $('#search_group').kendoDropDownList(config.group).data('kendoDropDownList');
+            ddl_user = $('#search_user').kendoDropDownList(config.user).data('kendoDropDownList');
         }
     });
 
@@ -41,7 +40,7 @@ $(function () {
             dataSource: dsArea,
             dataTextField: 'a_name',
             dataValueField: 'id',
-            optionLabel: '全部区域',
+            //optionLabel: '全部区域',
             change: function () {
                 var area_id = ~~this.value();
                 dsGroup.filter({
@@ -64,7 +63,7 @@ $(function () {
             dataSource: dsGroup,
             dataTextField: 'g_name',
             dataValueField: 'id',
-            optionLabel: '全部项目组',
+            //optionLabel: '全部项目组',
             template: '#:g_name##:area_name ? " [" + area_name + "]" : ""#',
             change: function () {
                 var group_id = ~~this.value();
@@ -81,13 +80,9 @@ $(function () {
             dataSource: dsUser,
             dataTextField: 'nickname',
             dataValueField: 'id',
-            optionLabel: '全体成员'
+            //optionLabel: '全体成员'
         }
     };
-
-    var ddl_area = $('#search_area').kendoDropDownList(config.area).data('kendoDropDownList');
-    var ddl_group = $('#search_group').kendoDropDownList(config.group).data('kendoDropDownList');
-    var ddl_user = $('#search_user').kendoDropDownList(config.user).data('kendoDropDownList');
 
 
     var sdate = $('#sdate').kendoDatePicker({
