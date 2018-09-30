@@ -23,9 +23,9 @@ $(function () {
         dataType: 'json',
         success: function (res) {
             console.log(res);
-            if (res.areas.length > 1) res.areas.unshift({id: '', a_name: '全部区域'});
-            if (res.groups.length > 1) res.groups.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
-            if (res.users.length > 1) res.users.unshift({id: '', nickname: '全体成员', area_id: 0, area_name: '', group_id: 0, group_name: ''});
+            //if (res.areas.length > 1) res.areas.unshift({id: '', a_name: '全部区域'});
+            //if (res.groups.length > 1) res.groups.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
+            //if (res.users.length > 1) res.users.unshift({id: '', nickname: '全体成员', area_id: 0, area_name: '', group_id: 0, group_name: ''});
             dsArea.data(res.areas);
             dsGroup.data(res.groups);
             dsUser.data(res.users);
@@ -40,7 +40,7 @@ $(function () {
             dataSource: dsArea,
             dataTextField: 'a_name',
             dataValueField: 'id',
-            //optionLabel: '全部区域',
+            optionLabel: '全部区域',
             change: function () {
                 var area_id = ~~this.value();
                 dsGroup.filter({
@@ -63,7 +63,7 @@ $(function () {
             dataSource: dsGroup,
             dataTextField: 'g_name',
             dataValueField: 'id',
-            //optionLabel: '全部项目组',
+            optionLabel: '全部项目组',
             template: '#:g_name##:area_name ? " [" + area_name + "]" : ""#',
             change: function () {
                 var group_id = ~~this.value();
@@ -80,7 +80,7 @@ $(function () {
             dataSource: dsUser,
             dataTextField: 'nickname',
             dataValueField: 'id',
-            //optionLabel: '全体成员'
+            optionLabel: '全体成员'
         }
     };
 
@@ -213,7 +213,7 @@ $(function () {
         } else if (area && area.id) {
             return area.a_name;
         } else {
-            return '全公司';
+            return '全部';
         }
     }
 

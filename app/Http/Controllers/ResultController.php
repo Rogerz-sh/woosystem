@@ -225,6 +225,7 @@ class ResultController extends BaseController {
         $area = request()->input('area');
         $group = request()->input('group');
         $user = request()->input('user');
+        $power = Session::get('power');
         $results = ResultUser::join('results', 'result_users.result_id', '=', 'results.id')
             ->join('users', 'result_users.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
@@ -234,7 +235,39 @@ class ResultController extends BaseController {
                             (select a_name from areas where areas.id = results.area) as area_name,
                             sum(percent) as total_percent, sum(user_result) as total_result'))
             ->where('result_users.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
-
+        if ($power < 10) {
+            $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')')->get();
+                } else {
+                    $users = $users->where('id', Session::get('id'))->get();
+                }
+            } else {
+                $users = $users->where('id', Session::get('id'))->get();
+            }
+            $uids = array(); $gids = array(); $aids = array();
+            foreach($users as $u) {
+                array_push($uids, $u->id);
+                if (!in_array($u->group_id, $gids)) {
+                    array_push($gids, $u->group_id);
+                }
+                if (!in_array($u->area_id, $aids)) {
+                    array_push($aids, $u->area_id);
+                }
+            }
+            $uids = join(',', $uids);
+            $gids = join(',', $gids);
+            $aids = join(',', $aids);
+            $results = $results->whereRaw('users.id in (' . $uids . ') and groups.id in (' . $gids . ') and areas.id in (' . $aids . ')');
+        }
         if ($user) {
             $results = $results->where('users.id', $user)->groupBy('result_id')->orderBy('results.date', 'desc')->get();
         } else if ($group) {
