@@ -2,7 +2,8 @@
  * Created by roger on 15/12/8.
  */
 $(function () {
-
+    var sessionId = $('meta[name="_sessionId"]').attr('content'),
+        sessionPower = $('meta[name="_sessionPower"]').attr('content');
     //search panel
     var search_options = {
         source: ["猎聘网", "智联卓聘", "智联招聘", "前程无忧", "LinkedIn", "若邻网", "其他网站", "人脉推荐"],
@@ -40,9 +41,8 @@ $(function () {
             if (searchs[n]) filter[n] = searchs[n];
         }
         $.$ajax.get('/candidate/json-list-data', {filter: filter}, function (res) {
-            console.log(res[1]);
             $('#grid').data('kendoGrid').dataSource.data(res[0]);
-        })
+        });
     });
 
     //grid
@@ -67,9 +67,7 @@ $(function () {
             {field: 'tel', title: '电话'},
             {field: 'user_name', title: '录入人'},
             {field: 'created_at', title: '录入时间', template: getDate, filterable: false, width: 150},
-            {title: '操作', template: '<a href="\\#/candidate/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
-            '<a href="\\#/candidate/detail/#:id#" target="_blank" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
-            '<a data-id="#:id#" class="btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></a>', width: 140, filterable: false}
+            {title: '操作', template: getButtons, width: 110, filterable: false}
         ],
         //filterable: {mode: 'row'},
         scrollable: false,
@@ -77,11 +75,22 @@ $(function () {
 
     });
 
+    function getButtons(item) {
+        if (['10', '99'].indexOf(sessionPower) > -1 || belongs.indexOf(item.created_by) > -1) {
+            return '<a href="#/candidate/detail/{0}" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-search"></i></a>\
+                <a href="#/candidate/edit/{0}" class="btn btn-default btn-xs"><i class="fa fa-pencil"></i></a>\
+                <a data-id="{0}" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'.format(item.id);
+        } else {
+            return '<a href="#/candidate/detail/{0}" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-search"></i></a>'.format(item.id);
+        }
+
+    }
+
     $('#grid').delegate('.btn-danger', 'click', function (e) {
         var id = $(this).data('id');
         $.$modal.confirm('确定要删除吗?', function (isOk) {
             if (!isOk) return;
-            $.$ajax.post('/candidate/delete/'+id, function (res) {
+            $.$ajax.post('/candidate/delete/', {id: id}, function (res) {
                 $.$modal.alert('删除成功', function () {
                     $('#grid').data('kendoGrid').dataSource.pushUpdate({id: id, deleted: true});
                 });
@@ -158,8 +167,11 @@ $(function () {
         return item.type === 'basic' ? '常规简历' : '附件简历';
     }
 
-    $.$ajax.get('/candidate/json-list-data', {filter: {}}, function (res, filter) {
-        console.log(res[1]);
-        $('#grid').data('kendoGrid').dataSource.data(res[0]);
-    })
+    var belongs = [];
+    $.$ajax.get('/team/team-belong-data', function (ids) {
+        belongs = ids;
+        $.$ajax.get('/candidate/json-list-data', {filter: {}}, function (res, filter) {
+            $('#grid').data('kendoGrid').dataSource.data(res[0]);
+        });
+    });
 });

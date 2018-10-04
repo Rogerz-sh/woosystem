@@ -28,22 +28,23 @@ $(function () {
             {field: 'scale', title: '企业规模'},
             {field: 'type', title: '企业性质'},
             {field: 'found', title: '成立时间'},
-            {title: '操作', template: getButtons, width: 140}
+            {title: '操作', template: getButtons, width: 110}
         ],
-        filterable: {mode: 'row'},
+        //filterable: {mode: 'row'},
         scrollable: false,
         pageable: true,
 
     });
 
     function getButtons(item) {
-        var disabled = 'disabled';
-        if (['3','9','10'].indexOf(session.power) > -1 || session.id == item.created_by) {
-            disabled = '';
+        if (['10', '99'].indexOf(session.power) > -1 || belongs.indexOf(item.created_by) > -1) {
+            return ('<a href="#/company/detail/{0}" class="btn btn-info btn-xs"><i class="fa fa-search"></i></a> ' +
+                '<a href="#/company/edit/{0}" class="btn btn-default btn-xs"><i class="fa fa-pencil"></i></a> ' +
+                '<a data-id="{0}" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>').format(item.id);
+        } else {
+            return ('<a href="#/company/detail/{0}" class="btn btn-info btn-xs"><i class="fa fa-search"></i></a>').format(item.id);
         }
-        return ('<a href="#/company/edit/{0}" class="btn btn-default btn-sm" {1}><i class="fa fa-pencil"></i></a> ' +
-            '<a href="#/company/detail/{0}" class="btn btn-info btn-sm"><i class="fa fa-search"></i></a> ' +
-            '<a data-id="{0}" class="btn btn-danger btn-sm" {1}><i class="fa fa-trash-o"></i></a>').format(item.id, disabled)
+
     }
 
     $('#grid').delegate('.btn-danger', 'click', function (e) {
@@ -79,7 +80,27 @@ $(function () {
         return industry[item.industry];
     }
 
-    $.$ajax.get('/company/json-list-data', function (res) {
-        $('#grid').data('kendoGrid').dataSource.data(res);
-    })
+    var belongs = [];
+    $.$ajax.get('/team/team-belong-data', function (ids) {
+        belongs = ids;
+        $.$ajax.get('/company/json-list-data', function (res) {
+            $('#grid').data('kendoGrid').dataSource.data(res);
+        });
+    });
+
+    $('#search').click(function () {
+        var data = {}, filters = [];
+        ['name', 'area'].map(function(v){
+            data[v] = $('#'+v).val()
+        });
+
+        for (var n in data) {
+            if (data[n]) {
+                filters.push({field: n, operator: 'contains', value: data[n]});
+            }
+        }
+
+        $('#grid').data('kendoGrid').dataSource.filter(filters);
+    });
+
 });

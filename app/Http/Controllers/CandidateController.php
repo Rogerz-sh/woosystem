@@ -31,7 +31,7 @@ class CandidateController extends BaseController {
     public function getJsonListData() {
         $filter = request()->input('filter');
         if ($filter) {
-            $whereStr = ' where 1 = 1';
+            $whereStr = ' where deleted_at is null';
             if (isset($filter['name'])) {
                 $whereStr = $whereStr.' and name like "%'.$filter['name'].'%"';
             }
@@ -257,6 +257,13 @@ class CandidateController extends BaseController {
             HuntResult::where('person_id', $candidate->id)->update(['person_id' => $candidate->id, 'person_name' => $candidate->name]);
             return response($candidate->id);
         }
+    }
+
+    public function postDelete () {
+        $id = request()->input('id');
+        $person = Candidate::find($id);
+        $person->delete();
+        return response($person->id);
     }
 
     public function getHuntList() {

@@ -21,6 +21,24 @@ use Illuminate\Support\Facades\Session;
 
 class TeamController extends BaseController {
 
+    public function getTeamBelongData() {
+        if (Session::get('power') > 9) {
+            return response([]);
+        } else {
+            $ids = array();
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    foreach ($path as $p) {
+                        array_push($ids, $p->user_id);
+                    }
+                }
+            }
+            return response($ids);
+        }
+    }
+
     public function getRecentFaceList() {
         $power = Session::get('power');
         if ($power < 10) {

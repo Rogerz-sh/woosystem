@@ -20,7 +20,7 @@ class CompanyController extends BaseController {
     }
 
     public function getJsonListData() {
-        $company = Company::select('id', 'name', 'area', 'industry', 'type', 'scale', 'found')->orderBy('created_at', 'desc')->get();
+        $company = Company::select('id', 'name', 'area', 'industry', 'type', 'scale', 'found', 'created_by')->orderBy('created_at', 'desc')->get();
         return response($company);
     }
 

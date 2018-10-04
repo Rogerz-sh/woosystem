@@ -2,7 +2,8 @@
  * Created by roger on 15/12/8.
  */
 $(function () {
-    var sessionId = $('meta[name="_sessionId"]').attr('content'), sessionPower = $('meta[name="_sessionPower"]').attr('content');
+    var sessionId = $('meta[name="_sessionId"]').attr('content'),
+        sessionPower = $('meta[name="_sessionPower"]').attr('content');
 
     var optionList = {
         industry: [
@@ -144,10 +145,10 @@ $(function () {
     }).data('kendoGrid');
 
     function getButtons(item) {
-        if (['3', '9', '10'].indexOf(sessionPower) > -1) {
-            return '<a href="#/job/edit/{0}" class="btn btn-default btn-xs" title="编辑"><i class="fa fa-pencil"></i></a>\
-                    <a href="#/job/detail/{0}" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a>\
+        if (['10', '99'].indexOf(sessionPower) > -1 || belongs.indexOf(item.created_by) > -1) {
+            return '<a href="#/job/detail/{0}" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a>\
                     <a data-id="{0}" class="btn btn-success btn-xs" title="加入我的项目"><i class="fa fa-plus-circle"></i></a>\
+                    <a href="#/job/edit/{0}" class="btn btn-default btn-xs" title="编辑"><i class="fa fa-pencil"></i></a>\
                     <a data-id="{0}" class="btn btn-danger btn-xs" title="删除"><i class="fa fa-trash-o"></i></a>'.format(item.id);
         } else {
             return '<a href="#/job/detail/{0}" class="btn btn-info btn-xs" title="查看详情"><i class="fa fa-search"></i></a>\
@@ -216,7 +217,12 @@ $(function () {
         return new Date(item.created_at.replace(/-/g, '/')).format();
     }
 
-    $.$ajax.get('/job/json-job-list-data', function (res) {
-        $('#grid').data('kendoGrid').dataSource.data(res);
+    var belongs = [];
+    $.$ajax.get('/team/team-belong-data', function (ids) {
+        belongs = ids;
+        $.$ajax.get('/job/json-job-list-data', function (res) {
+            $('#grid').data('kendoGrid').dataSource.data(res);
+        });
     });
+
 });
