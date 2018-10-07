@@ -114,7 +114,6 @@ $(function() {
             onLoaded: function () {
                 var dom = this.dom, text = ['开票类型', '开票名称', '纳税人识别号', '公司地址', '公司电话', '开户行', '银行帐号'], li = [];
                 text.forEach(function (v, i) {
-                    debugger;
                     li.push('<li class="list-group-item"><span class="dark-gray margin-right-10">{0}:</span>{1}</li>'.format(v, desc[i]));
                 });
                 dom.find('ul').html(li.join(''));
