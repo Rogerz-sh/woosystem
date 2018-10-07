@@ -38,6 +38,17 @@ class FileController extends BaseController {
         return response('"/'.$path.'/'.$saveName.'"');
     }
 
+    public function postUploadPayNotice() {
+        $file = request()->file('file');
+        $filename = date('Y-m-d-H-i-s');
+        $extension = $file->getClientOriginalExtension();
+        $path = 'upload/pay_notice/'.date('Y').'/'.date('m');
+        $saveName = $filename.'.'.$extension;
+        $file->move($path, $saveName);
+
+        return response('"/'.$path.'/'.$saveName.'"');
+    }
+
     public function postUploadResume() {
         $file = request()->file('file');
         $filename = date('Y-m-d-H-i-s');

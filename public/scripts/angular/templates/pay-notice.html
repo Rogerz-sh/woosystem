@@ -1,13 +1,22 @@
+<style>
+.invoice-info {line-height: 30px; padding: 10px 10px 10px 20px;}
+.invoice-info b {font-size: 14px;}
+.invoice-info ul {padding: 15px 0; margin: 0; border: 1px solid #ddd; border-radius: 5px; width: 100%;}
+.invoice-info li {padding: 0 15px; display: flex;}
+.invoice-info li span {flex: 1;}
+.invoice-info input[type="text"] {width: 100%; height: 20px; border: none; border-bottom: 1px solid #999;}
+.invoice-info input[type="radio"] {position: static; opacity: 1; left: 0; vertical-align: text-bottom; margin-right: 5px;}
+</style>
 <div class="wrapper bg-white padding-15 margin-top-20 margin-bottom-50">
     <div class="container-fluid">
         <div class="row">
             <ul class="breadcrumb">
                 <li><a href="#/">首页</a></li>
-                <li>开票管理</li>
+                <li>付款通知书管理</li>
             </ul>
         </div>
-        <div class="row margin-bottom-10" power-checker allowed="2,10,99">
-            <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增开票信息</a></div>
+        <div class="row margin-bottom-10">
+            <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增付款通知书</a></div>
         </div>
         <div class="row">
             <div class="col-xs-12">
@@ -27,7 +36,7 @@ $(function() {
             transport: {
                 read: function (option) {
                     $.$ajax({
-                        url: '/finance/invoice-json-list',
+                        url: '/finance/pay-notice-json-list',
                         type: 'GET',
                         dataType: 'json',
                         success: function (res) {
@@ -46,41 +55,30 @@ $(function() {
         scrollable: false,
         pageable: true,
         columns: [
-            //{field: 'job_name', title: '职位名称'},
-            {field: 'company_name', title: '客户名称', template: '<b>#:company_name#</b> - <span class="dark-gray">#:job_name# - #:person_name#</span>'},
-            //{field: 'person_name', title: '候选人'},
+            {field: 'user_name', title: '申请人', width: 80},
             {field: 'belong', title: '归属公司'},
-            {field: 'amount', title: '发票金额'},
-            {field: 'type', title: '款项类型'},
-            {field: 'invoice_type', title: '发票类型', template: getInvoiceType},
-            {field: 'estimate_date', title: '约定日期', template: getDate('estimate_date'), width: 80},
-            {field: 'status', title: '回款状态', template: getPayStatus},
-            {field: 'invoice_status', title: '开票状态', template: getInvoiceStatus},
-            //{field: 'description', title: '备注', template: '<div style="max-width:300px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" title="#:description#"><span>#:description#</span></div>'},
-            {field: 'user_name', title: '开票人', width: 80},
-            {field: 'created_at', title: '申请日期', template: getDate('created_at'), width: 80},
+            {field: 'company_name', title: '付款单位'},
+            {field: 'amount', title: '付款金额'},
+            {field: 'person_name', title: '上岗人选'},
+            {field: 'job_name', title: '上岗职位'},
+            {field: 'created_at', title: '提交时间', template: getDate('created_at'), width: 80},
+            {field: 'status', title: '审核状态', template: getStatus},
+            {field: 'need_invoice', title: '是否开票', template: getNeedInvoice},
+            {field: 'invoice_type', title: '开票信息', template: getInvoiceInfo},
             {title: '操作', template: getButtons, width: 120}
         ]
     }).data('kendoGrid');
 
-    function getInvoiceType(item) {
-        return item.invoice_type == '增值税专用发票' ? '<span class="label label-warning">专</span>' : '<span class="label label-success">普</span>';
+    function getStatus(item) {
+        return item.status == '1' ? '<span class="green">已审核</span>' : '<span class="dark-gray">未审核</span>';
     }
 
-    function getPayStatus(item) {
-        if (item.status == '已到账') {
-            return '<span class="green">{0}</span> <small class="dark-gray">[{1}]</small>'.format(item.status, new Date(item.pay_date).format());
-        } else {
-            return '<span class="red">{0}</span>'.format(item.status);
-        }
+    function getNeedInvoice(item) {
+        return item.need_invoice == 0 ? '<span class="dark-gray">不开票</span>' : '<span class="dark-yellow">开票</span>';
     }
 
-    function getInvoiceStatus(item) {
-        if (item.invoice_status == '已开') {
-            return '{0} <small class="dark-gray">[{1}]</small>'.format(item.invoice_status, new Date(item.invoice_date).format());
-        } else {
-            return item.invoice_status;
-        }
+    function getInvoiceInfo(item) {
+        return item.need_invoice == 1 ? '<span class="pointer dark-orange _view" data-id="{0}">[查看开票信息]</span>'.format(item.id) : '无';
     }
 
     function getDate(field) {
@@ -93,16 +91,35 @@ $(function() {
         if (item.filepath) {
             return '<a class="btn btn-default btn-xs margin-right-5 _edit" data-id="{0}"><i class="fa fa-pencil"></i></a>\
                     <a class="btn btn-danger btn-xs margin-right-5 _delete" data-id="{0}"><i class="fa fa-trash-o"></i></a>\
-                    <a class="btn btn-success btn-xs" href="{1}" target="_blank" title="查看附件"><i class="fa fa-eye"></i></a>'.format(item.id, item.filepath);
+                    <a class="btn btn-success btn-xs" href="/file/download-file?path={1}&coded=1&name={2}" target="_blank" title="下载附件"><i class="fa fa-download"></i></a>'.format(item.id, item.filepath, item.filename);
         } else {
             return '<a class="btn btn-default btn-xs margin-right-5 _edit" data-id="{0}"><i class="fa fa-pencil"></i></a>\
                     <a class="btn btn-danger btn-xs margin-right-5 _delete" data-id="{0}"><i class="fa fa-trash-o"></i></a>\
-                    <a class="btn btn-success btn-xs" disabled title="查看附件"><i class="fa fa-eye-slash"></i></a>'.format(item.id)
+                    <a class="btn btn-success btn-xs" disabled title="下载附件"><i class="fa fa-download"></i></a>'.format(item.id)
         }
     }
 
     $('#add').click(function () {
         initDialog(null);
+    });
+
+    $('#grid').delegate('._view', 'click', function() {
+        var id = $(this).data('id'), item = grid.dataSource.get(id), desc = item.invoice_type == 1 ? ['增值税普通发票'] : ['增值税专用发票'];
+        desc = desc.concat(item.invoice_desc.split('|'));
+        $.$modal.dialog({
+            title: '开票信息',
+            destroy: true,
+            content: '<ul class="list-group"></ul>',
+            footer: false,
+            onLoaded: function () {
+                var dom = this.dom, text = ['开票类型', '开票名称', '纳税人识别号', '公司地址', '公司电话', '开户行', '银行帐号'], li = [];
+                text.forEach(function (v, i) {
+                    debugger;
+                    li.push('<li class="list-group-item"><span class="dark-gray margin-right-10">{0}:</span>{1}</li>'.format(v, desc[i]));
+                });
+                dom.find('ul').html(li.join(''));
+            }
+        }).show();
     });
 
     $('#grid').delegate('a._edit', 'click', function() {
@@ -130,7 +147,7 @@ $(function() {
 
     function initDialog(data) {
         $.$modal.dialog({
-            title: '{0}开票信息'.format(data ? '编辑' : '新建'),
+            title: '{0}付款通知书'.format(data ? '编辑' : '新建'),
             size: 'lg',
             content: '<div id="dlg_ctn" class="padding-right-15" style="max-height:400px;overflow-y:auto;">' +
             '<form class="form form-horizontal">' +
@@ -146,7 +163,7 @@ $(function() {
                 '</div>' +
                 '<div class="form-group">' +
                     '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3"><span class="red">*</span> 开票人:</label>' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 申请人:</label>' +
                         '<div class="col-xs-9"><select id="user_id" class="form-control size-full"></select></div>' +
                     '</div>' +
                     '<div class="col-xs-6 no-padding">' +
@@ -156,55 +173,31 @@ $(function() {
                 '</div>' +
                 '<div class="form-group">' +
                     '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3"><span class="red">*</span> 开票金额:</label>' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 付款金额:</label>' +
                         '<div class="col-xs-9"><div class="input-group"><input type="text" id="amount" class="form-control" /><span class="input-group-addon">元</span></div></div>' +
                     '</div>' +
                     '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3"><span class="red">*</span> 发票类型:</label>' +
-                        '<div class="col-xs-9"><select id="invoice_type" class="form-control size-full"></select></div>' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 是否开票:</label>' +
+                        '<div class="col-xs-9"><select id="need_invoice" class="form-control size-full"></select></div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="form-group">' +
-                    '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3"><span class="red">*</span> 款项类型:</label>' +
-                        '<div class="col-xs-9"><select id="type" class="form-control size-full"></select></div>' +
-                    '</div>' +
-                    '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3"><span class="red">*</span> 约定日期:</label>' +
-                        '<div class="col-xs-9"><input type="text" id="estimate_date" class="form-control _date" /></div>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                    '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3"><span class="red">*</span> 开票状态:</label>' +
-                        '<div class="col-xs-9"><select id="invoice_status" class="form-control size-full"></select></div>' +
-                    '</div>' +
-                    '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3">开票日期:</label>' +
-                        '<div class="col-xs-9"><input type="text" id="invoice_date" class="form-control _date" /></div>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                    '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3"><span class="red">*</span> 回款状态:</label>' +
-                        '<div class="col-xs-9"><select id="status" class="form-control size-full"></select></div>' +
-                    '</div>' +
-                    '<div class="col-xs-6 no-padding">' +
-                        '<label class="control-label col-xs-3">回款日期:</label>' +
-                        '<div class="col-xs-9"><input type="text" id="pay_date" class="form-control _date" /></div>' +
-                    '</div>' +
+                '<div class="invoice-info" style="display: none;">' +
+                '<ul>' +
+                '<li><b>开票信息</b></li>' +
+                '<li><em>开票类型：</em><span><label class="pointer"><input type="radio" name="invoice_type" value="1" checked>增值税普通发票</label><label class="pointer margin-left-20"><input type="radio" name="invoice_type" value="2">增值税专用发票</label></span></li>' +
+                '<li><em>开票名称：</em><span><input type="text" /></span></li>' +
+                '<li><em>纳税人识别号：</em><span><input type="text" /></span></li>' +
+                '<li><em>公司地址：</em><span><input type="text" /></span></li>' +
+                '<li><em>公司电话：</em><span><input type="text" /></span></li>' +
+                '<li><em>开户行：</em><span><input type="text" /></span></li>' +
+                '<li><em>银行帐号：</em><span><input type="text" /></span></li>' +
+                '</ul>' +
                 '</div>' +
                 '<div class="form-group flex">' +
                     '<label class="control-label width-110 padding-right-15">附件上传:</label>' +
                     '<div class="flex-1 padding-left-15 padding-right-15">' +
-                        '<input type="file" id="file" /><input type="hidden" id="filepath" />' +
-                        '<div id="img_ctn" class="padding-10" style="display: none;"><img src="" alt="" style="height:200px;"></div>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="form-group flex">' +
-                    '<label class="control-label width-110 padding-right-15">备注:</label>' +
-                    '<div class="flex-1 padding-left-15 padding-right-15">' +
-                        '<textarea id="description" class="form-control" rows="3" style="resize: none;"></textarea>' +
+                        '<input type="file" id="file" /><input type="hidden" id="filepath" /><input type="hidden" id="filename" >' +
+                        '<div id="file_ctn" class="padding-10" style="display: none;"><span></span></div>' +
                     '</div>' +
                 '</div>' +
             '</form>' +
@@ -215,13 +208,10 @@ $(function() {
                     {
                         name: 'ok',
                         handler: function () {
-                            var self = this, dom = self.dom, formData = {}, url = '/finance/save-invoice';
+                            var self = this, dom = self.dom, formData = {}, url = '/finance/save-pay-notice';
                             var job = $('#job_id', dom).data('kendoDropDownList').dataItem();
                             var person = $('#person_id', dom).data('kendoDropDownList').dataItem();
                             var user = $('#user_id', dom).data('kendoDropDownList').dataItem();
-                            var invoice_date = $('#invoice_date', dom).data('kendoDatePicker').value();
-                            var estimate_date = $('#estimate_date', dom).data('kendoDatePicker').value();
-                            var pay_date = $('#pay_date', dom).data('kendoDatePicker').value();
                             if (job && job.job_id) {
                                 formData.job_id = job.job_id;
                                 formData.job_name = job.job_name;
@@ -236,29 +226,36 @@ $(function() {
                                 formData.user_id = user.user_id;
                                 formData.user_name = user.user_name;
                             }
-                            if (invoice_date) formData.invoice_date = invoice_date.format('yyyy-mm-dd');
-                            if (estimate_date) formData.estimate_date = estimate_date.format('yyyy-mm-dd');
-                            if (pay_date) formData.pay_date = pay_date.format('yyyy-mm-dd');
 
-                            formData.status = $('#status', dom).val();
-                            formData.type = $('#type', dom).val();
+                            formData.status = 0;
+                            formData.need_invoice = $('#need_invoice', dom).val();
                             formData.belong = $('#belong', dom).val();
                             formData.amount = $('#amount', dom).data('kendoNumericTextBox').value();
-                            formData.invoice_status = $('#invoice_status', dom).val();
-                            formData.invoice_type = $('#invoice_type', dom).val();
-                            formData.description = $('#description', dom).val();
+
+                            if (formData.need_invoice == 1) {
+                                formData.invoice_type = $('input[name="invoice_type"]:checked', dom).val();
+                                var desc = [];
+                                $('.invoice-info input[type="text"]', dom).each(function (i, ipt) {
+                                    desc.push($(ipt).val());
+                                });
+                                formData.invoice_desc = desc.join('|');
+                            } else {
+                                formData.invoice_desc = '';
+                            }
+
                             formData.filepath = $('#filepath', dom).val();
+                            formData.filename = $('#filename', dom).val();
                             console.log(formData);
 
                             if (data && data.id) {
-                                url = '/finance/edit-invoice';
+                                url = '/finance/edit-pay-notice';
                                 formData.id = data.id;
                             }
                             $.$ajax({
                                 url: url,
                                 type: 'POST',
                                 dataType: 'json',
-                                data: {invoice: formData},
+                                data: {notice: formData},
                                 success: function (res) {
                                     if (~~res > 0) {
                                         self.hide();
@@ -315,7 +312,7 @@ $(function() {
                             data: {job_id: item.job_id},
                             success: function (res) {
                                 person.dataSource.data(res);
-                                if (data.person_id) person.select(function(item) {
+                                if (data && data.person_id) person.select(function(item) {
                                     return item.person_id == data.person_id;
                                 })
                             }
@@ -358,9 +355,19 @@ $(function() {
                     format: 'n2'
                 }).data('kendoNumericTextBox');
 
-                var type = $('#type', dom).kendoDropDownList({
-                    dataSource: ["首款", "尾款", "其他"],
-                    optionLabel: '请选择款项类型'
+                var need_invoice = $('#need_invoice', dom).kendoDropDownList({
+                    dataSource: [{value: 0, text: '无需开票'}, {value: 1, text: '需要开票'}],
+                    dataTextField: 'text',
+                    dataValueField: 'value',
+                    optionLabel: '请选择是否开票',
+                    change: function () {
+                        var value = this.value();
+                        if (value == 1) {
+                            $('.invoice-info', dom).show();
+                        } else {
+                            $('.invoice-info', dom).hide();
+                        }
+                    }
                 }).data('kendoDropDownList');
 
                 var belong = $('#belong', dom).kendoDropDownList({
@@ -368,45 +375,16 @@ $(function() {
                     optionLabel: '请选择归属公司'
                 }).data('kendoDropDownList');
 
-                var status = $('#status', dom).kendoDropDownList({
-                    dataSource: ["未到账", "已到账"],
-                    optionLabel: '请选择回款状态'
-                }).data('kendoDropDownList');
-
-                var invoice_status = $('#invoice_status', dom).kendoDropDownList({
-                    dataSource: ["未开", "已开"],
-                    optionLabel: '请选择开票状态'
-                }).data('kendoDropDownList');
-
-                var invoice_type = $('#invoice_type', dom).kendoDropDownList({
-                    dataSource: ["增值税普通发票", "增值税专用发票"],
-                    optionLabel: '请选择发票类型'
-                }).data('kendoDropDownList');
-
-                $('._date', dom).kendoDatePicker({
-                    culture: 'zh-CN',
-                    format: 'yyyy-MM-dd'
-                });
-
                 $('#file', dom).kendoUpload({
                     async: {
-                        saveUrl: '/file/upload-invoice?_token='+$('meta[name="_token"]').attr('content'),
+                        saveUrl: '/file/upload-pay-notice?_token='+$('meta[name="_token"]').attr('content'),
                         saveField: 'file',
                     },
                     success: function (e) {
                         console.log(e);
                         $('#filepath', dom).val(e.response);
-                        $('#img_ctn').show().find('img').attr('src', e.response);
-                    },
-                    upload: function (e) {
-                        var files = e.files;
-                        files.forEach(function (v) {
-                            var ext = v.extension.toLowerCase()
-                            if (['.jpg', '.png'].indexOf(ext) < 0) {
-                                $.$modal.alert('只能上传jpg/png格式的图片');
-                                e.preventDefault();
-                            }
-                        });
+                        $('#filename', dom).val(e.files[0].name);
+                        $('#file_ctn').show().find('span').text(e.files[0].name);
                     }
                 });
 
@@ -433,29 +411,25 @@ $(function() {
                             return item.user_id == data.user_id;
                         });
                     });
-                    type.select(function (item) {
-                        return item == data.type;
+                    need_invoice.select(function (item) {
+                        return item.value == data.need_invoice;
                     });
-                    status.select(function (item) {
-                        return item == data.status;
-                    });
+                    need_invoice.trigger('change');
                     belong.select(function (item) {
                         return item == data.belong;
                     });
-                    invoice_status.select(function (item) {
-                        return item == data.invoice_status;
-                    });
-                    invoice_type.select(function (item) {
-                        return item == data.invoice_type;
-                    });
                     amount.value(data.amount);
-                    if (data.estimate_date) $('#estimate_date', dom).data('kendoDatePicker').value(new Date(data.estimate_date));
-                    if (data.invoice_date) $('#invoice_date', dom).data('kendoDatePicker').value(new Date(data.invoice_date));
-                    if (data.pay_date) $('#pay_date', dom).data('kendoDatePicker').value(new Date(data.pay_date));
-                    $('#description', dom).val(data.description);
+                    if (data.need_invoice) {
+                        var desc = data.invoice_desc.split('|');
+                        $('input[name="invoice_type"][value="{0}"]'.format(data.invoice_type), dom).prop('checked', true);
+                        $('.invoice-info input[type="text"]', dom).each(function (i, ipt) {
+                            $(ipt).val(desc[i] || '');
+                        });
+                    }
                     if (data.filepath) {
                         $('#filepath', dom).val(data.filepath);
-                        $('#img_ctn', dom).show().find('img').attr('src', data.filepath);
+                        $('#filename', dom).val(data.filename);
+                        $('#file_ctn').show().find('span').text(e.files[0].name);
                     }
                 }
             }

@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 use App\Invoice;
+use App\PayNotice;
 use App\User;
 use App\Hunt;
 use Illuminate\Routing\Controller as BaseController;
@@ -82,6 +83,42 @@ class FinanceController extends BaseController {
         $id = request()->input('id');
         $invoice = Invoice::find($id);
         $invoice->delete();
+        return response(1);
+    }
+
+    /***********************************************************************************************************/
+
+    public function getPayNoticeJsonList() {
+        $list = PayNotice::orderBy('created_at', 'desc')->get();
+        return response($list);
+    }
+
+    public function postSavePayNotice() {
+        $new_notice = request()->input('notice');
+        $notice = new PayNotice();
+        foreach ($new_notice as $key => $value) {
+            $notice->$key = $value;
+        }
+        $notice->created_by = Session::get('id');
+        $notice->save();
+        return response($notice->id);
+    }
+
+    public function postEditPayNotice() {
+        $new_notice = request()->input('notice');
+        $notice = PayNotice::find($new_notice['id']);
+        foreach ($new_notice as $key => $value) {
+            $notice->$key = $value;
+        }
+        $notice->updated_by = Session::get('id');
+        $notice->save();
+        return response($notice->id);
+    }
+
+    public function postDeletePayNotice() {
+        $id = request()->input('id');
+        $notice = PayNotice::find($id);
+        $notice->delete();
         return response(1);
     }
 

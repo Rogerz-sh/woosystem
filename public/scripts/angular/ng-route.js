@@ -166,6 +166,10 @@
                 templateUrl: '/scripts/angular/templates/finance-invoice.html',
                 controller: 'routeTempController'
             })
+            .when('/finance/pay-notice', {
+                templateUrl: '/scripts/angular/templates/pay-notice.html',
+                controller: 'routeTempController'
+            })
             .when('/user/info', {
                 templateUrl: '/scripts/angular/templates/user-info.html',
                 controller: 'userInfoController'

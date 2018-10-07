@@ -46,8 +46,9 @@
                         {url: '/team/powers', label: '权限管理', power: [10]},
                         {url: '/team/belongs', label: '架构管理', power: [10]},
                     ]},
-                    {url: '#', label: '财务管理', power: [10,99], items: [
-                            {url: '/finance/invoice', label: '开票管理', power: [10,99]},
+                    {url: '#', label: '财务管理', power: [1,5,6,3,7,9,8,2,10,99], items: [
+                            {url: '/finance/pay-notice', label: '付款通知书', power: [1,5,6,3,7,9,8,10,99]},
+                            {url: '/finance/invoice', label: '开票管理', power: [2,10,99]},
                         ]},
                     {url: '#', label: '个人管理', power: [1,4,5,2,3,6,7,8,9,10,99], items: [
                         {url: '/result/user', label: '我的业绩', power: [1,4,5,2,3,6,7,8,9,10,99]},
