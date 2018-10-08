@@ -10,6 +10,7 @@ use App\Invoice;
 use App\PayNotice;
 use App\User;
 use App\Hunt;
+use App\Belongs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -89,7 +90,28 @@ class FinanceController extends BaseController {
     /***********************************************************************************************************/
 
     public function getPayNoticeJsonList() {
-        $list = PayNotice::orderBy('created_at', 'desc')->get();
+        $power = Session::get('power');
+        if ($power >= 10) {
+            $list = PayNotice::orderBy('created_at', 'desc')->get();
+        } else {
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $list = PayNotice::whereRaw('created_by in (' . $ids . ')')->get();
+                } else {
+                    $list = PayNotice::where('created_by', Session::get('id'))->get();
+                }
+            } else {
+                $list = PayNotice::where('created_by', Session::get('id'))->get();
+            }
+            $list = $list->orderBy('created_at', 'desc')->get();
+        }
         return response($list);
     }
 
@@ -113,6 +135,14 @@ class FinanceController extends BaseController {
         $notice->updated_by = Session::get('id');
         $notice->save();
         return response($notice->id);
+    }
+
+    public function postAuditPayNotice() {
+        $id = request()->input('id');
+        $notice = PayNotice::find($id);
+        $notice->status = 1;
+        $notice->save();
+        return response(1);
     }
 
     public function postDeletePayNotice() {

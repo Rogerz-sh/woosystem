@@ -129,6 +129,7 @@ $(function() {
     });
 
     function initDialog(data) {
+        var required = ['job_id', 'company_id', 'person_id', 'user_id', 'belong', 'amount', 'invoice_type', 'type', 'estimate_date', 'invoice_status', 'status', 'filepath'];
         $.$modal.dialog({
             title: '{0}开票信息'.format(data ? '编辑' : '新建'),
             size: 'lg',
@@ -195,7 +196,7 @@ $(function() {
                     '</div>' +
                 '</div>' +
                 '<div class="form-group flex">' +
-                    '<label class="control-label width-110 padding-right-15">附件上传:</label>' +
+                    '<label class="control-label width-110 padding-right-15"><span class="red">*</span> 附件上传:</label>' +
                     '<div class="flex-1 padding-left-15 padding-right-15">' +
                         '<input type="file" id="file" /><input type="hidden" id="filepath" />' +
                         '<div id="img_ctn" class="padding-10" style="display: none;"><img src="" alt="" style="height:200px;"></div>' +
@@ -249,6 +250,15 @@ $(function() {
                             formData.description = $('#description', dom).val();
                             formData.filepath = $('#filepath', dom).val();
                             console.log(formData);
+
+                            var invalid = false;
+                            required.forEach(function (n) {
+                                if (formData[n] === '') invalid = true;
+                            });
+                            if (invalid) {
+                                $.$modal.alert('信息填写不全，请补全后再保存');
+                                return;
+                            }
 
                             if (data && data.id) {
                                 url = '/finance/edit-invoice';

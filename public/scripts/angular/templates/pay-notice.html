@@ -31,6 +31,7 @@ $(function() {
         cData = new kendo.data.DataSource(),
         power = +$('meta[name="_sessionPower"]').attr('content');
 
+    var autoData = [];
     var grid = $('#grid').kendoGrid({
         dataSource: {
             transport: {
@@ -40,6 +41,10 @@ $(function() {
                         type: 'GET',
                         dataType: 'json',
                         success: function (res) {
+                            res.forEach(function (v) {
+                                var desc = v.invoice_desc.split('|');
+                                if (desc[0] && !autoData.has({name: desc[0]})) autoData.push({name: desc[0], data: desc});
+                            });
                             option.success(res);
                         }
                     })
@@ -65,7 +70,7 @@ $(function() {
             {field: 'status', title: '审核状态', template: getStatus},
             {field: 'need_invoice', title: '是否开票', template: getNeedInvoice},
             {field: 'invoice_type', title: '开票信息', template: getInvoiceInfo},
-            {title: '操作', template: getButtons, width: 120}
+            {title: '操作', template: getButtons, width: 135}
         ]
     }).data('kendoGrid');
 
@@ -88,14 +93,18 @@ $(function() {
     }
 
     function getButtons(item) {
+        var auditBtn = '';
+        if (power > 8) {
+            auditBtn = '<a class="btn btn-success btn-xs margin-right-5 _audit" title="审核" data-id="{0}" {1}><i class="fa fa-check"></i></a>'.format(item.id, item.status == 1 ? 'disabled' : '');
+        }
         if (item.filepath) {
             return '<a class="btn btn-default btn-xs margin-right-5 _edit" data-id="{0}"><i class="fa fa-pencil"></i></a>\
                     <a class="btn btn-danger btn-xs margin-right-5 _delete" data-id="{0}"><i class="fa fa-trash-o"></i></a>\
-                    <a class="btn btn-success btn-xs" href="/file/download-file?path={1}&coded=1&name={2}" target="_blank" title="下载附件"><i class="fa fa-download"></i></a>'.format(item.id, item.filepath, item.filename);
+                    <a class="btn btn-success btn-xs margin-right-5" href="/file/download-file?path={1}&coded=1&name={2}" target="_blank" title="下载附件"><i class="fa fa-download"></i></a> {3}'.format(item.id, item.filepath, item.filename, auditBtn);
         } else {
             return '<a class="btn btn-default btn-xs margin-right-5 _edit" data-id="{0}"><i class="fa fa-pencil"></i></a>\
                     <a class="btn btn-danger btn-xs margin-right-5 _delete" data-id="{0}"><i class="fa fa-trash-o"></i></a>\
-                    <a class="btn btn-success btn-xs" disabled title="下载附件"><i class="fa fa-download"></i></a>'.format(item.id)
+                    <a class="btn btn-success btn-xs margin-right-5" disabled title="下载附件"><i class="fa fa-download"></i></a> {1}'.format(item.id, auditBtn)
         }
     }
 
@@ -126,12 +135,30 @@ $(function() {
         initDialog(item);
     });
 
+    $('#grid').delegate('a._audit', 'click', function() {
+        var id = $(this).data('id');
+        $.$modal.confirm('确定要通过审核吗？', function (isOk) {
+            if (!isOk) return;
+            $.$ajax({
+                url: '/finance/audit-pay-notice',
+                type: 'POST',
+                dataType: 'json',
+                data: {id: id},
+                success: function (res) {
+                    if (res > 0) {
+                        grid.dataSource.read();
+                    }
+                }
+            });
+        });
+    });
+
     $('#grid').delegate('a._delete', 'click', function() {
         var id = $(this).data('id');
         $.$modal.confirm('确定要删除吗？', function (isOk) {
             if (!isOk) return;
             $.$ajax({
-                url: '/finance/delete-invoice',
+                url: '/finance/delete-pay-notice',
                 type: 'POST',
                 dataType: 'json',
                 data: {id: id},
@@ -145,6 +172,7 @@ $(function() {
     });
 
     function initDialog(data) {
+        var required = ['job_id', 'company_id', 'person_id', 'user_id', 'belong', 'amount', 'need_invoice', 'filepath'];
         $.$modal.dialog({
             title: '{0}付款通知书'.format(data ? '编辑' : '新建'),
             size: 'lg',
@@ -184,7 +212,7 @@ $(function() {
                 '<ul>' +
                 '<li><b>开票信息</b></li>' +
                 '<li><em>开票类型：</em><span><label class="pointer"><input type="radio" name="invoice_type" value="1" checked>增值税普通发票</label><label class="pointer margin-left-20"><input type="radio" name="invoice_type" value="2">增值税专用发票</label></span></li>' +
-                '<li><em>开票名称：</em><span><input type="text" /></span></li>' +
+                '<li><em>开票名称：</em><span><input type="text" class="full-width" id="invoice_name" /></span></li>' +
                 '<li><em>纳税人识别号：</em><span><input type="text" /></span></li>' +
                 '<li><em>公司地址：</em><span><input type="text" /></span></li>' +
                 '<li><em>公司电话：</em><span><input type="text" /></span></li>' +
@@ -193,7 +221,7 @@ $(function() {
                 '</ul>' +
                 '</div>' +
                 '<div class="form-group flex">' +
-                    '<label class="control-label width-110 padding-right-15">附件上传:</label>' +
+                    '<label class="control-label width-110 padding-right-15"><span class="red">*</span> 附件上传:</label>' +
                     '<div class="flex-1 padding-left-15 padding-right-15">' +
                         '<input type="file" id="file" /><input type="hidden" id="filepath" /><input type="hidden" id="filename" >' +
                         '<div id="file_ctn" class="padding-10" style="display: none;"><span></span></div>' +
@@ -245,6 +273,15 @@ $(function() {
                             formData.filepath = $('#filepath', dom).val();
                             formData.filename = $('#filename', dom).val();
                             console.log(formData);
+
+                            var invalid = false;
+                            required.forEach(function (n) {
+                                if (formData[n] === '') invalid = true;
+                            });
+                            if (invalid) {
+                                $.$modal.alert('信息填写不全，请补全后再保存');
+                                return;
+                            }
 
                             if (data && data.id) {
                                 url = '/finance/edit-pay-notice';
@@ -431,6 +468,22 @@ $(function() {
                         $('#file_ctn').show().find('span').text(e.files[0].name);
                     }
                 }
+
+                $('#invoice_name', dom).kendoAutoComplete({
+                    dataSource: autoData.map(function (v) {
+                        return v.name;
+                    }),
+                    select: function (e) {
+                        var text = e.item.text();
+                        if (autoData.has({name: text})) {
+                            var desc = autoData[autoData.at({name: text})].data;
+                            $('.invoice-info input[type="text"]', dom).each(function (i, ipt) {
+                                if (i == 0) return;
+                                $(ipt).val(desc[i] || '');
+                            });
+                        }
+                    }
+                });
             }
         }).show();
     }
