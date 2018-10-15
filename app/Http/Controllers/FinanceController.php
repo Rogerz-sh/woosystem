@@ -103,12 +103,12 @@ class FinanceController extends BaseController {
                         $ids = $ids . ',' . $p->user_id;
                     }
                     $ids = substr($ids, 1);
-                    $list = PayNotice::whereRaw('created_by in (' . $ids . ')')->get();
+                    $list = PayNotice::whereRaw('created_by in (' . $ids . ')');
                 } else {
-                    $list = PayNotice::where('created_by', Session::get('id'))->get();
+                    $list = PayNotice::where('created_by', Session::get('id'));
                 }
             } else {
-                $list = PayNotice::where('created_by', Session::get('id'))->get();
+                $list = PayNotice::where('created_by', Session::get('id'));
             }
             $list = $list->orderBy('created_at', 'desc')->get();
         }
