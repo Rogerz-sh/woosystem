@@ -4,6 +4,7 @@
 .list-tree {margin-left: 30px;}
 .list-user {padding: 5px 7px; background: #fff; border-radius: 3px; border: 1px solid #ddd;}
 li {line-height: 30px;}
+i.expander {width:7px;}
 </style>
 <div class="wrap bg-white padding-15 margin-top-20 margin-bottom-50 bordered border-color-orange">
     <div class="container-fluid">
@@ -74,10 +75,10 @@ $(function () {
     }
 
     function buildNode(v) {
-        return '<li><span class="list-user">{3}</span>\
+        return '<li><i class="fa fa-caret-down pointer margin-right-5 expander"></i><span class="list-user">{3}</span>\
                 <a class="btn btn-xs btn-success margin-left-10 add" data-id="{0}" data-depth="{1}" data-path="{2}"><i class="fa fa-plus"></i></a>\
                 <a class="btn btn-xs btn-danger margin-left-10 delete" data-id="{0}"><i class="fa fa-times"></i></a>\
-                {4}</li>'.format(v.user_id, v.depth, v.root_path, '<b>{0}</b> <span class="dark-gray margin-left-5">{1} - {2}</span>'.format(v.nickname, v.group_name, v.area_name), v.children.length ? buildList(v) : '');
+                {4}</li>'.format(v.user_id, v.depth, v.root_path, '<b>{0}</b> <span class="dark-yellow">[{3}]</span> <span class="dark-gray margin-left-5">{1} - {2}</span>'.format(v.nickname, v.group_name, v.area_name, v.pow_name), v.children.length ? buildList(v) : '');
     }
 
     function buildTreeElement(data) {
@@ -175,6 +176,11 @@ $(function () {
                 });
             });
         }
+    });
+
+    $('#belongs').delegate('i.expander', 'click', function () {
+        $(this).toggleClass('fa-caret-right fa-caret-down');
+        $(this).closest('li').find('ul').toggle();
     });
 
     getBelongListData();

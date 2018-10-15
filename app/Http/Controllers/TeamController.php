@@ -327,7 +327,8 @@ class TeamController extends BaseController {
 
     public function getBelongListData() {
         $belongs = Belongs::join('users', 'users.id', '=', 'belongs.user_id')
-            ->select('users.nickname', 'users.group_name', 'users.area_name', 'belongs.user_id', 'belongs.parent_id', 'belongs.depth', 'belongs.root_path')->get();
+            ->join('powers', 'users.power', '=', 'powers.id')
+            ->select('users.nickname', 'users.group_name', 'users.area_name', 'powers.pow_name', 'belongs.user_id', 'belongs.parent_id', 'belongs.depth', 'belongs.root_path')->get();
         return response($belongs);
     }
 
