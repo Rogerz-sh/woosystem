@@ -91,7 +91,7 @@ class FinanceController extends BaseController {
 
     public function getPayNoticeJsonList() {
         $power = Session::get('power');
-        if ($power >= 10) {
+        if ($power == 2 || $power >= 10) {
             $list = PayNotice::orderBy('created_at', 'desc')->get();
         } else {
             $belong = Belongs::where('user_id', Session::get('id'))->first();
