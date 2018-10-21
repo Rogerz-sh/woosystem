@@ -27,6 +27,7 @@ class AccountController extends BaseController {
                 Session::set('name', $user->name);
                 Session::set('nickname', $user->nickname);
                 Session::set('power', $user->power);
+                Session::set('area', $user->area_id);
                 $log = new Logs();
                 $log->type = 'login';
                 $log->detail = request()->ip();

@@ -20,8 +20,41 @@ use Illuminate\Support\Facades\Storage;
 class FinanceController extends BaseController {
 
     public function getInvoiceJsonList() {
-        $list = Invoice::orderBy('created_at', 'desc')->get();
-        return response($list);
+        $power = Session::get('power');
+        if ($power >= 10) {
+            $list = Invoice::orderBy('created_at', 'desc')->get();
+            return response($list);
+        } else {
+            $area = Session::get('area');
+            if ($area == 1) {
+                $area_name = '上海';
+            } else if ($area == 2) {
+                $area_name = '湖南';
+            } else {
+                $area_name = '武汉';
+            }
+            $list = Invoice::where('belong', $area_name)->orderBy('created_at', 'desc')->get();
+            return response($list);
+        }
+    }
+
+    public function getInvoiceRequestList() {
+        $power = Session::get('power');
+        if ($power >= 10) {
+            $list = PayNotice::where('need_invoice', 1)->where('request_status', 1)->orderBy('created_at', 'desc')->get();
+            return response($list);
+        } else {
+            $area = Session::get('area');
+            if ($area == 1) {
+                $area_name = '上海';
+            } else if ($area == 2) {
+                $area_name = '湖南';
+            } else {
+                $area_name = '武汉';
+            }
+            $list = PayNotice::where('need_invoice', 1)->where('request_status', 1)->where('belong', $area_name)->orderBy('created_at', 'desc')->get();
+            return response($list);
+        }
     }
 
     public function getJsonJobPersonList() {
@@ -60,12 +93,18 @@ class FinanceController extends BaseController {
 
     public function postSaveInvoice() {
         $new_invoice = request()->input('invoice');
+        $request_id = request()->input('request_id');
         $invoice = new Invoice();
         foreach ($new_invoice as $key => $value) {
             $invoice->$key = $value;
         }
         $invoice->created_by = Session::get('id');
         $invoice->save();
+        if ($request_id > 0) {
+            $pay_notice = PayNotice::find($request_id);
+            $pay_notice->request_status = 2;
+            $pay_notice->save();
+        }
         return response($invoice->id);
     }
 
@@ -121,6 +160,7 @@ class FinanceController extends BaseController {
         foreach ($new_notice as $key => $value) {
             $notice->$key = $value;
         }
+        $notice->request_status = 1;
         $notice->created_by = Session::get('id');
         $notice->save();
         return response($notice->id);
@@ -141,6 +181,14 @@ class FinanceController extends BaseController {
         $id = request()->input('id');
         $notice = PayNotice::find($id);
         $notice->status = 1;
+        $notice->save();
+        return response(1);
+    }
+
+    public function postPayNoticeInvoiced() {
+        $id = request()->input('id');
+        $notice = PayNotice::find($id);
+        $notice->request_status = 2;
         $notice->save();
         return response(1);
     }

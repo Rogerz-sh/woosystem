@@ -14,6 +14,11 @@
                 <div class="bordered border-color-gray"><div id="grid"></div></div>
             </div>
         </div>
+        <div class="row margin-top-20">
+            <div class="col-xs-12">
+                <div class="bordered border-color-gray"><div id="gridRequest"></div></div>
+            </div>
+        </div>
     </div>
 </div>
 <script>
@@ -129,7 +134,7 @@ $(function() {
     });
 
     function initDialog(data) {
-        var required = ['job_id', 'company_id', 'person_id', 'user_id', 'belong', 'amount', 'invoice_type', 'type', 'estimate_date', 'invoice_status', 'status', 'filepath'];
+        var required = ['job_id', 'company_id', 'person_id', 'user_id', 'request_user', 'belong', 'amount', 'invoice_type', 'type', 'estimate_date', 'invoice_status', 'status', 'filepath'];
         $.$modal.dialog({
             title: '{0}开票信息'.format(data ? '编辑' : '新建'),
             size: 'lg',
@@ -154,6 +159,16 @@ $(function() {
                         '<label class="control-label col-xs-3"><span class="red">*</span> 归属公司:</label>' +
                         '<div class="col-xs-9"><select id="belong" class="form-control size-full"></select></div>' +
                     '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<div class="col-xs-6 no-padding">' +
+                        '<label class="control-label col-xs-3"><span class="red">*</span> 申请人:</label>' +
+                        '<div class="col-xs-9"><select id="request_user" class="form-control size-full"></select></div>' +
+                    '</div>' +
+                    // '<div class="col-xs-6 no-padding">' +
+                    //     '<label class="control-label col-xs-3"><span class="red">*</span> 归属公司:</label>' +
+                    //     '<div class="col-xs-9"><select id="belong" class="form-control size-full"></select></div>' +
+                    // '</div>' +
                 '</div>' +
                 '<div class="form-group">' +
                     '<div class="col-xs-6 no-padding">' +
@@ -220,6 +235,7 @@ $(function() {
                             var job = $('#job_id', dom).data('kendoDropDownList').dataItem();
                             var person = $('#person_id', dom).data('kendoDropDownList').dataItem();
                             var user = $('#user_id', dom).data('kendoDropDownList').dataItem();
+                            var request_user = $('#request_user', dom).data('kendoDropDownList').dataItem();
                             var invoice_date = $('#invoice_date', dom).data('kendoDatePicker').value();
                             var estimate_date = $('#estimate_date', dom).data('kendoDatePicker').value();
                             var pay_date = $('#pay_date', dom).data('kendoDatePicker').value();
@@ -236,6 +252,9 @@ $(function() {
                             if (user && user.user_id) {
                                 formData.user_id = user.user_id;
                                 formData.user_name = user.user_name;
+                            }
+                            if (request_user && request_user.user_id) {
+                                formData.request_user = request_user.user_id;
                             }
                             if (invoice_date) formData.invoice_date = invoice_date.format('yyyy-mm-dd');
                             if (estimate_date) formData.estimate_date = estimate_date.format('yyyy-mm-dd');
@@ -268,7 +287,7 @@ $(function() {
                                 url: url,
                                 type: 'POST',
                                 dataType: 'json',
-                                data: {invoice: formData},
+                                data: {invoice: formData, request_id: data.request_id || 0},
                                 success: function (res) {
                                     if (~~res > 0) {
                                         self.hide();
@@ -363,6 +382,24 @@ $(function() {
                     },
                 }).data('kendoDropDownList');
 
+                var request_user = $('#request_user', dom).kendoDropDownList({
+                    dataSource: {
+                        transport: {
+                            read: {
+                                url: '/result/json-user-list'
+                            }
+                        }
+                    },
+                    dataTextField: 'user_name',
+                    dataValueField: 'user_id',
+                    template: '<span style="font-size:12px;">#:user_name# -- #:group_name# -- #:area_name#</span>',
+                    optionLabel: '请选择申请人',
+                    filter: 'contains',
+                    popup: {
+                        appendTo: dom
+                    },
+                }).data('kendoDropDownList');
+
                 var amount = $('#amount').kendoNumericTextBox({
                     spinners: false,
                     format: 'n2'
@@ -443,6 +480,11 @@ $(function() {
                             return item.user_id == data.user_id;
                         });
                     });
+                    request_user.bind('dataBound', function () {
+                        request_user.select(function (item) {
+                            return item.user_id == data.request_user;
+                        });
+                    });
                     type.select(function (item) {
                         return item == data.type;
                     });
@@ -471,5 +513,74 @@ $(function() {
             }
         }).show();
     }
+
+    /****************************************开票申请列表*******************************************/
+
+    $('#gridRequest').kendoGrid({
+        dataSource: {
+            transport: {
+                read: function (option) {
+                    $.$ajax({
+                        url: '/finance/invoice-request-list',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (res) {
+                            option.success(res);
+                        }
+                    })
+                }
+            },
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            },
+            pageSize: 10
+        },
+        scrollable: false,
+        pageable: true,
+        columns: [
+            {title: '申请开票信息', template: '<b>#:company_name#</b><span class="dark-gray"> - #:job_name# - #:person_name#</span>'},
+            {field: 'amount', title: '开票金额'},
+            {field: 'belong', title: '归属公司'},
+            {field: 'user_name', title: '申请人'},
+            {title: '操作', template: '<a class="btn btn-success btn-xs _operate" data-id="#:id#">开票</a>' +
+                    '<a class="btn btn-warning btn-xs margin-left-5 _invoiced" data-id="#:id#">设为已开</a>', width: 120}
+        ]
+    });
+
+    $('#gridRequest').delegate('a._operate', 'click', function () {
+        var id = $(this).data('id'), item = $('#gridRequest').data('kendoGrid').dataSource.get(id);
+        var data = {
+            company_id: item.company_id,
+            job_id: item.job_id,
+            job_name: item.job_name,
+            person_id: item.person_id,
+            amount: item.amount,
+            belong: item.belong,
+            invoice_type: item.invoice_type == '1' ? '增值税普通发票' : item.invoice_type == '2' ? '增值税专用发票' : '',
+            request_user: item.user_id,
+            request_id: item.id
+        };
+        initDialog(data);
+    });
+
+    $('#gridRequest').delegate('a._invoiced', 'click', function() {
+        var id = $(this).data('id');
+        $.$modal.confirm('确定要设为已开吗？', function (isOk) {
+            if (!isOk) return;
+            $.$ajax({
+                url: '/finance/pay-notice-invoiced',
+                type: 'POST',
+                dataType: 'json',
+                data: {id: id},
+                success: function (res) {
+                    if (res > 0) {
+                        $('#gridRequest').data('kendoGrid').dataSource.read();
+                    }
+                }
+            });
+        });
+    });
 });
 </script>
