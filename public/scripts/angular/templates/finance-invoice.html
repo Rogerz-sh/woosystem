@@ -292,6 +292,7 @@ $(function() {
                                     if (~~res > 0) {
                                         self.hide();
                                         grid.dataSource.read();
+                                        if (data.request_id) $('#gridRequest').data('kendoGrid').dataSource.read();
                                         $.$modal.alert('保存成功');
                                     } else {
                                         $.$modal.alert(res);
