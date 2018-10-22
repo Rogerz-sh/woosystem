@@ -292,7 +292,7 @@ $(function() {
                                     if (~~res > 0) {
                                         self.hide();
                                         grid.dataSource.read();
-                                        if (data.request_id) $('#gridRequest').data('kendoGrid').dataSource.read();
+                                        if (data.request_id) gridRequest.dataSource.read();
                                         $.$modal.alert('保存成功');
                                     } else {
                                         $.$modal.alert(res);
@@ -517,7 +517,7 @@ $(function() {
 
     /****************************************开票申请列表*******************************************/
 
-    $('#gridRequest').kendoGrid({
+    var gridRequest = $('#gridRequest').kendoGrid({
         dataSource: {
             transport: {
                 read: function (option) {
@@ -544,14 +544,48 @@ $(function() {
             {title: '申请开票信息', template: '<b>#:company_name#</b><span class="dark-gray"> - #:job_name# - #:person_name#</span>'},
             {field: 'amount', title: '开票金额'},
             {field: 'belong', title: '归属公司'},
+            {title: '开票信息', template: getInvoiceInfo},
             {field: 'user_name', title: '申请人'},
-            {title: '操作', template: '<a class="btn btn-success btn-xs _operate" data-id="#:id#">开票</a>' +
-                    '<a class="btn btn-warning btn-xs margin-left-5 _invoiced" data-id="#:id#">设为已开</a>', width: 120}
+            {title: '操作', template: getInvoiceButtons, width: 180}
         ]
+    }).data('kendoGrid');
+
+    function getInvoiceButtons(item) {
+        if (item.filepath) {
+            return '<a class="btn btn-success btn-xs _operate" data-id="{0}">开票</a>\
+                    <a class="btn btn-warning btn-xs margin-left-5 _invoiced" data-id="{0}">设为已开</a>\
+                    <a class="btn btn-success btn-xs margin-right-5" href="/file/download-file?path={1}&coded=1&name={2}" target="_blank" title="下载附件"><i class="fa fa-download"></i></a>'.format(item.id, item.filepath, item.filename);
+        } else {
+            return '<a class="btn btn-success btn-xs _operate" data-id="{0}">开票</a>\
+                    <a class="btn btn-warning btn-xs margin-left-5 _invoiced" data-id="{0}">设为已开</a>\
+                    <a class="btn btn-success btn-xs margin-right-5" disabled title="下载附件"><i class="fa fa-download"></i></a>'.format(item.id)
+        }
+    }
+
+    function getInvoiceInfo(item) {
+        return item.need_invoice == 1 ? '<span class="pointer dark-orange _view" data-id="{0}">[查看开票信息]</span>'.format(item.id) : '无';
+    }
+
+    $('#gridRequest').delegate('._view', 'click', function() {
+        var id = $(this).data('id'), item = gridRequest.dataSource.get(id), desc = item.invoice_type == 1 ? ['增值税普通发票'] : ['增值税专用发票'];
+        desc = desc.concat(item.invoice_desc.split('|'));
+        $.$modal.dialog({
+            title: '开票信息',
+            destroy: true,
+            content: '<ul class="list-group"></ul>',
+            footer: false,
+            onLoaded: function () {
+                var dom = this.dom, text = ['开票类型', '开票名称', '纳税人识别号', '公司地址', '公司电话', '开户行', '银行帐号'], li = [];
+                text.forEach(function (v, i) {
+                    li.push('<li class="list-group-item"><span class="dark-gray margin-right-10">{0}:</span>{1}</li>'.format(v, desc[i]));
+                });
+                dom.find('ul').html(li.join(''));
+            }
+        }).show();
     });
 
     $('#gridRequest').delegate('a._operate', 'click', function () {
-        var id = $(this).data('id'), item = $('#gridRequest').data('kendoGrid').dataSource.get(id);
+        var id = $(this).data('id'), item = gridRequest.dataSource.get(id);
         var data = {
             company_id: item.company_id,
             job_id: item.job_id,
@@ -577,7 +611,7 @@ $(function() {
                 data: {id: id},
                 success: function (res) {
                     if (res > 0) {
-                        $('#gridRequest').data('kendoGrid').dataSource.read();
+                        gridRequest.dataSource.read();
                     }
                 }
             });
