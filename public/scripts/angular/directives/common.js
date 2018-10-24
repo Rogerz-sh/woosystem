@@ -44,7 +44,7 @@
                         {url: '/team/groups', label: '项目组管理', power: [2,10,99]},
                         {url: '/team/areas', label: '区域管理', power: [2,10,99]},
                         {url: '/team/powers', label: '权限管理', power: [10]},
-                        {url: '/team/belongs', label: '架构管理', power: [10]},
+                        {url: '/team/belongs', label: '架构管理', power: [2,10]},
                     ]},
                     {url: '#', label: '财务管理', power: [1,5,6,3,7,9,8,2,10,99], items: [
                             {url: '/finance/pay-notice', label: '付款通知书', power: [1,5,6,3,7,9,8,10,99]},
