@@ -141,7 +141,7 @@ $(function () {
 
     function renderRankList(ele, data, target, unit) {
         var $ul = $(ele), li = [], colors = ['red','blue','dark-yellow'];
-        for (var i = 0; i < 50; i++) {
+        for (var i = 0; i < 5; i++) {
             var d = data[i];
             if (d) {
                 li.push('<li class="list-group-item {4}">第<b>{0}</b>名 <span class="margin-left-10">{1}</span> <span class="pull-right bold">{2}{3}</span></li>'.format(i + 1, getTargetName(d, target), d['rank_result'], unit, colors[i] || ''));
