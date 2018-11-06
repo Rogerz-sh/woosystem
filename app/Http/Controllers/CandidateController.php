@@ -14,6 +14,7 @@ use App\HuntFace;
 use App\HuntReport;
 use App\HuntResult;
 use App\HuntSuccess;
+use App\PersonAddition;
 use App\PersonCompany;
 use App\PersonSchool;
 use App\PersonTraining;
@@ -281,5 +282,30 @@ class CandidateController extends BaseController {
                             (select max(hunt_success.date) from hunt_success where hunt_success.hunt_id = hunt.id and deleted_at is null) as success_date
                             from hunt where hunt.person_id = '.$id.' and deleted_at is null');
         return response($report);
+    }
+
+    public function getAdditionList() {
+        $id = request()->input('id');
+        $list = PersonAddition::where('person_id', $id)->orderBy('created_at', 'desc')->get();
+        return response($list);
+    }
+
+    public function postPushAddition() {
+        $person_id = request()->input('person_id');
+        $content = request()->input('content');
+        $addition = new PersonAddition();
+        $addition->person_id = $person_id;
+        $addition->content = $content;
+        $addition->user_name = Session::get('nickname');
+        $addition->created_by = Session::get('id');
+        $addition->save();
+        return response($addition);
+    }
+
+    public function postRemoveAddition() {
+        $id = request()->input('id');
+        $addition = PersonAddition::find($id);
+        $addition->delete();
+        return response(1);
     }
 }

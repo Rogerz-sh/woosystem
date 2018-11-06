@@ -10,6 +10,25 @@
         <resume-info id="{{person_id}}"></resume-info>
         <hr>
         <blockquote>
+            <span>简历补充信息</span>
+            <div class="btn btn-xs btn-success pull-right" ng-click="pushAddition()">增加补充信息</div>
+
+        </blockquote>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="panel panel-warning" ng-repeat="add in additions track by $index">
+                    <div class="panel-heading">
+                        <span>信息提供者：{{add.user_name}}</span>
+                        <span class="pull-right">提交时间：{{add.created_at}} <i ng-click="removeAddition(add.id, $index)" class="red fa fa-trash-o margin-left-5 pointer" title="删除" ng-if="session.id==add.created_by"></i></span>
+                    </div>
+                    <div class="panel-body">
+                        {{add.content}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <blockquote>
             <p>已推荐的职位</p>
         </blockquote>
         <div class="row">
