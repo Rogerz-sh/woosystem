@@ -132,7 +132,7 @@
             })
             .when('/target/list', {
                 templateUrl: '/scripts/angular/templates/target-list.html',
-                controller: 'targetListController'
+                controller: 'routeTempController'
             })
             .when('/target/daily-report', {
                 templateUrl: '/scripts/angular/templates/daily-report.html',

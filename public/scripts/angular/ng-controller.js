@@ -916,10 +916,10 @@
                         {field: 'tel', title: '联系电话'},
                         {field: 'date', title: '接入日期', template: getDate},
                         {title: '<div class=\'text-center\'>当前状态</div>', columns: [
-                            {filed: 'reported', title: '推荐', template: getPersonStatus('reported')},
-                            {filed: 'faced', title: '面试', template: getPersonStatus('faced')},
-                            {filed: 'offered', title: 'Offer', template: getPersonStatus('offered')},
-                            {filed: 'succeed', title: '上岗', template: getPersonStatus('succeed')},
+                            {field: 'reported', title: '推荐', template: getPersonStatus('reported')},
+                            {field: 'faced', title: '面试', template: getPersonStatus('faced')},
+                            {field: 'offered', title: 'Offer', template: getPersonStatus('offered')},
+                            {field: 'succeed', title: '上岗', template: getPersonStatus('succeed')},
                         ]},
                         {field: 'user_name', title: '顾问'},
                         {title: '操作', template: '<a href="\\#/hunt/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +

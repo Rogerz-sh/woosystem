@@ -7,101 +7,72 @@
             </ul>
         </div>
         <div class="row margin-bottom-10">
+            <div class="col-xs-1"><a class="btn btn-sm btn-success"><i class="fa fa-plus"></i> 新增目标</a></div>
+        </div>
+        <div class="row margin-bottom-10">
             <div class="col-xs-12">
-                <div kendo-tab-strip id="tab">
-                    <ul>
-                        <li class="k-state-active">目标列表</li>
-                        <li>制定目标</li>
-                    </ul>
-                    <div>
-                        <div kendo-grid k-options="config.grid"></div>
-                    </div>
-                    <div>
-
-                        <div class="row">
-                            <div class="col-xs-12">
-                                <!--<div class="pull-left margin-left-10 form-control-static">月份：</div>-->
-                                <!--<div class="pull-left margin-left-10"><input type="number" kendo-numeric-text-box id="month" /></div>-->
-                                <!--<div class="pull-left margin-left-10 form-control-static">人选：</div>-->
-                                <!--<div class="pull-left margin-left-10"><input type="number" kendo-numeric-text-box id="target_person" /></div>-->
-                                <!--<div class="pull-left margin-left-10 form-control-static">报告：</div>-->
-                                <!--<div class="pull-left margin-left-10"><input type="number" kendo-numeric-text-box id="target_report" /></div>-->
-                                <form class="form form-horizontal">
-                                    <div class="form-group">
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">月份：</label>
-                                            <div class="col-xs-8">
-                                                <input type="text" name="month" class="form-control" kendo-date-picker k-options="config.date" ng-model="selMonth" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">BD：</label>
-                                            <div class="col-xs-8">
-                                                <input type="text" name="target_report" ng-model="target.bd" class="form-control" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">人选：</label>
-                                            <div class="col-xs-8">
-                                                <input type="text" name="target_person" ng-model="target.person" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">报告：</label>
-                                            <div class="col-xs-8">
-                                                <input type="text" name="target_report" ng-model="target.report" class="form-control" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">面试：</label>
-                                            <div class="col-xs-8">
-                                                <input type="text" name="target_face" ng-model="target.face" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">Offer：</label>
-                                            <div class="col-xs-8">
-                                                <input type="text" name="target_offer" ng-model="target.offer" class="form-control" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">上岗：</label>
-                                            <div class="col-xs-8">
-                                                <input type="text" name="target_success" ng-model="target.success" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <label class="control-label col-xs-4">业绩：</label>
-                                            <div class="col-xs-8">
-                                                <div class="input-group">
-                                                    <input type="text" name="target_offer" ng-model="target.result" class="form-control" />
-                                                    <span class="input-group-addon">万元</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-6 no-padding error-box">
-                                            <div class="col-xs-offset-4 col-xs-8">
-                                                <button class="btn btn-success width-100" ng-disabled="isValidMonth()" ng-click="saveTarget()">保存</button>
-                                            </div>
-                                        </div>
-
-                                        <!--<button class="btn btn-success width-100 margin-left-20">保存</button>-->
-                                    </div>
-                                </form>
-                                <month id="calendar" month="selMonth" tb="target.bd" tp="target.person" tr="target.report" tf="target.face" to="target.offer" ts="target.success" tt="target.result"></month>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div class="bordered border-color-gray"><div id="grid"></div></div>
             </div>
         </div>
     </div>
 </div>
+<script>
+$(function () {
+    $('#grid').kendoGrid({
+        dataSource: {
+            transport: {
+                read: function (options) {
+                    options.success([{month: '2018-11', result_target: 20000, result_count: 18000, result_percent: 18000/20000}]);
+                }
+            },
+            schema: {
+                model: {
+                    id: 'id'
+                }
+            },
+            pageSize: 10
+        },
+        scrollable: false,
+        pageable: true,
+        columns: [
+            {field: 'month', title: '目标月份'},
+            {title: '<div class=\'text-center\'>人选录入</div>', columns: [
+                {field: 'result_target', title: '目标量'},
+                {field: 'result_count', title: '完成量'},
+                {field: 'result_percent', title: '完成率'}
+            ]},
+            {title: '<div class=\'text-center\'>BD签约</div>', columns: [
+                {field: 'result_target', title: '目标量'},
+                {field: 'result_count', title: '完成量'},
+                {field: 'result_percent', title: '完成率'}
+            ]},
+            {title: '<div class=\'text-center\'>推荐报告</div>', columns: [
+                {field: 'result_target', title: '目标量'},
+                {field: 'result_count', title: '完成量'},
+                {field: 'result_percent', title: '完成率'}
+            ]},
+            {title: '<div class=\'text-center\'>企业面试</div>', columns: [
+                {field: 'result_target', title: '目标量'},
+                {field: 'result_count', title: '完成量'},
+                {field: 'result_percent', title: '完成率'}
+            ]},
+            {title: '<div class=\'text-center\'>Offer</div>', columns: [
+                {field: 'result_target', title: '目标量'},
+                {field: 'result_count', title: '完成量'},
+                {field: 'result_percent', title: '完成率'}
+            ]},
+            {title: '<div class=\'text-center\'>入职上岗</div>', columns: [
+                {field: 'result_target', title: '目标量'},
+                {field: 'result_count', title: '完成量'},
+                {field: 'result_percent', title: '完成率'}
+            ]},
+            {title: '<div class=\'text-center\'>回款业绩</div>', columns: [
+                {field: 'result_target', title: '目标量'},
+                {field: 'result_count', title: '完成量'},
+                {field: 'result_percent', title: '完成率'}
+            ]},
+            {title: '操作', template: '<a class="btn btn-xs btn-warning"><i class="fa fa-pencil"></i></a>'}
+        ]
+    });
+});
+</script>
