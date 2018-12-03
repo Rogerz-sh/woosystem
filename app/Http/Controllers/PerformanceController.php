@@ -642,4 +642,67 @@ class PerformanceController extends BaseController {
         $hs = DB::table('hunt_count')->whereRaw('locate(concat(",", ?, ","), concat(",", user_ids, ",")) > 0 and status="进行中"', [Session::get('id')])->orderBy('updated_at', 'desc')->get();
         return response($hs);
     }
+
+    public function getJsonPerformanceSearch() {
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        $area = request()->input('area');
+        $group = request()->input('group');
+        $user = request()->input('user');
+        $power = Session::get('power');
+        $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+        if ($power < 10) {
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')');
+                } else {
+                    $users = $users->where('id', Session::get('id'));
+                }
+            } else {
+                $users = $users->where('id', Session::get('id'));
+            }
+        }
+        if ($user) {
+            $users = $users->where('id', $user)->get();
+        } else if ($group) {
+            $users = $users->where('group_id', $group)->get();
+        } else if ($area) {
+            $users = $users->where('area_id', $area)->get();
+        } else {
+            $users = $users->get();
+        }
+        $uids = array();
+//        $gids = array();
+//        $aids = array();
+        foreach($users as $u) {
+            array_push($uids, $u->id);
+//            if (!in_array($u->group_id, $gids)) {
+//                array_push($gids, $u->group_id);
+//            }
+//            if (!in_array($u->area_id, $aids)) {
+//                array_push($aids, $u->area_id);
+//            }
+        }
+        $uids = join(',', $uids);
+
+        $targets = DB::table('month_target')->where('month', '>=', $sdate)->where('month', '<=', $edate)
+            ->whereRaw('user_id in (' . $uids . ')')->get();
+        $bd = Bd::select(DB::raw('count(id) as count, max(user_id) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->whereRaw('user_id in (' . $uids . ')')->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
+        $person = Candidate::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(created_at), "%Y-%m") as month'))
+            ->where('created_at', '>=', $sdate)->where('created_at', '<=', $edate)
+            ->whereRaw('created_by in (' . $uids . ')')->groupBy(DB::raw('created_by, date_format(created_at, "%Y-%m")'))->get();
+        $report = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('type', 'report')->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->whereRaw('created_by in (' . $uids . ')')->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        return response(["target"=>$targets, "bd"=>$bd, "person"=>$person, "report"=>$report]);
+    }
 }

@@ -7,7 +7,23 @@
             </ul>
         </div>
         <div class="row margin-bottom-10">
-            <div class="col-xs-1"><a class="btn btn-sm btn-success"><i class="fa fa-plus"></i> 新增目标</a></div>
+            <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增目标</a></div>
+        </div>
+        <div class="row margin-bottom-10">
+            <div class="col-xs-12">
+                <div class="pull-left">
+                    <div class="pull-left margin-left-10 form-control-static">查询月份：</div>
+                    <div class="pull-left margin-left-10"><input type="text" name="sdate" id="sdate" class="size-120" placeholder="开始月份"></div>
+                    <div class="pull-left margin-left-10 form-control-static"> ~ </div>
+                    <div class="pull-left margin-left-10"><input type="text" name="edate" id="edate" class="size-120" placeholder="结束月份"></div>
+                </div>
+                <div class="pull-left margin-left-20"><select id="search_area"></select></div>
+                <div class="pull-left margin-left-20"><select id="search_group"></select></div>
+                <div class="pull-left margin-left-20"><select id="search_user"></select></div>
+                <div class="pull-left margin-left-10">
+                    <button class="btn btn-sm btn-primary" id="search"><i class="fa fa-search"></i> 查询</button>
+                </div>
+            </div>
         </div>
         <div class="row margin-bottom-10">
             <div class="col-xs-12">
@@ -18,7 +34,141 @@
 </div>
 <script>
 $(function () {
-    $('#grid').kendoGrid({
+    var dsArea = new kendo.data.DataSource({
+        dataSource: []
+    });
+
+    var dsGroup = new kendo.data.DataSource({
+        dataSource: []
+    });
+
+    var dsUser = new kendo.data.DataSource({
+        dataSource: []
+    });
+
+
+    var ddl_area, ddl_group, ddl_user;
+    $.$ajax({
+        url: '/result/json-area-group-user-data',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            console.log(res);
+            //if (res.areas.length > 1) res.areas.unshift({id: '', a_name: '全部区域'});
+            //if (res.groups.length > 1) res.groups.unshift({id: '', g_name: '全部项目组', area_id: 0, area_name: ''});
+            //if (res.users.length > 1) res.users.unshift({id: '', nickname: '全体成员', area_id: 0, area_name: '', group_id: 0, group_name: ''});
+            dsArea.data(res.areas);
+            dsGroup.data(res.groups);
+            dsUser.data(res.users);
+            ddl_area = $('#search_area').kendoDropDownList(config.area).data('kendoDropDownList');
+            ddl_group = $('#search_group').kendoDropDownList(config.group).data('kendoDropDownList');
+            ddl_user = $('#search_user').kendoDropDownList(config.user).data('kendoDropDownList');
+        }
+    });
+
+    var config = {
+        area: {
+            dataSource: dsArea,
+            dataTextField: 'a_name',
+            dataValueField: 'id',
+            optionLabel: '全部区域',
+            change: function () {
+                var area_id = ~~this.value();
+                dsGroup.filter({
+                    logic: 'or',
+                    filters: [
+                        {field: 'area_id', operator: 'eq', value: area_id},
+                        {field: 'area_id', operator: 'eq', value: 0},
+                    ]
+                });
+                dsUser.filter({
+                    logic: 'or',
+                    filters: [
+                        {field: 'area_id', operator: 'eq', value: area_id},
+                        {field: 'area_id', operator: 'eq', value: 0},
+                    ]
+                });
+            }
+        },
+        group: {
+            dataSource: dsGroup,
+            dataTextField: 'g_name',
+            dataValueField: 'id',
+            optionLabel: '全部项目组',
+            template: '#:g_name##:area_name ? " [" + area_name + "]" : ""#',
+            change: function () {
+                var group_id = ~~this.value();
+                dsUser.filter({
+                    logic: 'or',
+                    filters: [
+                        {field: 'group_id', operator: 'eq', value: group_id},
+                        {field: 'group_id', operator: 'eq', value: 0},
+                    ]
+                });
+            }
+        },
+        user: {
+            dataSource: dsUser,
+            dataTextField: 'nickname',
+            dataValueField: 'id',
+            optionLabel: '全体成员'
+        }
+    };
+
+    var sdate = $('#sdate').kendoDatePicker({
+        culture: 'zh-CN',
+        format: 'yyyy-MM',
+        depth: 'year',
+        start: 'year',
+        change: function () {
+            edate.min(this.value());
+            edate.max(this.value().translate('now+365'));
+            if (!edate.value()) {
+                sdate.max(this.value());
+                sdate.min(this.value().translate('now-365'));
+                edate.value(this.value());
+            }
+        }
+    }).data('kendoDatePicker');
+    var edate = $('#edate').kendoDatePicker({
+        culture: 'zh-CN',
+        format: 'yyyy-MM',
+        depth: 'year',
+        start: 'year',
+        change: function () {
+            sdate.max(this.value());
+            sdate.min(this.value().translate('now-365'));
+            if (!sdate.value()) {
+                edate.min(this.value());
+                edate.max(this.value().translate('now+365'));
+                sdate.value(this.value());
+            }
+        }
+    }).data('kendoDatePicker');
+
+    $('#search').click(function () {
+        var data = {}, area = $('#search_area').val(), group = $('#search_group').val(), user = $('#search_user').val()
+        var sdate = new Date($('#sdate').val());
+        var edate = new Date($('#edate').val());
+        data.sdate = new Date(sdate.getFullYear(), sdate.getMonth(), 1).format();
+        data.edate = new Date(edate.getFullYear(), edate.getMonth() + 1, 0).format();
+        data.area = area;
+        data.group = group;
+        data.user = user;
+        console.log(data);
+        $.$ajax({
+            url: '/performance/json-performance-search',
+            type: 'GET',
+            dataType: 'json',
+            data: data,
+            success: function (res) {
+                console.log(res);
+//                grid.dataSource.data(res);
+            }
+        })
+    });
+
+    var grid = $('#grid').kendoGrid({
         dataSource: {
             transport: {
                 read: function (options) {
@@ -73,6 +223,85 @@ $(function () {
             ]},
             {title: '操作', template: '<a class="btn btn-xs btn-warning"><i class="fa fa-pencil"></i></a>'}
         ]
+    }).data('kendoGrid');
+
+    $('#add').click(function () {
+        initDialog();
     });
+
+    function initDialog(data) {
+        $.$modal.dialog({
+            title: '{0}目标'.format(data ? '修改' : '新增'),
+            destroy: true,
+//            content: '<div>' +
+//            '<form class="form form-horizontal">' +
+//                '<div class="form-group">' +
+//                    '<div class="col-xs-6 no-padding">' +
+//                        '<label class="control-label col-xs-3"><span class="red">*</span> 目标月份:</label>' +
+//                        '<div class="col-xs-9"><select id="job_id" class="form-control size-full"></select></div>' +
+//                    '</div>' +
+//                    '<div class="col-xs-6 no-padding">' +
+//                        '<label class="control-label col-xs-3"><span class="red">*</span> 候选人:</label>' +
+//                        '<div class="col-xs-9"><select id="person_id" class="form-control size-full"></select></div>' +
+//                    '</div>' +
+//                '</div>' +
+//            '</form>' +
+//            '</div>',
+            content: '' +
+            '<div>' +
+                '<div class="flex"><span class="form-control-static">目标月份：</span><span class="flex-1"><input type="text" id="month" /></span></div>' +
+                '<div class="margin-top-10 margin-bottom-5"><b class="form-control-static">目标设定</b></div>' +
+                '<div class="flex margin-bottom-5">' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">BD：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="bd_target" /><span class="input-group-addon">个</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">人选：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="person_target" /><span class="input-group-addon">人</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">报告：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="report_target" /><span class="input-group-addon">份</span></div></span></div>' +
+                '</div>' +
+                '<div class="flex margin-bottom-5">' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">面试：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="face_target" /><span class="input-group-addon">个</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">Offer：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="offer_target" /><span class="input-group-addon">个</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">上岗：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="success_target" /><span class="input-group-addon">人</span></div></span></div>' +
+                '</div>' +
+                '<div class="flex margin-bottom-5">' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">业绩：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="result_target" /><span class="input-group-addon">元</span></div></span></div>' +
+                    '<div class="flex-1 margin-right-10"></div><div class="flex-1 margin-right-10"></div>' +
+                '</div>' +
+            '</div>',
+            footer: {
+                buttons: [
+                    {
+                        name: 'ok',
+                        handler: function () {
+                            this.hide();
+                        }
+                    },
+                    {
+                        name: 'cancel',
+                        handler: function () {
+                            this.hide();
+                        }
+                    }
+                ]
+            },
+            onLoaded: function () {
+                var self = this, dom = self.dom;
+                $('#month', dom).kendoDatePicker({
+                    culture: 'zh-CN',
+                    format: 'yyyy-MM',
+                    depth: 'year',
+                    start: 'year',
+                    value: new Date()
+                });
+                $('input.int', dom).each(function (i, ipt) {
+                    $(ipt).kendoNumericTextBox({
+                        spinners: false,
+                        decimal: 0,
+                        format: '',
+                        min: 0,
+                        value: 0
+                    });
+                });
+            }
+        }).show();
+    }
 });
 </script>
