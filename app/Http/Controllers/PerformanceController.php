@@ -692,17 +692,38 @@ class PerformanceController extends BaseController {
         }
         $uids = join(',', $uids);
 
-        $targets = DB::table('month_target')->where('month', '>=', $sdate)->where('month', '<=', $edate)
-            ->whereRaw('user_id in (' . $uids . ')')->get();
+        $targets = DB::table('month_target')
+            ->join('users', 'users.id', '=', 'month_target.user_id')
+            ->select('month_target.user_id', 'users.nickname', 'month_target.month', 'month_target.bd_target', 'month_target.person_target', 'month_target.report_target', 'month_target.face_target', 'month_target.offer_target', 'month_target.success_target', 'month_target.result_target')
+            ->whereRaw('month >= date_format("'.$sdate.'", "%Y-%m") and month <= date_format("'.$edate.'", "%Y-%m") and user_id in (' . $uids . ')')->get();
         $bd = Bd::select(DB::raw('count(id) as count, max(user_id) as user_id, date_format(max(date), "%Y-%m") as month'))
             ->where('date', '>=', $sdate)->where('date', '<=', $edate)
-            ->whereRaw('user_id in (' . $uids . ')')->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
+            ->whereRaw('user_id in (' . $uids . ')')
+            ->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
         $person = Candidate::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(created_at), "%Y-%m") as month'))
             ->where('created_at', '>=', $sdate)->where('created_at', '<=', $edate)
-            ->whereRaw('created_by in (' . $uids . ')')->groupBy(DB::raw('created_by, date_format(created_at, "%Y-%m")'))->get();
+            ->whereRaw('created_by in (' . $uids . ')')
+            ->groupBy(DB::raw('created_by, date_format(created_at, "%Y-%m")'))->get();
         $report = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
             ->where('type', 'report')->where('date', '>=', $sdate)->where('date', '<=', $edate)
-            ->whereRaw('created_by in (' . $uids . ')')->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
-        return response(["target"=>$targets, "bd"=>$bd, "person"=>$person, "report"=>$report]);
+            ->whereRaw('created_by in (' . $uids . ')')
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $face = HuntFace::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->whereRaw('created_by in (' . $uids . ')')
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $offer = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('type', 'offer')->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->whereRaw('created_by in (' . $uids . ')')
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $success = HuntSuccess::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->whereRaw('created_by in (' . $uids . ')')
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $result = ResultUser::select(DB::raw('sum(user_result) as count, max(user_id) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->whereRaw('user_id in (' . $uids . ')')
+            ->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
+        return response(["target"=>$targets, "bd"=>$bd, "person"=>$person, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success, "result"=>$result]);
     }
 }

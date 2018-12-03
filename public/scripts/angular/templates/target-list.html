@@ -1,3 +1,6 @@
+<style>
+tbody tr:nth-child(2n) td {background: #f9f9f9;}
+</style>
 <div class="wrapper bg-white padding-15 margin-top-20 margin-bottom-50 box-shadow">
     <div class="container-fluid">
         <div class="row">
@@ -120,6 +123,7 @@ $(function () {
         format: 'yyyy-MM',
         depth: 'year',
         start: 'year',
+        value: new Date(),
         change: function () {
             edate.min(this.value());
             edate.max(this.value().translate('now+365'));
@@ -135,6 +139,7 @@ $(function () {
         format: 'yyyy-MM',
         depth: 'year',
         start: 'year',
+        value: new Date(),
         change: function () {
             sdate.max(this.value());
             sdate.min(this.value().translate('now-365'));
@@ -162,19 +167,74 @@ $(function () {
             dataType: 'json',
             data: data,
             success: function (res) {
-                console.log(res);
+                buildGridData(res);
 //                grid.dataSource.data(res);
             }
         })
     });
 
+    function buildGridData(data) {
+        var target_data = data.target.map(function (v) {
+            var bd_count = getCountData(v, data.bd),
+                person_count = getCountData(v, data.person),
+                report_count = getCountData(v, data.report),
+                face_count = getCountData(v, data.face),
+                offer_count = getCountData(v, data.offer),
+                success_count = getCountData(v, data.success),
+                result_count = getCountData(v, data.result);
+
+            return {
+                user_id: v.user_id,
+                nickname: v.nickname,
+                month: v.month,
+                bd: {
+                    target: v.bd_target,
+                    count: bd_count
+                },
+                person: {
+                    target: v.person_target,
+                    count: person_count
+                },
+                report: {
+                    target: v.report_target,
+                    count: report_count
+                },
+                face: {
+                    target: v.face_target,
+                    count: face_count
+                },
+                offer: {
+                    target: v.offer_target,
+                    count: offer_count
+                },
+                success: {
+                    target: v.success_target,
+                    count: success_count
+                },
+                result: {
+                    target: v.result_target,
+                    count: result_count
+                }
+            }
+        });
+        grid.dataSource.data(target_data);
+    }
+
+    function getCountData(v, data) {
+        var count = 0;
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            if (d.month == v.month && d.user_id == v.user_id) {
+                count = d.count;
+                break;
+            }
+        }
+        return count;
+    }
+
     var grid = $('#grid').kendoGrid({
         dataSource: {
-            transport: {
-                read: function (options) {
-                    options.success([{month: '2018-11', result_target: 20000, result_count: 18000, result_percent: 18000/20000}]);
-                }
-            },
+            data: [],
             schema: {
                 model: {
                     id: 'id'
@@ -185,45 +245,63 @@ $(function () {
         scrollable: false,
         pageable: true,
         columns: [
+            {field: 'nickname', title: '顾问'},
             {field: 'month', title: '目标月份'},
             {title: '<div class=\'text-center\'>人选录入</div>', columns: [
-                {field: 'result_target', title: '目标量'},
-                {field: 'result_count', title: '完成量'},
-                {field: 'result_percent', title: '完成率'}
+                {field: 'bd.target', title: '目标量'},
+                {field: 'bd.count', title: '完成量'},
+                {title: '完成率', template: getPercent('bd')}
             ]},
             {title: '<div class=\'text-center\'>BD签约</div>', columns: [
-                {field: 'result_target', title: '目标量'},
-                {field: 'result_count', title: '完成量'},
-                {field: 'result_percent', title: '完成率'}
+                {field: 'person.target', title: '目标量'},
+                {field: 'person.count', title: '完成量'},
+                {title: '完成率', template: getPercent('person')}
             ]},
             {title: '<div class=\'text-center\'>推荐报告</div>', columns: [
-                {field: 'result_target', title: '目标量'},
-                {field: 'result_count', title: '完成量'},
-                {field: 'result_percent', title: '完成率'}
+                {field: 'report.target', title: '目标量'},
+                {field: 'report.count', title: '完成量'},
+                {title: '完成率', template: getPercent('report')}
             ]},
             {title: '<div class=\'text-center\'>企业面试</div>', columns: [
-                {field: 'result_target', title: '目标量'},
-                {field: 'result_count', title: '完成量'},
-                {field: 'result_percent', title: '完成率'}
+                {field: 'face.target', title: '目标量'},
+                {field: 'face.count', title: '完成量'},
+                {title: '完成率', template: getPercent('face')}
             ]},
             {title: '<div class=\'text-center\'>Offer</div>', columns: [
-                {field: 'result_target', title: '目标量'},
-                {field: 'result_count', title: '完成量'},
-                {field: 'result_percent', title: '完成率'}
+                {field: 'offer.target', title: '目标量'},
+                {field: 'offer.count', title: '完成量'},
+                {title: '完成率', template: getPercent('offer')}
             ]},
             {title: '<div class=\'text-center\'>入职上岗</div>', columns: [
-                {field: 'result_target', title: '目标量'},
-                {field: 'result_count', title: '完成量'},
-                {field: 'result_percent', title: '完成率'}
+                {field: 'success.target', title: '目标量'},
+                {field: 'success.count', title: '完成量'},
+                {title: '完成率', template: getPercent('success')}
             ]},
             {title: '<div class=\'text-center\'>回款业绩</div>', columns: [
-                {field: 'result_target', title: '目标量'},
-                {field: 'result_count', title: '完成量'},
-                {field: 'result_percent', title: '完成率'}
+                {field: 'result.target', title: '目标量', template: '#:result.target#W'},
+                {field: 'result.count', title: '完成量'},
+                {title: '完成率', template: getPercent('result')}
             ]},
-            {title: '操作', template: '<a class="btn btn-xs btn-warning"><i class="fa fa-pencil"></i></a>'}
+            //{title: '操作', template: '<a class="btn btn-xs btn-warning"><i class="fa fa-pencil"></i></a>'}
         ]
     }).data('kendoGrid');
+
+    function getPercent(field) {
+        return function (item) {
+            var target = item[field].target;
+            if (target > 0) {
+                if (field == 'result') target = target * 10000;
+                var percent = item[field].count / target;
+                if (percent < 1) {
+                    return '<span class="red">{0}</span>'.format(kendo.toString(percent, 'p1'));
+                } else {
+                    return '<span class="green">{0}</span>'.format(kendo.toString(percent, 'p1'));
+                }
+            } else {
+                return '<span class="dark-gray">--</span>';
+            }
+        }
+    }
 
     $('#add').click(function () {
         initDialog();
@@ -262,7 +340,7 @@ $(function () {
                     '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">上岗：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="success_target" /><span class="input-group-addon">人</span></div></span></div>' +
                 '</div>' +
                 '<div class="flex margin-bottom-5">' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">业绩：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="result_target" /><span class="input-group-addon">元</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">业绩：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="result_target" /><span class="input-group-addon">万元</span></div></span></div>' +
                     '<div class="flex-1 margin-right-10"></div><div class="flex-1 margin-right-10"></div>' +
                 '</div>' +
             '</div>',
