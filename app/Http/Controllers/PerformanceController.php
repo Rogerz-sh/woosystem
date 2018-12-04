@@ -16,7 +16,7 @@ use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
 use App\HuntResult;
-use App\HuntSelect;
+use App\Belongs;
 use App\HuntSuccess;
 use App\Job;
 use App\User;
@@ -322,16 +322,16 @@ class PerformanceController extends BaseController {
             DB::table('month_target')->insert(['user_id'=>$id, 'month'=>$month['month'], 'bd_target'=>$month['bd'], 'person_target'=>$month['person'], 'report_target'=>$month['report'], 'face_target'=>$month['face'], 'offer_target'=>$month['offer'], 'success_target'=>$month['success'], 'result_target'=>$month['result']]);
         }
 
-        $days = request()->input('days');
-        $sqls = array();
-        for ($i = 0; $i < sizeof($days); $i++) {
-            $day = $days[$i];
-            $sql = ['user_id'=>$id, 'date'=>$day['date'], 'month'=>$month['month'], 'person_target'=>$day['tp'], 'report_target'=>$day['tr'], 'face_target'=>$day['tf'], 'offer_target'=>$day['to'], 'success_target'=>$day['ts']];
-            array_push($sqls, $sql);
-        }
-        DB::table('day_target')->where('user_id', $id)->where('month', $month['month'])->delete();
-        DB::table('day_target')->insert($sqls);
-        return response(sizeof($sqls));
+//        $days = request()->input('days');
+//        $sqls = array();
+//        for ($i = 0; $i < sizeof($days); $i++) {
+//            $day = $days[$i];
+//            $sql = ['user_id'=>$id, 'date'=>$day['date'], 'month'=>$month['month'], 'person_target'=>$day['tp'], 'report_target'=>$day['tr'], 'face_target'=>$day['tf'], 'offer_target'=>$day['to'], 'success_target'=>$day['ts']];
+//            array_push($sqls, $sql);
+//        }
+//        DB::table('day_target')->where('user_id', $id)->where('month', $month['month'])->delete();
+//        DB::table('day_target')->insert($sqls);
+        return response(1);
     }
 
     public function getJsonPerformanceChartData() {

@@ -33,6 +33,11 @@ tbody tr:nth-child(2n) td {background: #f9f9f9;}
                 <div class="bordered border-color-gray"><div id="grid"></div></div>
             </div>
         </div>
+        <div class="row margin-bottom-10">
+            <div class="col-xs-12">
+                提示：月份颜色显示为蓝色时可点击编辑（自己的目标并且目标月份尚未开始才可以编辑哦）
+            </div>
+        </div>
     </div>
 </div>
 <script>
@@ -49,7 +54,7 @@ $(function () {
         dataSource: []
     });
 
-
+    var sessionId = +$('meta[name="_sessionId"]').attr('content');
     var ddl_area, ddl_group, ddl_user;
     $.$ajax({
         url: '/result/json-area-group-user-data',
@@ -173,6 +178,8 @@ $(function () {
         })
     });
 
+    $('#search').trigger('click');
+
     function buildGridData(data) {
         var target_data = data.target.map(function (v) {
             var bd_count = getCountData(v, data.bd),
@@ -235,24 +242,19 @@ $(function () {
     var grid = $('#grid').kendoGrid({
         dataSource: {
             data: [],
-            schema: {
-                model: {
-                    id: 'id'
-                }
-            },
             pageSize: 10
         },
         scrollable: false,
         pageable: true,
         columns: [
             {field: 'nickname', title: '顾问'},
-            {field: 'month', title: '目标月份'},
-            {title: '<div class=\'text-center\'>人选录入</div>', columns: [
+            {field: 'month', title: '目标月份', template: editMonth},
+            {title: '<div class=\'text-center\'>BD签约</div>', columns: [
                 {field: 'bd.target', title: '目标量'},
                 {field: 'bd.count', title: '完成量'},
                 {title: '完成率', template: getPercent('bd')}
             ]},
-            {title: '<div class=\'text-center\'>BD签约</div>', columns: [
+            {title: '<div class=\'text-center\'>人选录入</div>', columns: [
                 {field: 'person.target', title: '目标量'},
                 {field: 'person.count', title: '完成量'},
                 {title: '完成率', template: getPercent('person')}
@@ -303,6 +305,30 @@ $(function () {
         }
     }
 
+    function editMonth(item) {
+        if (sessionId == item.user_id && new Date(item.month).getTime() > Date.now()) {
+            return '<a class="_edit text-primary pointer">{0}</a>'.format(item.month, item.user_id);
+        } else {
+            return item.month;
+        }
+    }
+
+    $('#grid').delegate('a._edit', 'click', function () {
+        var self = $(this), item = grid.dataItem(self.closest('tr'));
+        var data = {
+            user_id: item.user_id,
+            month: item.month,
+            bd: item['bd'].target,
+            person: item['person'].target,
+            report: item['report'].target,
+            face: item['face'].target,
+            offer: item['offer'].target,
+            success: item['success'].target,
+            result: item['result'].target,
+        }
+        initDialog(data);
+    });
+
     $('#add').click(function () {
         initDialog();
     });
@@ -330,17 +356,17 @@ $(function () {
                 '<div class="flex"><span class="form-control-static">目标月份：</span><span class="flex-1"><input type="text" id="month" /></span></div>' +
                 '<div class="margin-top-10 margin-bottom-5"><b class="form-control-static">目标设定</b></div>' +
                 '<div class="flex margin-bottom-5">' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">BD：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="bd_target" /><span class="input-group-addon">个</span></div></span></div>' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">人选：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="person_target" /><span class="input-group-addon">人</span></div></span></div>' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">报告：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="report_target" /><span class="input-group-addon">份</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">BD：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="bd" /><span class="input-group-addon">个</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">人选：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="person" /><span class="input-group-addon">人</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">报告：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="report" /><span class="input-group-addon">份</span></div></span></div>' +
                 '</div>' +
                 '<div class="flex margin-bottom-5">' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">面试：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="face_target" /><span class="input-group-addon">个</span></div></span></div>' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">Offer：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="offer_target" /><span class="input-group-addon">个</span></div></span></div>' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">上岗：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="success_target" /><span class="input-group-addon">人</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">面试：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="face" /><span class="input-group-addon">个</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">Offer：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="offer" /><span class="input-group-addon">个</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">上岗：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="success" /><span class="input-group-addon">人</span></div></span></div>' +
                 '</div>' +
                 '<div class="flex margin-bottom-5">' +
-                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">业绩：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="result_target" /><span class="input-group-addon">万元</span></div></span></div>' +
+                    '<div class="flex-1 flex margin-right-10"><span class="width-50 text-right form-control-static padding-right-5">业绩：</span><span class="flex-1"><div class="input-group"><input type="text" class="form-control int" id="result" /><span class="input-group-addon">万元</span></div></span></div>' +
                     '<div class="flex-1 margin-right-10"></div><div class="flex-1 margin-right-10"></div>' +
                 '</div>' +
             '</div>',
@@ -349,7 +375,41 @@ $(function () {
                     {
                         name: 'ok',
                         handler: function () {
-                            this.hide();
+                            var self = this, dom = self.dom, valid = true;
+                            var month = {
+                                month: $('#month', dom).val(),
+                                bd: $('#bd', dom).val(),
+                                person: $('#person', dom).val(),
+                                report: $('#report', dom).val(),
+                                face: $('#face', dom).val(),
+                                offer: $('#offer', dom).val(),
+                                success: $('#success', dom).val(),
+                                result: $('#result', dom).val(),
+                            }
+                            for (var n in month) {
+                                if (month[n] === '') {
+                                    valid = false;
+                                }
+                            }
+                            if (!valid) {
+                                $.$modal.alert('不能有空值!');
+                                return;
+                            }
+                            $.$ajax({
+                                url: '/performance/save-target',
+                                type: 'POST',
+                                data: {month: month},
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res == 1) {
+                                        $.$modal.alert('保存成功!');
+                                        self.hide();
+                                        if (data) {
+                                            $('#search').trigger('click');
+                                        }
+                                    }
+                                }
+                            });
                         }
                     },
                     {
@@ -367,15 +427,16 @@ $(function () {
                     format: 'yyyy-MM',
                     depth: 'year',
                     start: 'year',
-                    value: new Date()
+                    value: data ? new Date(data.month) : new Date()
                 });
                 $('input.int', dom).each(function (i, ipt) {
+                    var id = $(ipt).attr('id');
                     $(ipt).kendoNumericTextBox({
                         spinners: false,
                         decimal: 0,
                         format: '',
                         min: 0,
-                        value: 0
+                        value: data ? data[id] : 0
                     });
                 });
             }
