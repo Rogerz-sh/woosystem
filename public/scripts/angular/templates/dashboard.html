@@ -1,7 +1,9 @@
 <style>
-    .circle {width: 100px; height: 100px; border-radius: 50%; text-align: center; line-height: 100px; position: relative;}
+    .circle {width: 100px; height: 100px; border-radius: 50%; text-align: center; line-height: 100px; position: relative; overflow: hidden;}
     .circle::before {content: ""; display: block; position: absolute; width: 90px; height: 90px; top: 5px; left: 5px; background: #fff; border-radius: 50%;}
     .circle span {position: relative; font-size: 1.5em; font-weight: bold; color: #666;}
+    .circle .p_bg {position: absolute; width: 90px; height: 90px; left: 5px; top: 5px; border-radius: 50%; overflow: hidden;}
+    .circle .p_bg div {width: 100%; height: 100px; background: #fff;}
 </style>
 <div class="wrapper">
     <div class="container-fluid">
@@ -12,32 +14,53 @@
                 </blockquote>
                 <div class="flex flex-row">
                     <div class="flex-1 flex flex-col flex-v-center flex-h-center">
-                        <div class="circle bg-yellow"><span id="bd_count">0</span></div>
-                        <p class="margin-top-10 bold">BD数</p>
+                        <div class="circle bg-dark-gray">
+                            <div class="p_bg"><div></div></div>
+                            <span id="bd">0</span>
+                        </div>
+                        <p class="margin-top-10 bold text-center">BD数 <br> 完成率：<span class="p_text"></span></p>
                     </div>
                     <div class="flex-1 flex flex-col flex-v-center flex-h-center">
-                        <div class="circle bg-dark-yellow"><span id="person_count">0</span></div>
-                        <p class="margin-top-10 bold">录入数</p>
+                        <div class="circle bg-dark-gray">
+                            <div class="p_bg"><div></div></div>
+                            <span id="person">0</span>
+                        </div>
+                        <p class="margin-top-10 bold text-center">录入数 <br> 完成率：<span class="p_text"></span></p>
                     </div>
                     <div class="flex-1 flex flex-col flex-v-center flex-h-center">
-                        <div class="circle bg-orange"><span id="report_count">0</span></div>
-                        <p class="margin-top-10 bold">推荐数</p>
+                        <div class="circle bg-dark-gray">
+                            <div class="p_bg"><div></div></div>
+                            <span id="report">0</span>
+                        </div>
+                        <p class="margin-top-10 bold text-center">推荐数 <br> 完成率：<span class="p_text"></span></p>
                     </div>
                     <div class="flex-1 flex flex-col flex-v-center flex-h-center">
-                        <div class="circle bg-dark-orange"><span id="face_count">0</span></div>
-                        <p class="margin-top-10 bold">面试数</p>
+                        <div class="circle bg-dark-gray">
+                            <div class="p_bg"><div></div></div>
+                            <span id="face">0</span>
+                        </div>
+                        <p class="margin-top-10 bold text-center">面试数 <br> 完成率：<span class="p_text"></span></p>
                     </div>
                     <div class="flex-1 flex flex-col flex-v-center flex-h-center">
-                        <div class="circle bg-orange"><span id="offer_count">0</span></div>
-                        <p class="margin-top-10 bold">Offer数</p>
+                        <div class="circle bg-dark-gray">
+                            <div class="p_bg"><div></div></div>
+                            <span id="offer">0</span>
+                        </div>
+                        <p class="margin-top-10 bold text-center">Offer <br> 完成率：<span class="p_text"></span></p>
                     </div>
                     <div class="flex-1 flex flex-col flex-v-center flex-h-center">
-                        <div class="circle bg-dark-yellow"><span id="success_count">0</span></div>
-                        <p class="margin-top-10 bold">上岗数</p>
+                        <div class="circle bg-dark-gray">
+                            <div class="p_bg"><div></div></div>
+                            <span id="success">0</span>
+                        </div>
+                        <p class="margin-top-10 bold text-center">上岗数 <br> 完成率：<span class="p_text"></span></p>
                     </div>
                     <div class="flex-1 flex flex-col flex-v-center flex-h-center">
-                        <div class="circle bg-yellow"><span id="protected_count">0</span></div>
-                        <p class="margin-top-10 bold">过保数</p>
+                        <div class="circle bg-dark-gray">
+                            <div class="p_bg"><div></div></div>
+                            <span id="result">0</span>
+                        </div>
+                        <p class="margin-top-10 bold text-center">过保数 <br> 完成率：<span class="p_text"></span></p>
                     </div>
                 </div>
             </div>

@@ -52,13 +52,28 @@ $(function () {
             type: 'GET',
             dataType: 'json',
             data: data,
-            success: function (res) {
+            success: function (data) {
+                //g: #84ffb5, y: #fff8a4, r: #ff8484
+                var month = new Date().format('yyyy-mm');
                 $('.circle span').each(function (i, span) {
                     var id = $(span).attr('id');
-                    $(span).text(res[0][id]);
-                })
+                    $(span).text(getCountData(month, data[id]));
+                    initTargetView(id, month, data);
+                });
             }
         })
+    }
+
+    function getCountData(month, data) {
+        var count = 0;
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            if (d.month == month) {
+                count = d.count;
+                break;
+            }
+        }
+        return count;
     }
 
     function renderRankList(ele, data, target, unit) {
@@ -80,6 +95,32 @@ $(function () {
         } else {
             return '{0} - {1}'.format(data.group_name, data.area_name);
         }
+    }
+
+    function initTargetView(id, month, data) {
+        var color = {r: '#f12424', y: '#ffdf43', g: '#43e283'}
+        var target = data.target[0] ? data.target[0][id + '_target'] || 0 : 0,
+            count = getCountData(month, data[id]),
+            percent = target ? count / target : -1,
+            percentMargin = percent > 0 ? kendo.toString(1-percent, 'n1') : '0',
+            percentText = target > 0 ? kendo.toString(count/target, 'p1') : '---%';
+        if (percent > 0 && percent < 0.6) {
+            $('#'+id).prev().find('div').css({
+                'background': color.r,
+                'margin-top': (percentMargin*100) + '%'
+            });
+        } else if (percent >= 0.6 && percent < 0.8) {
+            $('#'+id).prev().find('div').css({
+                'background': color.y,
+                'margin-top': (percentMargin*100) + '%'
+            });
+        } else if (percent >= 0.8) {
+            $('#'+id).prev().find('div').css({
+                'background': color.g,
+                'margin-top': (percentMargin*100) + '%'
+            });
+        }
+        $('#'+id).closest('.circle').next().find('span.p_text').text('{0}/{1} ({2})'.format(count, target, percentText))
     }
 
     getPersonPerformance();

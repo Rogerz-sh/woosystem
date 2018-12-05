@@ -210,23 +210,41 @@ class PerformanceController extends BaseController {
     public function getJsonPerformanceData() {
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
-        $result = DB::table('users')
-            ->select(DB::raw('users.id, users.name, users.nickname,
-            (select count(id) from bd where bd.user_id = users.id and bd.status = "签约合作" and bd.date >= "'.$sdate.'" and bd.date <= "'.$edate.'" and deleted_at is null) as bd_count,
-            (select count(id) from person where person.created_by = users.id and person.created_at >= "'.$sdate.'" and person.created_at <= "'.$edate.'" and deleted_at is null) as person_count,
-            (select count(distinct hunt_id) from hunt_face where hunt_face.type = "一面" and (hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) and hunt_face.created_by = users.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and deleted_at is null) as face_count,
-            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "report" and hunt_report.is_confirm = 1 and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and deleted_at is null) as report_count,
-            (select count(id) from hunt_report where hunt_report.created_by = users.id and type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and deleted_at is null) as offer_count,
-            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and deleted_at is null) as success_count,
-            (select count(id) from hunt_success where hunt_success.created_by = users.id and hunt_success.protected >= "'.$sdate.'" and hunt_success.protected <= "'.$edate.'" and deleted_at is null) as protected_count
-            '))
-            ->where('users.id', Session::get('id'))
-            ->where('users.deleted_at', null)
-            ->where('users.status', '1')
-//            ->where('id', Session::get('id'))
-            ->get();
+        $user_id = Session::get('id');
 
-        return response($result);
+        $targets = DB::table('month_target')
+            ->join('users', 'users.id', '=', 'month_target.user_id')
+            ->select('month_target.user_id', 'users.nickname', 'month_target.month', 'month_target.bd_target', 'month_target.person_target', 'month_target.report_target', 'month_target.face_target', 'month_target.offer_target', 'month_target.success_target', 'month_target.result_target')
+            ->whereRaw('month >= date_format("'.$sdate.'", "%Y-%m") and month <= date_format("'.$edate.'", "%Y-%m") and user_id = '. $user_id .'')->get();
+        $bd = Bd::select(DB::raw('count(id) as count, max(user_id) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->where('user_id', $user_id)
+            ->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
+        $person = Candidate::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(created_at), "%Y-%m") as month'))
+            ->where('created_at', '>=', $sdate)->where('created_at', '<=', $edate)
+            ->where('created_by', $user_id)
+            ->groupBy(DB::raw('created_by, date_format(created_at, "%Y-%m")'))->get();
+        $report = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('type', 'report')->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->where('created_by', $user_id)
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $face = HuntFace::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->where('created_by', $user_id)
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $offer = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('type', 'offer')->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->where('created_by', $user_id)
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $success = HuntSuccess::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->where('created_by', $user_id)
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $result = ResultUser::select(DB::raw('sum(user_result) as count, max(user_id) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->where('user_id', $user_id)
+            ->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
+        return response(["target"=>$targets, "bd"=>$bd, "person"=>$person, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success, "result"=>$result]);
     }
 
     public function getJsonTargetData() {
