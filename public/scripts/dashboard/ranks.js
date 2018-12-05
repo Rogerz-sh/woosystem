@@ -99,8 +99,9 @@ $(function () {
 
     function initTargetView(id, month, data) {
         var color = {r: '#f12424', y: '#ffdf43', g: '#43e283'}
-        var target = data.target[0] ? data.target[0][id + '_target'] || 0 : 0,
-            count = getCountData(month, data[id]),
+        var target = data.target[0] ? data.target[0][id + '_target'] || 0 : 0;
+        if (id == 'result' && target < 10000) target = target * 10000;
+        var count = getCountData(month, data[id]),
             percent = target ? count / target : -1,
             percentMargin = percent > 0 ? kendo.toString(1-percent, 'n1') : '0',
             percentText = target > 0 ? kendo.toString(count/target, 'p1') : '---%';
