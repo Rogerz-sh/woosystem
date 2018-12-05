@@ -1,5 +1,6 @@
 <style>
 tbody tr:nth-child(2n) td {background: #f9f9f9;}
+.k-grid tbody tr td {border-width: 1px 0 0 1px;}
 </style>
 <div class="wrapper bg-white padding-15 margin-top-20 margin-bottom-50 box-shadow">
     <div class="container-fluid">
@@ -337,20 +338,6 @@ $(function () {
         $.$modal.dialog({
             title: '{0}目标'.format(data ? '修改' : '新增'),
             destroy: true,
-//            content: '<div>' +
-//            '<form class="form form-horizontal">' +
-//                '<div class="form-group">' +
-//                    '<div class="col-xs-6 no-padding">' +
-//                        '<label class="control-label col-xs-3"><span class="red">*</span> 目标月份:</label>' +
-//                        '<div class="col-xs-9"><select id="job_id" class="form-control size-full"></select></div>' +
-//                    '</div>' +
-//                    '<div class="col-xs-6 no-padding">' +
-//                        '<label class="control-label col-xs-3"><span class="red">*</span> 候选人:</label>' +
-//                        '<div class="col-xs-9"><select id="person_id" class="form-control size-full"></select></div>' +
-//                    '</div>' +
-//                '</div>' +
-//            '</form>' +
-//            '</div>',
             content: '' +
             '<div>' +
                 '<div class="flex"><span class="form-control-static">目标月份：</span><span class="flex-1"><input type="text" id="month" /></span></div>' +
@@ -427,6 +414,7 @@ $(function () {
                     format: 'yyyy-MM',
                     depth: 'year',
                     start: 'year',
+                    min: new Date(),
                     value: data ? new Date(data.month) : new Date()
                 });
                 $('input.int', dom).each(function (i, ipt) {
