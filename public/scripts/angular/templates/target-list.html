@@ -58,7 +58,7 @@ $(function () {
     var sessionId = +$('meta[name="_sessionId"]').attr('content');
     var ddl_area, ddl_group, ddl_user;
     $.$ajax({
-        url: '/result/json-area-group-user-data',
+        url: '/performance/json-area-group-user-data',
         type: 'GET',
         dataType: 'json',
         success: function (res) {

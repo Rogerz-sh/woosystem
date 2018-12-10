@@ -668,9 +668,10 @@ class PerformanceController extends BaseController {
         $group = request()->input('group');
         $user = request()->input('user');
         $power = Session::get('power');
+        $sid = Session::get('id');
         $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
-        if ($power < 10) {
-            $belong = Belongs::where('user_id', Session::get('id'))->first();
+        if ($power < 10 && $sid != 85) {
+            $belong = Belongs::where('user_id', $sid)->first();
             if ($belong) {
                 $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
                 if (sizeof($path) > 0) {
@@ -681,10 +682,10 @@ class PerformanceController extends BaseController {
                     $ids = substr($ids, 1);
                     $users = $users->whereRaw('id in (' . $ids . ')');
                 } else {
-                    $users = $users->where('id', Session::get('id'));
+                    $users = $users->where('id', $sid);
                 }
             } else {
-                $users = $users->where('id', Session::get('id'));
+                $users = $users->where('id', $sid);
             }
         }
         if ($user) {
@@ -743,5 +744,45 @@ class PerformanceController extends BaseController {
             ->whereRaw('user_id in (' . $uids . ')')
             ->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
         return response(["target"=>$targets, "bd"=>$bd, "person"=>$person, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success, "result"=>$result]);
+    }
+
+    public function getJsonAreaGroupUserData() {
+        $power = Session::get('power');
+        if ($power >= 10 || Session::get('id') == 85) {
+            $area = Areas::select('id', 'a_name')->get();
+            $group = Groups::select('id', 'g_name', 'area_id', 'area_name')->get();
+            $user = User::select('id', 'nickname', 'area_id', 'group_id')->where('status', '1')->orderBy('id', 'desc')->get();
+        } else {
+            $users = User::select('id', 'nickname', 'group_id', 'group_name', 'area_id', 'area_name')->where('status', 1);
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')')->get();
+                } else {
+                    $users = $users->where('id', Session::get('id'))->get();
+                }
+            } else {
+                $users = $users->where('id', Session::get('id'))->get();
+            }
+            $user = array(); $group = array(); $area = array(); $gids = array(); $aids = array();
+            foreach($users as $u) {
+                array_push($user, $u);
+                if (!in_array($u->group_id, $gids)) {
+                    array_push($gids, $u->group_id);
+                    array_push($group, ["id"=>$u->group_id, "g_name"=>$u->group_name, "area_id"=>$u->area_id, "area_name"=>$u->area_name]);
+                }
+                if (!in_array($u->area_id, $aids)) {
+                    array_push($aids, $u->area_id);
+                    array_push($area, ["id"=>$u->area_id, "a_name"=>$u->area_name]);
+                }
+            }
+        }
+        return response(["users"=>$user, "groups"=>$group, "areas"=>$area]);
     }
 }
