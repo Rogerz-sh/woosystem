@@ -1892,7 +1892,30 @@
                             dataType: 'json',
                             data: Object.assign($scope.search, $scope.team),
                             success: function (res) {
-                                option.success(res);
+                                var data = res.users.map(function (v) {
+                                    var bd_count = getCountData(v, res.bd),
+                                        person_count = getCountData(v, res.person),
+                                        report_count = getCountData(v, res.report),
+                                        face_count = getCountData(v, res.face),
+                                        offer_count = getCountData(v, res.offer),
+                                        success_count = getCountData(v, res.success),
+                                        result_count = getCountData(v, res.result);
+
+                                    return {
+                                        user_id: v.user_id,
+                                        nickname: v.nickname,
+                                        group_name: v.group_name,
+                                        area_name: v.area_name,
+                                        bd_count: bd_count,
+                                        person_count: person_count,
+                                        report_count: report_count,
+                                        face_count: face_count,
+                                        offer_count: offer_count,
+                                        success_count: success_count,
+                                        result_count: result_count
+                                    }
+                                });
+                                option.success(data);
                             }
                         });
                     } else {
@@ -1907,18 +1930,30 @@
                     id: 'id'
                 }
             },
-            aggregate: [
-                { field: "bd_count", aggregate: "max" },
-                { field: "person_count", aggregate: "max" },
-                { field: "report_count", aggregate: "max" },
-                { field: "face_count", aggregate: "max" },
-                { field: "offer_count", aggregate: "max" },
-                { field: "success_count", aggregate: "max" },
-                { field: "result_count", aggregate: "max" }
-            ],
+            //aggregate: [
+            //    { field: "bd_count", aggregate: "max" },
+            //    { field: "person_count", aggregate: "max" },
+            //    { field: "report_count", aggregate: "max" },
+            //    { field: "face_count", aggregate: "max" },
+            //    { field: "offer_count", aggregate: "max" },
+            //    { field: "success_count", aggregate: "max" },
+            //    { field: "result_count", aggregate: "max" }
+            //],
             filter: {field: 'deleted', operator: 'neq', value: true},
             sort: {field: 'id', dir: 'desc'}
         });
+
+        function getCountData(v, data) {
+            var count = 0;
+            for (var i = 0; i < data.length; i++) {
+                var d = data[i];
+                if (d.user_id == v.user_id) {
+                    count = d.count;
+                    break;
+                }
+            }
+            return count;
+        }
 
         var detailData = new kendo.data.DataSource({
             pageSize: 10,
@@ -2044,31 +2079,31 @@
         function getCountColor(name) {
             var count_field = name + '_count', target_field = name + '_target';
             return function (item) {
-                var performance = item[count_field] || 0, target = item[target_field] || 1
-                var percent = performance / target;
-                var color = '';
-                if (percent >= 0.8) {
-                    //green
-                    color = '#20bb0d';
-                //} else if (percent < 0.9 && percent >= 0.5) {
-                //    //blue
-                //    color = '#207fcc';
-                } else if (percent < 0.8 && percent >= 0.5) {
-                    //yellow
-                    color = '#ded02c';
-                } else {
-                    //red
-                    color = '#f72626';
-                }
-                if (percent > 1) percent = 1;
-                if (percent < 0 || !percent) percent = 0;
-                if (performance > 0) {
-                    return '<div class="box-progress"><div class="box-target"><div class="box-performance pointer {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}" ng-click="showDetailList({4},\'{5}\')">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div><div class="width-20 text-center">{6}</div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color, item.id, count_field, percent > 0.8 && performance == gridData.aggregates()[count_field].max ? '<i class="fa fa-thumbs-up dark-yellow"></i>': '');
-                } else {
-                    return '<div class="box-progress"><div class="box-target"><div class="box-performance {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div><div class="width-20"></div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color);
-                }
+                var performance = item[count_field] || 0;
+                //var percent = performance / target;
+                //var color = '';
+                //if (percent >= 0.8) {
+                //    //green
+                //    color = '#20bb0d';
+                ////} else if (percent < 0.9 && percent >= 0.5) {
+                ////    //blue
+                ////    color = '#207fcc';
+                //} else if (percent < 0.8 && percent >= 0.5) {
+                //    //yellow
+                //    color = '#ded02c';
+                //} else {
+                //    //red
+                //    color = '#f72626';
+                //}
+                //if (percent > 1) percent = 1;
+                //if (percent < 0 || !percent) percent = 0;
+                //if (performance > 0) {
+                //    return '<div class="box-progress"><div class="box-target"><div class="box-performance pointer {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}" ng-click="showDetailList({4},\'{5}\')">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div><div class="width-20 text-center">{6}</div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color, item.id, count_field, percent > 0.8 && performance == gridData.aggregates()[count_field].max ? '<i class="fa fa-thumbs-up dark-yellow"></i>': '');
+                //} else {
+                //    return '<div class="box-progress"><div class="box-target"><div class="box-performance {3}" title="已完成：{0}" style="width:{2}%;background-color: {3}">{0}</div></div><div class="box-detail" title="目标：{1}">{1}</div><div class="width-20"></div></div>'.format(performance, item[target_field] || '--', kendo.toString(percent*100, 'n0'), color);
+                //}
 
-                //return item[count_field] == '0' ? '<span class="bold red">{0}</span>'.format(item[count_field]) : '<span class="bold green pointer" ng-click="showDetailList({1},\'{2}\')">{0}</span>'.format(item[count_field], item.id, count_field);
+                return item[count_field] == '0' ? '<span class="bold red">{0}</span>'.format(item[count_field]) : '<span class="bold green pointer" ng-click="showDetailList({1},\'{2}\')">{0}</span>'.format(item[count_field], item.user_id, count_field);
             }
         }
 
