@@ -47,9 +47,9 @@ class PerformanceController extends BaseController {
     public function getJsonPerformanceListData() {
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
-        $area = request()->input('area');
-        $group = request()->input('group');
-        $user = request()->input('user');
+        $area = request()->input('_area');
+        $group = request()->input('_group');
+        $user = request()->input('_user');
         $power = Session::get('power');
         $sid = Session::get('id');
         $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
