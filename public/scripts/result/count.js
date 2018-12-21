@@ -219,7 +219,7 @@ $(function () {
 
     $('#search').click(function () {
         var range = $('button[data-range].active').data('range'), data = {};
-        var area = $('#search_area').val(), group = $('#search_group').val(), user = $('#search_user').val()
+        var area = $('#search_area').val(), group = $('#search_group').val(), user = $('#search_user').val(), company_name = $('#company_name').val();
         if (range == '自定义') {
             data.sdate = $('#sdate').val();
             data.edate = $('#edate').val();
@@ -231,6 +231,7 @@ $(function () {
         data.area = area;
         data.group = group;
         data.user = user;
+        data.company_name = company_name;
         console.log(data);
         $.$ajax({
             url: '/result/json-result-search',
