@@ -1948,8 +1948,7 @@
             for (var i = 0; i < data.length; i++) {
                 var d = data[i];
                 if (d.user_id == v.user_id) {
-                    count = d.count;
-                    break;
+                    count += +d.count;
                 }
             }
             return count;
