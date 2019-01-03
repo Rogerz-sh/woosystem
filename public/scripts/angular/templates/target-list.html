@@ -10,39 +10,66 @@ tbody tr:nth-child(2n) td {background: #f9f9f9;}
                 <li>目标管理</li>
             </ul>
         </div>
-        <div class="row margin-bottom-10">
-            <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增目标</a></div>
-        </div>
-        <div class="row margin-bottom-10">
-            <div class="col-xs-12">
-                <div class="pull-left">
-                    <div class="pull-left margin-left-10 form-control-static">查询月份：</div>
-                    <div class="pull-left margin-left-10"><input type="text" name="sdate" id="sdate" class="size-120" placeholder="开始月份"></div>
-                    <div class="pull-left margin-left-10 form-control-static"> ~ </div>
-                    <div class="pull-left margin-left-10"><input type="text" name="edate" id="edate" class="size-120" placeholder="结束月份"></div>
+        <div id="tabstrip">
+            <ul>
+                <li class="k-state-active">KPI目标</li>
+                <li>业绩目标</li>
+            </ul>
+            <div>
+                <div class="row margin-bottom-10 margin-top-10">
+                    <div class="col-xs-1"><a class="btn btn-sm btn-success" id="add"><i class="fa fa-plus"></i> 新增目标</a></div>
                 </div>
-                <div class="pull-left margin-left-20"><select id="search_area"></select></div>
-                <div class="pull-left margin-left-20"><select id="search_group"></select></div>
-                <div class="pull-left margin-left-20"><select id="search_user"></select></div>
-                <div class="pull-left margin-left-10">
-                    <button class="btn btn-sm btn-primary" id="search"><i class="fa fa-search"></i> 查询</button>
+                <div class="row margin-bottom-10">
+                    <div class="col-xs-12">
+                        <div class="pull-left">
+                            <div class="pull-left margin-left-10 form-control-static">查询月份：</div>
+                            <div class="pull-left margin-left-10"><input type="text" name="sdate" id="sdate" class="size-120" placeholder="开始月份"></div>
+                            <div class="pull-left margin-left-10 form-control-static"> ~ </div>
+                            <div class="pull-left margin-left-10"><input type="text" name="edate" id="edate" class="size-120" placeholder="结束月份"></div>
+                        </div>
+                        <div class="pull-left margin-left-20"><select id="search_area"></select></div>
+                        <div class="pull-left margin-left-20"><select id="search_group"></select></div>
+                        <div class="pull-left margin-left-20"><select id="search_user"></select></div>
+                        <div class="pull-left margin-left-10">
+                            <button class="btn btn-sm btn-primary" id="search"><i class="fa fa-search"></i> 查询</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row margin-bottom-10">
+                    <div class="col-xs-12">
+                        <div class="bordered border-color-gray"><div id="grid"></div></div>
+                    </div>
+                </div>
+                <div class="row margin-bottom-10">
+                    <div class="col-xs-12">
+                        提示：月份颜色显示为蓝色时可点击编辑（自己的目标并且目标月份尚未开始才可以编辑哦）
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row margin-bottom-10">
-            <div class="col-xs-12">
-                <div class="bordered border-color-gray"><div id="grid"></div></div>
-            </div>
-        </div>
-        <div class="row margin-bottom-10">
-            <div class="col-xs-12">
-                提示：月份颜色显示为蓝色时可点击编辑（自己的目标并且目标月份尚未开始才可以编辑哦）
+            <div>
+                <div class="row margin-bottom-10 margin-top-10">
+                    <div class="col-xs-1"><a class="btn btn-sm btn-success" id="addResultTarget"><i class="fa fa-plus"></i> 新增目标</a></div>
+                </div>
+                <div class="row margin-bottom-10">
+                    <div class="col-xs-12">
+                        <div class="bordered border-color-gray"><div id="gridResultTarget"></div></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 <script>
 $(function () {
+    $("#tabstrip").kendoTabStrip({
+        animation:  {
+            open: {
+                effects: "fadeIn"
+            }
+        }
+    });
+
+
     var dsArea = new kendo.data.DataSource({
         dataSource: []
     });
@@ -430,5 +457,20 @@ $(function () {
             }
         }).show();
     }
+
+
+    /*******************************业绩目标***************************************/
+
+    $('#gridResultTarget').kendoGrid({
+        dataSource: {
+            data: []
+        },
+        scrollable: false,
+        pageable: true,
+        columns: [
+            {field: 'start_date', 'title': '目标时间'},
+            {field: 'result_target', 'title': '目标额度'},
+        ]
+    });
 });
 </script>
