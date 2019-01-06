@@ -192,7 +192,7 @@ $(function () {
                 {target: month_target, count: month_count}
             ];
             $('#personal_result').find('div.result-target').each(function (i, ele) {
-                var d = data[i], p = d.target > 0 ? Math.round(d.count / d.target * 100) : 100;
+                var d = data[i], p = d.target > 0 ? Math.round(d.count / d.target * 100) : d.count > 0 ? 100 : 0;
                 if (p > 100) p = 100;
                 $(ele).find('small').text('{2}% ({0}元 / {1}元)'.format(d.count, d.target, p));
                 $(ele).find('div.result-count').css('width', p + '%');
