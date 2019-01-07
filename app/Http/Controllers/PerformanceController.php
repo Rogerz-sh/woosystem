@@ -833,8 +833,8 @@ class PerformanceController extends BaseController {
     }
 
     public function getResultTargetSearch() {
-        $syear = request()->input('syear');
-        $eyear = request()->input('eyear');
+        $year = request()->input('year');
+        $range = request()->input('range');
         $area = request()->input('area');
         $group = request()->input('group');
         $user = request()->input('user');
@@ -874,11 +874,17 @@ class PerformanceController extends BaseController {
         }
         $uids = join(',', $uids);
 
-        $list = ResultTarget::select(DB::raw('result_target.id, result_target.year, result_target.area, result_target.target, result_target.start, result_target.end, users.nickname, users.group_name, users.area_name,
+        $list = ResultTarget::select(DB::raw('result_target.id, result_target.user_id, result_target.year, result_target.area, result_target.target, result_target.start, result_target.end, users.nickname, users.group_name, users.area_name,
         (select sum(result_users.user_result) from result_users where result_users.user_id = result_target.user_id and deleted_at is null and date >= result_target.start and date <= result_target.end) as result_count'))
             ->join('users', 'users.id', '=', 'result_target.user_id')
-            ->where('year', '>=', $syear)->where('year', '<=', $eyear)
-            ->whereRaw('result_target.user_id in (' . $uids . ')')->get();
+            ->where('year', $year);
+        if ($range == '上半年') {
+            $list = $list->where('area', '1');
+        }
+        if ($range == '下半年') {
+            $list = $list->where('area', '2');
+        }
+        $list = $list->whereRaw('result_target.user_id in (' . $uids . ')')->get();
 
         return response($list);
     }
@@ -899,7 +905,7 @@ class PerformanceController extends BaseController {
             $resultTarget->area = $area;
             if ($area == 1) {
                 $resultTarget->start = $year.'-01-01 00:00:00';
-                $resultTarget->end = $year.'-06-31 23:59:59';
+                $resultTarget->end = $year.'-06-30 23:59:59';
             } else {
                 $resultTarget->start = $year.'-07-01 00:00:00';
                 $resultTarget->end = $year.'-12-31 23:59:59';
@@ -909,5 +915,40 @@ class PerformanceController extends BaseController {
             $resultTarget->save();
             return response(1);
         }
+    }
+
+    public function postEditResultTarget() {
+        $id = request()->input('id');
+        $year = request()->input('year');
+        $area = request()->input('area');
+        $user_id = request()->input('user_id');
+        $target = request()->input('target');
+
+        $exist = ResultTarget::where('year', $year)->where('area', $area)->where('user_id', $user_id)->where('id', '!=', $id)->first();
+
+        if ($exist) {
+            return response(-1);
+        } else {
+            $resultTarget = ResultTarget::find($id);
+            $resultTarget->year = $year;
+            $resultTarget->area = $area;
+            if ($area == 1) {
+                $resultTarget->start = $year.'-01-01 00:00:00';
+                $resultTarget->end = $year.'-06-30 23:59:59';
+            } else {
+                $resultTarget->start = $year.'-07-01 00:00:00';
+                $resultTarget->end = $year.'-12-31 23:59:59';
+            }
+            $resultTarget->target = $target;
+            $resultTarget->save();
+            return response(1);
+        }
+    }
+
+    public function postDeleteResultTarget() {
+        $id = request()->input('id');
+        $resultTarget = ResultTarget::find($id);
+        $resultTarget->delete();
+        return response(1);
     }
 }

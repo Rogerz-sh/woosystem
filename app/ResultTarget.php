@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ResultTarget extends Model
 {
-    use SoftDeletes;
+//    use SoftDeletes;
 
     protected $table = 'result_target';
 }
