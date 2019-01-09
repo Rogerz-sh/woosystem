@@ -198,5 +198,47 @@ $(function () {
                 $(ele).find('div.result-count').css('width', p + '%');
             });
         }
-    })
+    });
+
+    $.$ajax({
+        url: '/dashboard/team-result-target',
+        type: 'GET',
+        dataType: 'json',
+        data: {year: (new Date()).getFullYear()},
+        success: function (res) {
+            console.log(res);
+            var now = new Date(), year_target = 0, half_target = 0, month_target = 0, area = now.getMonth() > 5 ? 2 : 1;
+            res.rt.forEach(function (v) {
+                year_target += +v.target;
+                if (area == +v.area) {
+                    half_target = +v.target;
+                    month_target = Math.round(+v.target / 6);
+                }
+            });
+            var year_count = 0, half_count = 0, month_count = 0, month = now.format('yyyy-mm'), month_start, month_end;
+            if (area == 1) {
+                month_start = now.getFullYear() + '-' + '01';
+                month_end = now.getFullYear() + '-' + '06';
+            } else {
+                month_start = now.getFullYear() + '-' + '07';
+                month_end = now.getFullYear() + '-' + '12';
+            }
+            res.rc.forEach(function (v) {
+                year_count += +v.count;
+                if (month == v.month) month_count = +v.count;
+                if (month >= month_start && month <= month_end) half_count += +v.count;
+            });
+            var data = [
+                {target: year_target, count: year_count},
+                {target: half_target, count: half_count},
+                {target: month_target, count: month_count}
+            ];
+            $('#team_result').find('div.result-target').each(function (i, ele) {
+                var d = data[i], p = d.target > 0 ? Math.round(d.count / d.target * 100) : d.count > 0 ? 100 : 0;
+                if (p > 100) p = 100;
+                $(ele).find('small').text('{2}% ({0}元 / {1}元)'.format(d.count, d.target, p));
+                $(ele).find('div.result-count').css('width', p + '%');
+            });
+        }
+    });
 });

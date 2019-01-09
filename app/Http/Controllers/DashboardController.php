@@ -10,10 +10,12 @@ namespace App\Http\Controllers;
 use App\HuntFace;
 use App\HuntReport;
 use App\Job;
+use App\User;
 use App\HuntSuccess;
 use App\Invoice;
 use App\ResultTarget;
 use App\ResultUser;
+use App\Belongs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -42,6 +44,47 @@ class DashboardController extends BaseController {
             ->where('user_id', $user)->whereRaw('date_format(date, "%Y") = '.$year.'')
             ->groupBy(DB::raw('date_format(date, "%Y-%m")'))->get();
         return response(["rt"=>$rt, "rc"=>$rc]);
+    }
+
+    public function getTeamResultTarget() {
+        $year = request()->input('year');
+        $user_id = Session::get('id');
+        $power = Session::get('power');
+        $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+        if ($power < 10) {
+            $belong = Belongs::where('user_id', $user_id)->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')');
+                } else {
+                    $users = $users->where('id', $user_id);
+                }
+            } else {
+                $users = $users->where('id', $user_id);
+            }
+        }
+        $users = $users->get();
+        $uids = array();
+        foreach($users as $u) {
+            if (!($u->id == $user_id && ($power == 3 || $power == 7))) array_push($uids, $u->id);
+        }
+        if (sizeof($uids) > 0) {
+            $uids = join(',', $uids);
+            $rt = ResultTarget::select(DB::raw('sum(target) as target, max(area) as area, max(year) as year'))->where('year', $year)->whereRaw('user_id in (' . $uids . ')')->groupBy('area')->get();
+            $rc = ResultUser::select(DB::raw('max(user_id) as user_id, date_format(max(date), "%Y-%m") as month, sum(user_result) as count'))
+                ->whereRaw('date_format(date, "%Y") = ' . $year . '')->whereRaw('user_id in (' . $uids . ')')
+                ->groupBy(DB::raw('date_format(date, "%Y-%m")'))->get();
+        } else {
+            $rt = [];
+            $rc = [];
+        }
+        return response(["rt"=>$rt, "rc"=>$rc, "ids"=>$uids]);
     }
 
     public function getRecentFaceList() {
