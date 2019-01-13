@@ -122,6 +122,25 @@ $(function () {
         }
     });
 
+    $('#industry').kendoDropDownList({
+        dataSource: {
+            data: [
+                "互联网•游戏•软件",
+                "电子•通信•硬件",
+                "房地产•建筑•物业",
+                "金融",
+                "广告•传媒•教育•文化",
+                "制药•医疗,消费品",
+                "汽车•机械•制造",
+                "服务•外包•中介",
+                "交通•贸易•物流",
+                "能源•化工•环保",
+                "政府•农林牧渔•其他"
+            ]
+        },
+        optionLabel: '全部行业'
+    });
+
     function getQuickSearchDates(range) {
         var date = {sdate: '', edate: ''}, d = new Date();
         switch (range) {
@@ -192,6 +211,7 @@ $(function () {
         },
         columns: [
             {field: 'company_name', title: '打款客户'},
+            {field: 'industry', title: '客户所属行业'},
             {field: 'job_name', title: '上岗职位'},
             {field: 'name', title: '款项名称'},
             {field: 'amount', title: '打款金额'},
@@ -219,7 +239,11 @@ $(function () {
 
     $('#search').click(function () {
         var range = $('button[data-range].active').data('range'), data = {};
-        var area = $('#search_area').val(), group = $('#search_group').val(), user = $('#search_user').val(), company_name = $('#company_name').val();
+        var area = $('#search_area').val(),
+            group = $('#search_group').val(),
+            user = $('#search_user').val(),
+            company_name = $('#company_name').val(),
+            industry = $('#industry').val();
         if (range == '自定义') {
             data.sdate = $('#sdate').val();
             data.edate = $('#edate').val();
@@ -232,6 +256,7 @@ $(function () {
         data.group = group;
         data.user = user;
         data.company_name = company_name;
+        data.industry = industry;
         console.log(data);
         $.$ajax({
             url: '/result/json-result-search',

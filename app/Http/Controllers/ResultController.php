@@ -226,16 +226,21 @@ class ResultController extends BaseController {
         $group = request()->input('group');
         $user = request()->input('user');
         $company_name = request()->input('company_name');
+        $industry = request()->input('industry');
         $power = Session::get('power');
         $results = ResultUser::join('results', 'result_users.result_id', '=', 'results.id')
             ->join('users', 'result_users.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
-            ->select(DB::raw('results.job_id, results.job_name, results.company_id, results.company_name, results.amount, results.name, results.date,
+            ->join('company', 'results.company_id', '=', 'company.id')
+            ->select(DB::raw('results.job_id, results.job_name, results.company_id, results.company_name, company.industry, results.amount, results.name, results.date,
                             (select name from users where users.id = results.operator) as operator,
                             (select a_name from areas where areas.id = results.area) as area_name,
                             sum(percent) as total_percent, sum(user_result) as total_result'))
             ->where('result_users.status', 1)->where('results.date', '>=', $sdate)->where('results.date', '<=', $edate);
+        if ($industry) {
+            $results = $results->where('company.industry', $industry);
+        }
         if ($company_name) {
             $results = $results->whereRaw('results.company_name like "%'.$company_name.'%"');
         }
