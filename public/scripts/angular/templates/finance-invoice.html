@@ -307,6 +307,8 @@ $(function() {
     function getInvoiceStatus(item) {
         if (item.invoice_status == '已开') {
             return '{0} <small class="dark-gray">[{1}]</small>'.format(item.invoice_status, new Date(item.invoice_date).format());
+        } else if (item.invoice_status == '作废') {
+            return '<span class="red">{0}</span>'.format(item.invoice_status)
         } else {
             return item.invoice_status;
         }
@@ -646,7 +648,7 @@ $(function() {
                 }).data('kendoDropDownList');
 
                 var invoice_status = $('#invoice_status', dom).kendoDropDownList({
-                    dataSource: ["未开", "已开"],
+                    dataSource: ["未开", "已开", "作废"],
                     optionLabel: '请选择开票状态'
                 }).data('kendoDropDownList');
 
