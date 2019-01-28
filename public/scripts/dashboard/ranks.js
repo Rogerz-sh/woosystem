@@ -241,4 +241,101 @@ $(function () {
             });
         }
     });
+
+    /*************2019-01-26增加的功能*************/
+    var kpi_json_data = {}, kpi_target = 'person';
+    $('body').delegate('.selector', 'click', function () {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+    });
+    $('body').delegate('.tab-switcher-selector', 'click', function () {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        showTargetTab();
+    });
+
+    $('#kpi-selector').delegate('.selector', 'click', function () {
+        var target = $(this).data('target'), d = new Date(), day = d.getDay(), month = d.format('yyyy-mm'), sdate, edate;
+        if (target == 'today') {
+            sdate = edate = d.format();
+        } else if (target == 'week') {
+            sdate = Date.translate('now-'+(day - 1)).format();
+            edate = Date.translate('now+'+(7 - day)).format();
+        } else if (target == 'month') {
+            sdate = new Date(d.getFullYear(), d.getMonth(), 1).format();
+            edate = new Date(d.getFullYear(), d.getMonth()+1, 0).format();
+        }
+        getKpiJsonData(month, sdate, edate);
+    });
+
+    function showTargetTab() {
+        var type = $('.tab-switcher-left').find('.tab-switcher-selector.active').data('target');
+        var query = $('.tab-switcher-top').find('.tab-switcher-selector.active').data('target');
+        $('#'+type).show().siblings().hide();
+        if (kpi_target != query) {
+            kpi_target = query;
+            bindKpiJsonData();
+        }
+    }
+
+    function getKpiJsonData(month, sdate, edate) {
+        $.$ajax({
+            url: '/dashboard/kpi-json-data',
+            type: 'GET',
+            data: {month: month, sdate: sdate, edate: edate},
+            dataType: 'json',
+            success: function (res) {
+                console.log(res);
+                kpi_json_data = res;
+                bindKpiJsonData();
+            }
+        });
+    }
+
+    function bindKpiJsonData() {
+        var query = $('.tab-switcher-top').find('.tab-switcher-selector.active').data('target');
+        var day_target = $('#kpi-selector .selector.active').data('target');
+        var div_base = day_target == 'today' ? 20 : day_target == 'week' ? 4 : 1
+        var target = {bd: 0, job: 0, bds: 0, hunt: 0, person: 0, report: 0, face: 0, offer: 0, success: 0},
+            result = {bd: 0, job: 0, bds: 0, hunt: 0, person: 0, report: 0, face: 0, offer: 0, success: 0}
+        if (query == 'person') {
+            if (kpi_json_data && kpi_json_data.person_target) {
+                kpi_json_data.person_target.hunt_target = 0;
+                kpi_json_data.person_target.job_target = 0;
+                kpi_json_data.person_target.bds_target = 0;
+                for (var n in target) {
+                    target[n] += +kpi_json_data.person_target[n+'_target'] / div_base;
+                }
+            }
+            if (kpi_json_data && kpi_json_data.person_result) {
+                for (var n in result) {
+                    result[n] += +kpi_json_data.person_result[n+'_count'];
+                }
+            }
+        } else {
+            if (kpi_json_data && kpi_json_data.team_target) {
+                kpi_json_data.team_target.hunt_target = 0;
+                kpi_json_data.team_target.job_target = 0;
+                kpi_json_data.team_target.bds_target = 0;
+                for (var n in target) {
+                    target[n] += +kpi_json_data.team_target[n+'_target'] / div_base;
+                }
+            }
+            if (kpi_json_data && kpi_json_data.team_result) {
+                for (var n in result) {
+                    result[n] += +kpi_json_data.team_result[n+'_count'];
+                }
+            }
+        }
+        renderKpiView(target, result);
+    }
+
+    function renderKpiView(target, result) {
+        for (var n in target) {
+            $('#kpi_view').find('#kpi_'+n).text('{0} / {1}'.format(result[n], target[n] % 1 == 0 ? target[n] : kendo.toString(target[n], 'n1')));
+        }
+    }
+
+    $('#kpi-selector .selector.active').trigger('click');
+
 });

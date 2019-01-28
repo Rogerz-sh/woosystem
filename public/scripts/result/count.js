@@ -142,7 +142,7 @@ $(function () {
     });
 
     function getQuickSearchDates(range) {
-        var date = {sdate: '', edate: ''}, d = new Date();
+        var date = {sdate: '', edate: ''}, d = new Date(), day = d.getDay();
         switch (range) {
             case '本周':
                 date.sdate = Date.translate('now-'+(day - 1)).format();

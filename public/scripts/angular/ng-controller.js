@@ -179,10 +179,10 @@
                 },
                 columns: [
                     //{field: 'num', title: '编号'},
-                    {field: 'person_name', title: '面试人'},
-                    {field: 'job_name', title: '面试岗位'},
-                    {field: 'type', title: '面试名称'},
-                    {field: 'date', title: '面试日期'},
+                    {field: 'person_name', title: '姓名'},
+                    {field: 'job_name', title: '岗位'},
+                    {field: 'company_name', title: '公司'},
+                    {field: 'date', title: '日期'},
                     {field: 'tel', title: '手机号'},
                     {field: 'desc', title: '备注'},
                     //{title: '操作', template: '<a ng-click="editFace(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteFace(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
@@ -201,7 +201,6 @@
                     pageSize: 5
                 },
                 columns: [
-                    //{field: 'num', title: '编号'},
                     {field: 'person_name', title: '姓名'},
                     {field: 'job_name', title: '岗位'},
                     {field: 'company_name', title: '公司'},
@@ -222,7 +221,6 @@
                     pageSize: 5
                 },
                 columns: [
-                    //{field: 'num', title: '编号'},
                     {field: 'person_name', title: '姓名'},
                     {field: 'job_name', title: '岗位'},
                     {field: 'company_name', title: '公司'},

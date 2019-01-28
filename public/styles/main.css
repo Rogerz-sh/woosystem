@@ -137,3 +137,12 @@ html, body {min-width: 1280px; font-size: 12px;}
     box-sizing: border-box;
     border-radius: 5px;
 }
+
+.tab-body {position: relative; border: 1px solid #ddd; border-radius: 5px; padding: 10px;}
+.tab-switcher-top {position: absolute; left: 20px; top: -25px; height: 25px; padding-right: 1px; background: #ffe097; border-radius: 5px 5px 0 0;}
+.tab-switcher-left {position: absolute; left: -25px; top: 50%; transform: translateY(-50%); width: 25px; background: #ffe097; border-radius: 5px 0 0 5px; padding-bottom: 1px;}
+.tab-switcher-selector {color: #fff; cursor: pointer;}
+.tab-switcher-selector.active {background: #fff; color: #00a7f7; margin: 1px 0 0 1px;}
+.tab-switcher-top .tab-switcher-selector {display: inline-block; line-height: 25px; padding: 0 15px; border-radius: 5px 5px 0 0;}
+.tab-switcher-left .tab-switcher-selector {display: block; padding: 15px 0; border-radius: 5px 0 0 5px; text-align: center;}
+

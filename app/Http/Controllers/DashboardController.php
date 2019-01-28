@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 use App\HuntFace;
 use App\HuntReport;
 use App\Job;
+use App\MonthTarget;
 use App\User;
 use App\HuntSuccess;
 use App\Invoice;
@@ -129,4 +130,70 @@ class DashboardController extends BaseController {
         $invoice = Invoice::where('request_user', $user_id)->where('status', '未付')->whereRaw('datediff(now(), estimate_date) >= -7 and datediff(now(), estimate_date) <= 30')->get();
         return response([$hunt_success, $invoice]);
     }
+
+    public function getKpiJsonData() {
+        $user = 19; //Session::get('id');
+        $power = 9; //Session::get('power');
+        $month = request()->input('month');
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+
+        $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+        if ($power < 10) {
+            $belong = Belongs::where('user_id', $user)->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')');
+                } else {
+                    $users = $users->where('id', $user);
+                }
+            } else {
+                $users = $users->where('id', $user);
+            }
+        }
+        $users = $users->get();
+        $uids = array();
+        foreach($users as $u) {
+            array_push($uids, $u->id);
+        }
+        if (sizeof($uids) > 0) {
+            $uids = join(',', $uids);
+            $team_target = MonthTarget::select(DB::raw('sum(bd_target) as bd_target, sum(person_target) as person_target, sum(report_target) as report_target, sum(face_target) as face_target, sum(offer_target) as offer_target, sum(success_target) as success_target, max(month) as month'))
+                ->where('month', $month)->whereRaw('user_id in (' . $uids . ')')->groupBy('month')->first();
+            $team_result = User::select(DB::raw('(select count(bd.id) from bd where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bd_count,
+                (select count(jobs.id) from jobs where created_by in ('.$uids.') and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as job_count,
+                (select count(bd.id) from bd where user_id in ('.$uids.') and status = "签约合作" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bds_count,
+                (select count(hunt.id) from hunt where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
+                (select count(person.id) from person where created_by in ('.$uids.') and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as person_count,
+                (select count(hunt_report.id) from hunt_report where created_by in ('.$uids.') and type = "report" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as report_count,
+                (select count(hunt_face.id) from hunt_face where created_by in ('.$uids.') and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as face_count,
+                (select count(hunt_report.id) from hunt_report where created_by in ('.$uids.') and type = "offer" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as offer_count,
+                (select count(hunt_success.id) from hunt_success where created_by in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as success_count'))
+                ->whereRaw('users.id in ('.$uids.')')->first();
+        } else {
+            $team_target = '';
+            $team_result = '';
+        }
+
+        $person_target = MonthTarget::where('user_id', $user)->where('month', $month)->first();
+        $person_result = User::select(DB::raw('(select count(bd.id) from bd where user_id = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bd_count,
+            (select count(jobs.id) from jobs where created_by = users.id and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as job_count,
+            (select count(bd.id) from bd where user_id = users.id and status = "签约合作" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bds_count,
+            (select count(hunt.id) from hunt where user_id = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
+            (select count(person.id) from person where created_by = users.id and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as person_count,
+            (select count(hunt_report.id) from hunt_report where created_by = users.id and type = "report" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as report_count,
+            (select count(hunt_face.id) from hunt_face where created_by = users.id and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as face_count,
+            (select count(hunt_report.id) from hunt_report where created_by = users.id and type = "offer" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as offer_count,
+            (select count(hunt_success.id) from hunt_success where created_by = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as success_count'))
+            ->where('users.id', $user)->first();
+
+        return response(["person_target"=>$person_target, "team_target"=>$team_target, "person_result"=>$person_result, "team_result"=>$team_result]);
+    }
+
 }
