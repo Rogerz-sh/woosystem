@@ -251,7 +251,6 @@ $(function () {
     $('body').delegate('.tab-switcher-selector', 'click', function () {
         $(this).siblings().removeClass('active');
         $(this).addClass('active');
-        showTargetTab();
     });
 
     $('#kpi-selector').delegate('.selector', 'click', function () {
@@ -268,9 +267,13 @@ $(function () {
         getKpiJsonData(month, sdate, edate);
     });
 
-    function showTargetTab() {
-        var type = $('.tab-switcher-left').find('.tab-switcher-selector.active').data('target');
-        var query = $('.tab-switcher-top').find('.tab-switcher-selector.active').data('target');
+    $('#kpi-ctn').delegate('.tab-switcher-selector', 'click', function () {
+        setTimeout(showKpiTargetTab, 0);
+    });
+
+    function showKpiTargetTab() {
+        var type = $('#kpi-ctn .tab-switcher-left').find('.tab-switcher-selector.active').data('target');
+        var query = $('#kpi-ctn .tab-switcher-top').find('.tab-switcher-selector.active').data('target');
         $('#'+type).show().siblings().hide();
         if (kpi_target != query) {
             kpi_target = query;
@@ -293,7 +296,7 @@ $(function () {
     }
 
     function bindKpiJsonData() {
-        var query = $('.tab-switcher-top').find('.tab-switcher-selector.active').data('target');
+        var query = $('#kpi-ctn .tab-switcher-top').find('.tab-switcher-selector.active').data('target');
         var day_target = $('#kpi-selector .selector.active').data('target');
         var div_base = day_target == 'today' ? 20 : day_target == 'week' ? 4 : 1
         var target = {bd: 0, job: 0, bds: 0, hunt: 0, person: 0, report: 0, face: 0, offer: 0, success: 0},
@@ -337,5 +340,55 @@ $(function () {
     }
 
     $('#kpi-selector .selector.active').trigger('click');
+
+    $('#hunt-selector').delegate('.selector', 'click', function () {
+        var target = $(this).data('target'), d = new Date(), day = d.getDay(), sdate, edate;
+        if (target == 'today') {
+            sdate = edate = d.format();
+        } else if (target == 'week') {
+            sdate = Date.translate('now-'+(day - 1)).format();
+            edate = Date.translate('now+'+(7 - day)).format();
+        } else if (target == 'month') {
+            sdate = new Date(d.getFullYear(), d.getMonth(), 1).format();
+            edate = new Date(d.getFullYear(), d.getMonth()+1, 0).format();
+        }
+        getRecentHuntData(sdate, edate);
+    });
+
+    $('#hunt-ctn').delegate('.tab-switcher-selector', 'click', function () {
+        setTimeout(RenderRecentHuntData, 0);
+    });
+
+    var recent_hunt_data = {};
+    function getRecentHuntData(sdate, edate) {
+        $.$ajax({
+            url: '/dashboard/recent-hunt-data',
+            type: 'GET',
+            data: {sdate: sdate, edate: edate},
+            dataType: 'json',
+            success: function (res) {
+                console.log(res);
+                recent_hunt_data = res;
+                RenderRecentHuntData();
+            }
+        });
+    }
+
+    function RenderRecentHuntData() {
+        var query = $('#hunt-ctn .tab-switcher-top').find('.tab-switcher-selector.active').data('target');
+        var data = recent_hunt_data[query] || [], li = [];
+        data.forEach(function (v) {
+            li.push('<li class="list-group-item">\
+                        <div class="margin-bottom-5"><b>{0}</b> ({1}) <span class="pull-right">{2} - {3}</span></div>\
+                        <div><b>寻访记录：</b><span class="dark-gray">{4} <small class="pull-right">[{5}]</small></span></div>\
+                    </li>'.format(v.name, v.tel, v.job, v.company, v.description, new Date(v.created_at).format()));
+        });
+        if (li.length == 0) {
+            li.push('<li class="list-group-item text-center text-warning"><span style="line-height:35px;">暂时没有任何记录</span></li>');
+        }
+        $('#hunt_view').html(li.join(''));
+    }
+
+    $('#hunt-selector .selector.active').trigger('click');
 
 });

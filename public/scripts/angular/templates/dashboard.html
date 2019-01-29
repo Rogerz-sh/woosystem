@@ -158,7 +158,7 @@
             </div>
         </div>
         <div class="row margin-top-20">
-            <div class="col-xs-6">
+            <div class="col-xs-6" id="kpi-ctn">
                 <div class="panel bordered border-color-dark-yellow">
                     <div class="panel-heading bg-dark-yellow white">
                         <b>已完成任务</b>
@@ -198,11 +198,11 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xs-6">
+            <div class="col-xs-6" id="hunt-ctn">
                 <div class="panel bordered border-color-dark-yellow">
                     <div class="panel-heading bg-dark-yellow white">
                         <b>最新录入候选人记录</b>
-                        <div class="pull-right">
+                        <div class="pull-right" id="hunt-selector">
                             <span class="margin-right-5 selector active" data-target="today">今天</span>
                             <span class="margin-right-5 selector" data-target="week">本周</span>
                             <span class="margin-right-5 selector" data-target="month">本月</span>
@@ -210,9 +210,19 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <ul class="list-group" style="height: 250px;">
-                            <li class="list-group-item"></li>
-                        </ul>
+                        <div class="tab-body margin-top-25 padding-5">
+                            <div class="tab-switcher-top">
+                                <span class="tab-switcher-selector active" data-target="person">个人</span>
+                                <span class="tab-switcher-selector" data-target="team">团队</span>
+                            </div>
+                            <div style="height:230px;overflow-y:auto;">
+                                <ul class="list-group" id="hunt_view" style="margin-bottom:0;">
+                                    <li class="list-group-item text-center text-warning">
+                                        <span style="line-height:35px;">暂时没有任何记录</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

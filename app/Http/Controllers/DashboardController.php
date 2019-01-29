@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 
+use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
 use App\Job;
@@ -132,8 +133,8 @@ class DashboardController extends BaseController {
     }
 
     public function getKpiJsonData() {
-        $user = 19; //Session::get('id');
-        $power = 9; //Session::get('power');
+        $user = Session::get('id');
+        $power = Session::get('power');
         $month = request()->input('month');
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
@@ -194,6 +195,58 @@ class DashboardController extends BaseController {
             ->where('users.id', $user)->first();
 
         return response(["person_target"=>$person_target, "team_target"=>$team_target, "person_result"=>$person_result, "team_result"=>$team_result]);
+    }
+
+    public function getRecentHuntData() {
+        $user = Session::get('id');
+        $power = Session::get('power');
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+
+        $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+        if ($power < 10) {
+            $belong = Belongs::where('user_id', $user)->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')');
+                } else {
+                    $users = $users->where('id', $user);
+                }
+            } else {
+                $users = $users->where('id', $user);
+            }
+        }
+        $users = $users->get();
+        $uids = array();
+        foreach($users as $u) {
+            array_push($uids, $u->id);
+        }
+        $person_hunts = Hunt::join('person', 'person.id', '=', 'hunt.person_id')
+            ->select('hunt.id', 'person.name', 'person.sex', 'person.tel', 'person.job', 'person.company', 'hunt.description', 'hunt.created_at')
+            ->where('hunt.created_by', $user)
+            ->where('hunt.created_at', '>=', $sdate)
+            ->where('hunt.created_at', '<=', $edate)
+            ->orderBy('hunt.created_at', 'desc')
+            ->get();
+        if (sizeof($uids) > 0) {
+            $uids = join(',', $uids);
+            $team_hunts = Hunt::join('person', 'person.id', '=', 'hunt.person_id')
+                ->select('hunt.id', 'person.name', 'person.sex', 'person.tel', 'person.job', 'person.company', 'hunt.description', 'hunt.created_at')
+                ->whereRaw('hunt.created_by in (' . $uids . ')')
+                ->where('hunt.created_at', '>=', $sdate)
+                ->where('hunt.created_at', '<=', $edate)
+                ->orderBy('hunt.created_at', 'desc')
+                ->get();
+        } else {
+            $team_hunts = [];
+        }
+        return response(["person"=>$person_hunts, "team"=>$team_hunts]);
     }
 
 }
