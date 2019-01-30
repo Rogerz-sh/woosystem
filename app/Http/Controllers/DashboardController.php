@@ -133,8 +133,8 @@ class DashboardController extends BaseController {
     }
 
     public function getKpiJsonData() {
-        $user = 65;//Session::get('id');
-        $power = 4;//Session::get('power');
+        $user = Session::get('id');
+        $power = Session::get('power');
         $month = request()->input('month');
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
