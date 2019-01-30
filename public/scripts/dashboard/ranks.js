@@ -272,9 +272,9 @@ $(function () {
     });
 
     function showKpiTargetTab() {
-        var type = $('#kpi-ctn .tab-switcher-left').find('.tab-switcher-selector.active').data('target');
+        //var type = $('#kpi-ctn .tab-switcher-left').find('.tab-switcher-selector.active').data('target');
         var query = $('#kpi-ctn .tab-switcher-top').find('.tab-switcher-selector.active').data('target');
-        $('#'+type).show().siblings().hide();
+        //$('#'+type).show().siblings().hide();
         if (kpi_target != query) {
             kpi_target = query;
             bindKpiJsonData();

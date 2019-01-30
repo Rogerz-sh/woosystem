@@ -133,8 +133,8 @@ class DashboardController extends BaseController {
     }
 
     public function getKpiJsonData() {
-        $user = Session::get('id');
-        $power = Session::get('power');
+        $user = 65;//Session::get('id');
+        $power = 4;//Session::get('power');
         $month = request()->input('month');
         $sdate = request()->input('sdate').' 00:00:00';
         $edate = request()->input('edate').' 23:59:59';
@@ -170,7 +170,7 @@ class DashboardController extends BaseController {
             $team_result = User::select(DB::raw('(select count(bd.id) from bd where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bd_count,
                 (select count(jobs.id) from jobs where created_by in ('.$uids.') and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as job_count,
                 (select count(bd.id) from bd where user_id in ('.$uids.') and status = "签约合作" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bds_count,
-                (select count(hunt.id) from hunt where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
+                (select count(distinct(hunt.job_id)) from hunt where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
                 (select count(person.id) from person where created_by in ('.$uids.') and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as person_count,
                 (select count(hunt_report.id) from hunt_report where created_by in ('.$uids.') and type = "report" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as report_count,
                 (select count(hunt_face.id) from hunt_face where created_by in ('.$uids.') and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as face_count,
@@ -186,7 +186,7 @@ class DashboardController extends BaseController {
         $person_result = User::select(DB::raw('(select count(bd.id) from bd where user_id = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bd_count,
             (select count(jobs.id) from jobs where created_by = users.id and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as job_count,
             (select count(bd.id) from bd where user_id = users.id and status = "签约合作" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bds_count,
-            (select count(hunt.id) from hunt where user_id = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
+            (select count(distinct(hunt.job_id)) from hunt where user_id = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
             (select count(person.id) from person where created_by = users.id and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as person_count,
             (select count(hunt_report.id) from hunt_report where created_by = users.id and type = "report" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as report_count,
             (select count(hunt_face.id) from hunt_face where created_by = users.id and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as face_count,

@@ -11,6 +11,7 @@
     .result-text {position: absolute; right: 5px; bottom: 2px;}
     .selector {border-radius: 2px; display: inline-block; padding: 2px 5px 2px 3px; cursor: pointer;}
     .selector.active {background: #845e19;}
+    #hunt_view .list-group-item {padding: 5px 10px;}
 </style>
 <div class="wrapper">
     <div class="container-fluid">
@@ -170,15 +171,15 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <div class="tab-body margin-top-25 margin-left-25" style="height: 250px;">
+                        <div class="tab-body margin-top-25">
                             <div class="tab-switcher-top">
                                 <span class="tab-switcher-selector active" data-target="person">个人</span>
                                 <span class="tab-switcher-selector" data-target="team">团队</span>
                             </div>
-                            <div class="tab-switcher-left">
-                                <span class="tab-switcher-selector active" data-target="kpi-list">职<br>位<br>操<br>作</span>
-                                <span class="tab-switcher-selector" data-target="bd-list">B<br>D<br>活<br>动</span>
-                            </div>
+                            <!--<div class="tab-switcher-left">-->
+                                <!--<span class="tab-switcher-selector active" data-target="kpi-list">职<br>位<br>操<br>作</span>-->
+                                <!--<span class="tab-switcher-selector" data-target="bd-list">B<br>D<br>活<br>动</span>-->
+                            <!--</div>-->
                             <div id="kpi_view">
                                 <ul class="list-group" id="kpi-list">
                                     <li class="list-group-item">操作职位 <span class="pull-right" id="kpi_hunt">0 / 0</span></li>
@@ -188,7 +189,7 @@
                                     <li class="list-group-item">Offer <span class="pull-right" id="kpi_offer">0 / 0</span></li>
                                     <li class="list-group-item">上岗候选人 <span class="pull-right" id="kpi_success">0 / 0</span></li>
                                 </ul>
-                                <ul class="list-group" id="bd-list" style="display: none;">
+                                <ul class="list-group" id="bd-list">
                                     <li class="list-group-item">新增客户 <span class="pull-right" id="kpi_bd">0 / 0</span></li>
                                     <li class="list-group-item">新增职位 <span class="pull-right" id="kpi_job">0 / 0</span></li>
                                     <li class="list-group-item">新签客户 <span class="pull-right" id="kpi_bds">0 / 0</span></li>
@@ -215,7 +216,7 @@
                                 <span class="tab-switcher-selector active" data-target="person">个人</span>
                                 <span class="tab-switcher-selector" data-target="team">团队</span>
                             </div>
-                            <div style="height:230px;overflow-y:auto;">
+                            <div style="height:385px;overflow-y:auto;">
                                 <ul class="list-group" id="hunt_view" style="margin-bottom:0;">
                                     <li class="list-group-item text-center text-warning">
                                         <span style="line-height:35px;">暂时没有任何记录</span>
