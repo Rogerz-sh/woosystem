@@ -263,6 +263,9 @@ $(function () {
         } else if (target == 'month') {
             sdate = new Date(d.getFullYear(), d.getMonth(), 1).format();
             edate = new Date(d.getFullYear(), d.getMonth()+1, 0).format();
+        } else if (target == 'pre_month') {
+            sdate = new Date(d.getFullYear(), d.getMonth()-1, 1).format();
+            edate = new Date(d.getFullYear(), d.getMonth(), 0).format();
         }
         getKpiJsonData(month, sdate, edate);
     });
@@ -351,6 +354,9 @@ $(function () {
         } else if (target == 'month') {
             sdate = new Date(d.getFullYear(), d.getMonth(), 1).format();
             edate = new Date(d.getFullYear(), d.getMonth()+1, 0).format();
+        } else if (target == 'pre_month') {
+            sdate = new Date(d.getFullYear(), d.getMonth()-1, 1).format();
+            edate = new Date(d.getFullYear(), d.getMonth(), 0).format();
         }
         getRecentHuntData(sdate, edate);
     });
