@@ -173,7 +173,7 @@ class DashboardController extends BaseController {
                 (select count(distinct(hunt.job_id)) from hunt where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
                 (select count(person.id) from person where created_by in ('.$uids.') and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as person_count,
                 (select count(hunt_report.id) from hunt_report where created_by in ('.$uids.') and type = "report" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as report_count,
-                (select count(hunt_face.id) from hunt_face where created_by in ('.$uids.') and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as face_count,
+                (select count(hunt_face.id) from hunt_face where created_by in ('.$uids.') and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'" and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
                 (select count(hunt_report.id) from hunt_report where created_by in ('.$uids.') and type = "offer" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as offer_count,
                 (select count(hunt_success.id) from hunt_success where created_by in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as success_count'))
                 ->whereRaw('users.id in ('.$uids.')')->first();
@@ -189,7 +189,7 @@ class DashboardController extends BaseController {
             (select count(distinct(hunt.job_id)) from hunt where user_id = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
             (select count(person.id) from person where created_by = users.id and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as person_count,
             (select count(hunt_report.id) from hunt_report where created_by = users.id and type = "report" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as report_count,
-            (select count(hunt_face.id) from hunt_face where created_by = users.id and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as face_count,
+            (select count(hunt_face.id) from hunt_face where created_by = users.id and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'" and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
             (select count(hunt_report.id) from hunt_report where created_by = users.id and type = "offer" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as offer_count,
             (select count(hunt_success.id) from hunt_success where created_by = users.id and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as success_count'))
             ->where('users.id', $user)->first();

@@ -111,6 +111,7 @@ class PerformanceController extends BaseController {
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
         $face = HuntFace::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
             ->where('date', '>=', $sdate)->where('date', '<=', $edate)->where('type', '一面')
+            ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
             ->whereRaw('created_by in (' . $uids . ')')
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
         $offer = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
@@ -174,7 +175,7 @@ class PerformanceController extends BaseController {
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('count(hunt_face.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
                 ->where('hunt_face.type', '一面')
-                ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
                 ->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
                 ->groupBy('hunt_face.created_by')->orderBy('rank_result', 'desc')->get();
 
@@ -232,7 +233,7 @@ class PerformanceController extends BaseController {
                 ->join('areas', 'users.area_id', '=', 'areas.id')
                 ->select(DB::raw('count(hunt_face.id) as rank_result, max(users.id) as user_id, max(users.nickname) as nickname, max(groups.g_name) as group_name, max(areas.a_name) as area_name'))
                 ->where('hunt_face.type', '一面')
-                ->whereRaw('(hunt_face.date < "2017-08-01 00:00:00" or (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0)')
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
                 ->where('hunt_face.date', '>=', $sdate)->where('hunt_face.date', '<=', $edate)
                 ->groupBy('users.group_id')->orderBy('rank_result', 'desc')->get();
 
@@ -276,6 +277,7 @@ class PerformanceController extends BaseController {
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
         $face = HuntFace::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
             ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
             ->where('created_by', $user_id)
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
         $offer = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
@@ -330,6 +332,7 @@ class PerformanceController extends BaseController {
             $result = HuntFace::where('created_by', $id)
                 ->where('date', '>=', $sdate)
                 ->where('date', '<=', $edate)
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
                 ->orderBy('updated_at', 'desc')->get();
             return response($result);
         }
@@ -569,7 +572,7 @@ class PerformanceController extends BaseController {
                 daily_report.target, users.nickname, users.group,
                 (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
                 (select count(id) from person where person.created_by = daily_report.user_id and date_format(person.created_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as person_count,
-                (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as face_count,
+                (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
                 (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
                 (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
                 (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
@@ -593,7 +596,7 @@ class PerformanceController extends BaseController {
                 daily_report.target, users.nickname, users.group,
                 (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and hunt_report.job_id = daily_report.job_id and hunt_report.deleted_at is null) as complete,
                 (select count(id) from person where person.created_by = daily_report.user_id and date_format(person.created_at, "%Y-%m-%d") = daily_report.date and deleted_at is null) as person_count,
-                (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as face_count,
+                (select count(distinct hunt_id) from hunt_face where hunt_face.created_by = daily_report.user_id and date_format(hunt_face.date, "%Y-%m-%d") = daily_report.date and deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
                 (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "report" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as report_count,
                 (select count(id) from hunt_report where hunt_report.created_by = daily_report.user_id and type = "offer" and date_format(hunt_report.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as offer_count,
                 (select count(id) from hunt_success where hunt_success.created_by = daily_report.user_id and date_format(hunt_success.date, "%Y-%m-%d") = daily_report.date and deleted_at is null) as success_count'))
@@ -776,6 +779,7 @@ class PerformanceController extends BaseController {
         $face = HuntFace::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
             ->where('date', '>=', $sdate)->where('date', '<=', $edate)->where('type', '一面')
             ->whereRaw('created_by in (' . $uids . ')')
+            ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
         $offer = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
             ->where('type', 'offer')->where('date', '>=', $sdate)->where('date', '<=', $edate)
