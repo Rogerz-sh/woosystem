@@ -204,7 +204,7 @@ class TeamController extends BaseController {
             $group->area_id = $area_id;
             $group->area_name = $area_name;
             $group->save();
-            User::where('group_id', $id)->update(['group_name'=>$group->g_name]);
+            User::where('group_id', $id)->update(['group_name'=>$group->g_name, 'area_id'=>$area_id, 'area_name'=>$area_name]);
             return response($group->id);
         } else {
             return response(-1);
