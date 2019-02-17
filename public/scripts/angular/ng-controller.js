@@ -495,70 +495,70 @@
 
         $scope.person_id = $routeParams.person_id;
 
-        if ($location.path() == '/candidate/detail/'+$routeParams.person_id) {
-            $http.get('/candidate/hunt-list', {params: {id: $routeParams.person_id}}).success(function (res) {
-                $scope.hunts = res;
-            });
-
-            $http.get('/candidate/addition-list', {params: {id: $routeParams.person_id}}).success(function (res) {
-                $scope.additions = res;
-            });
-
-            $scope.pushAddition = function () {
-                $.$modal.dialog({
-                    title: '增加补充信息',
-                    destroy: true,
-                    content: '<textarea class="form-control" rows="5" style="resize: none;" placeholder="请填写补充信息"></textarea>',
-                    footer: {
-                        buttons: [
-                            {
-                                name: 'ok',
-                                handler: function () {
-                                    var self = this, dom = self.dom, text = dom.find('textarea').val().trim();
-                                    if (text == '') {
-                                        $.$modal.alert('补充信息不能为空');
-                                        return;
-                                    }
-                                    $.$ajax({
-                                        url: '/candidate/push-addition',
-                                        type: 'POST',
-                                        dataType: 'json',
-                                        data: {person_id: $routeParams.person_id, content: text},
-                                        success: function (res) {
-                                            $scope.additions.unshift(res);
-                                            $scope.$apply();
-                                            self.hide();
-                                        }
-                                    })
-                                }
-                            },
-                            {
-                                name: 'cancel',
-                                handler: function () {
-                                    this.hide();
-                                }
-                            }
-                        ]
-                    }
-                }).show();
-            }
-
-            $scope.removeAddition = function (id, index) {
-                $.$modal.confirm(['删除补充信息', '确定要删除吗？'], function (isOk) {
-                    if (!isOk) return;
-                    $.$ajax({
-                        url: '/candidate/remove-addition',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {id: id},
-                        success: function (res) {
-                            $scope.additions.splice(index, 1);
-                            $scope.$apply();
-                        }
-                    });
-                })
-            }
-        }
+        // if ($location.path() == '/candidate/detail/'+$routeParams.person_id) {
+        //     $http.get('/candidate/hunt-list', {params: {id: $routeParams.person_id}}).success(function (res) {
+        //         $scope.hunts = res;
+        //     });
+        //
+        //     $http.get('/candidate/addition-list', {params: {id: $routeParams.person_id}}).success(function (res) {
+        //         $scope.additions = res;
+        //     });
+        //
+        //     $scope.pushAddition = function () {
+        //         $.$modal.dialog({
+        //             title: '增加补充信息',
+        //             destroy: true,
+        //             content: '<textarea class="form-control" rows="5" style="resize: none;" placeholder="请填写补充信息"></textarea>',
+        //             footer: {
+        //                 buttons: [
+        //                     {
+        //                         name: 'ok',
+        //                         handler: function () {
+        //                             var self = this, dom = self.dom, text = dom.find('textarea').val().trim();
+        //                             if (text == '') {
+        //                                 $.$modal.alert('补充信息不能为空');
+        //                                 return;
+        //                             }
+        //                             $.$ajax({
+        //                                 url: '/candidate/push-addition',
+        //                                 type: 'POST',
+        //                                 dataType: 'json',
+        //                                 data: {person_id: $routeParams.person_id, content: text},
+        //                                 success: function (res) {
+        //                                     $scope.additions.unshift(res);
+        //                                     $scope.$apply();
+        //                                     self.hide();
+        //                                 }
+        //                             })
+        //                         }
+        //                     },
+        //                     {
+        //                         name: 'cancel',
+        //                         handler: function () {
+        //                             this.hide();
+        //                         }
+        //                     }
+        //                 ]
+        //             }
+        //         }).show();
+        //     }
+        //
+        //     $scope.removeAddition = function (id, index) {
+        //         $.$modal.confirm(['删除补充信息', '确定要删除吗？'], function (isOk) {
+        //             if (!isOk) return;
+        //             $.$ajax({
+        //                 url: '/candidate/remove-addition',
+        //                 type: 'POST',
+        //                 dataType: 'json',
+        //                 data: {id: id},
+        //                 success: function (res) {
+        //                     $scope.additions.splice(index, 1);
+        //                     $scope.$apply();
+        //                 }
+        //             });
+        //         })
+        //     }
+        // }
     }]);
 
     //controllers for bd

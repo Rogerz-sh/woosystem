@@ -545,6 +545,7 @@
                 model.getPersonInfo(~~$scope.id, function (res) {
                     $scope.person = res;
                     rebuild(res);
+                    initAddtionInfo($scope.id);
                 });
 
                 $scope.$on('refresh.person-info', function (e, id, callback) {
@@ -553,8 +554,81 @@
                         rebuild(res);
                         if (typeof callback === 'function') callback();
                     });
+                    initAddtionInfo(id);
                 });
 
+                $scope.hunts = [];
+                $scope.additions = [];
+
+                function initAddtionInfo(pid) {
+                    if (~~pid) {
+                        $http.get('/candidate/hunt-list', {params: {id: ~~pid}}).success(function (res) {
+                            $scope.hunts = res;
+                            //$scope.$apply();
+                        });
+
+                        $http.get('/candidate/addition-list', {params: {id: ~~pid}}).success(function (res) {
+                            $scope.additions = res;
+                            //$scope.$apply();
+                        });
+
+                        $scope.pushAddition = function () {
+                            $.$modal.dialog({
+                                title: '增加补充信息',
+                                destroy: true,
+                                content: '<textarea class="form-control" rows="5" style="resize: none;" placeholder="请填写补充信息"></textarea>',
+                                footer: {
+                                    buttons: [
+                                        {
+                                            name: 'ok',
+                                            handler: function () {
+                                                var self = this, dom = self.dom,
+                                                    text = dom.find('textarea').val().trim();
+                                                if (text == '') {
+                                                    $.$modal.alert('补充信息不能为空');
+                                                    return;
+                                                }
+                                                $.$ajax({
+                                                    url: '/candidate/push-addition',
+                                                    type: 'POST',
+                                                    dataType: 'json',
+                                                    data: {person_id: ~~pid, content: text},
+                                                    success: function (res) {
+                                                        $scope.additions.unshift(res);
+                                                        $scope.$apply();
+                                                        self.hide();
+                                                    }
+                                                })
+                                            }
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            handler: function () {
+                                                this.hide();
+                                            }
+                                        }
+                                    ]
+                                }
+                            }).show();
+                        }
+
+                        $scope.removeAddition = function (id, index) {
+                            $.$modal.confirm(['删除补充信息', '确定要删除吗？'], function (isOk) {
+                                if (!isOk) return;
+                                $.$ajax({
+                                    url: '/candidate/remove-addition',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {id: id},
+                                    success: function (res) {
+                                        $scope.additions.splice(index, 1);
+                                        $scope.$apply();
+                                    }
+                                });
+                            })
+                        }
+                    }
+                }
             }],
             link: function (scope, element, attr) {
 
