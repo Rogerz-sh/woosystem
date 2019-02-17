@@ -253,11 +253,13 @@ $(function () {
         $(this).addClass('active');
     });
 
+    var globalData = {};
     $('#kpi-selector').delegate('.selector', 'click', function () {
         var target = $(this).data('target'), d = new Date(), day = d.getDay(), month = d.format('yyyy-mm'), sdate, edate;
         if (target == 'today') {
             sdate = edate = d.format();
         } else if (target == 'week') {
+            if (day == 0) day = 7;
             sdate = Date.translate('now-'+(day - 1)).format();
             edate = Date.translate('now+'+(7 - day)).format();
         } else if (target == 'month') {
@@ -267,6 +269,8 @@ $(function () {
             sdate = new Date(d.getFullYear(), d.getMonth()-1, 1).format();
             edate = new Date(d.getFullYear(), d.getMonth(), 0).format();
         }
+        globalData.sdate = sdate;
+        globalData.edate = edate;
         getKpiJsonData(month, sdate, edate);
     });
 
@@ -338,7 +342,7 @@ $(function () {
 
     function renderKpiView(target, result) {
         for (var n in target) {
-            $('#kpi_view').find('#kpi_'+n).text('{0} / {1}'.format(result[n], target[n] % 1 == 0 ? target[n] : kendo.toString(target[n], 'n1')));
+            $('#kpi_view').find('#kpi_'+n).html('<a class="pointer" data-field="{0}">{1}</a> / {2}'.format(n, result[n], target[n] % 1 == 0 ? target[n] : kendo.toString(target[n], 'n1')));
         }
     }
 
@@ -349,6 +353,7 @@ $(function () {
         if (target == 'today') {
             sdate = edate = d.format();
         } else if (target == 'week') {
+            if (day == 0) day = 7;
             sdate = Date.translate('now-'+(day - 1)).format();
             edate = Date.translate('now+'+(7 - day)).format();
         } else if (target == 'month') {
@@ -386,8 +391,9 @@ $(function () {
         data.forEach(function (v) {
             li.push('<li class="list-group-item">\
                         <div class="margin-bottom-5"><b>{0}</b> ({1}) <span class="pull-right">{2} - {3}</span></div>\
-                        <div><b>寻访记录：</b><span class="dark-gray">{4} <small class="pull-right">[{5}]</small></span></div>\
-                    </li>'.format(v.name, v.tel, v.job, v.company, v.description, new Date(v.created_at).format()));
+                        <div class="margin-bottom-5"><b>推荐职位：</b><span class="dark-gray">{4}</span><span class="pull-right"><b>推荐公司：</b><span class="dark-gray">{5}</span></span></div>\
+                        <div class="flex"><span class="flex-1"><b>寻访记录：</b><span class="dark-gray">{6} </span></span><small class="dark-gray">[{7}]</small></div>\
+                    </li>'.format(v.name, v.tel, v.job, v.company, v.job_name, v.company_name, v.description, new Date(v.created_at).format('yyyy-mm-dd hh:MM')));
         });
         if (li.length == 0) {
             li.push('<li class="list-group-item text-center text-warning"><span style="line-height:35px;">暂时没有任何记录</span></li>');
@@ -396,5 +402,98 @@ $(function () {
     }
 
     $('#hunt-selector .selector.active').trigger('click');
+
+    /***********************02.17增加的功能**************************/
+    function getDetailText(item, field) {
+        switch (field) {
+            case 'bd':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b></span>\
+                            <span>at: <i class="dark-gray">{1}</i> by <i class="dark-gray">{2}</i></span>\
+                        </div>'.format(item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'job':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><span class="dark-gray"> - {1}</span></span>\
+                            <span>at: <i class="dark-gray">{2}</i> by <i class="dark-gray">{3}</i></span>\
+                        </div>'.format(item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'bds':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b></span>\
+                            <span>at: <i class="dark-gray">{1}</i> by <i class="dark-gray">{2}</i></span>\
+                        </div>'.format(item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'hunt':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><span class="dark-gray"> - {1}</span></span>\
+                            <span>at: <i class="dark-gray">{2}</i></span>\
+                        </div>'.format(item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'));
+                break;
+            case 'person':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><small class="dark-gray"> {1} - {2}</small></span>\
+                            <span>at: <i class="dark-gray">{3}</i> by <i class="dark-gray">{4}</i></span>\
+                        </div>'.format(item.person_name, item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'report':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><small class="dark-gray"> {1} - {2}</small></span>\
+                            <span>at: <i class="dark-gray">{3}</i> by <i class="dark-gray">{4}</i></span>\
+                        </div>'.format(item.person_name, item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'face':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><small class="dark-gray"> {1} - {2}</small></span>\
+                            <span>at: <i class="dark-gray">{3}</i> by <i class="dark-gray">{4}</i></span>\
+                        </div>'.format(item.person_name, item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'offer':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><small class="dark-gray"> {1} - {2}</small></span>\
+                            <span>at: <i class="dark-gray">{3}</i> by <i class="dark-gray">{4}</i></span>\
+                        </div>'.format(item.person_name, item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'success':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><small class="dark-gray"> {1} - {2}</small></span>\
+                            <span>at: <i class="dark-gray">{3}</i> by <i class="dark-gray">{4}</i></span>\
+                        </div>'.format(item.person_name, item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            default:
+                return '';
+                break;
+        }
+    }
+
+    $('#kpi_view').delegate('a[data-field]', 'click', function () {
+        var field = $(this).data('field'), target = $('#kpi-ctn').find('.tab-switcher-selector.active').data('target');
+        console.log(field, target, globalData);
+        $.$ajax({
+            url: '/dashboard/kpi-view-data',
+            type: 'GET',
+            data: {field: field, target: target, sdate: globalData.sdate, edate: globalData.edate},
+            dataType: 'json',
+            success: function (res) {
+                console.log(res);
+                showKpiViewDialog(res, field);
+            }
+        });
+    });
+
+    function showKpiViewDialog(data, field) {
+        $.$modal.dialog({
+            title: '详细信息',
+            destroy: true,
+            content: '<ul class="list-group" id="view_list" style="max-height:300px;overflow-y:auto;"></ul>',
+            onLoaded: function () {
+                var dom = this.dom, li = [];
+                data.forEach(function (v) {
+                    li.push('<li class="list-group-item">{0}</li>'.format(getDetailText(v, field)));
+                });
+                $('#view_list', dom).html(li.join(''));
+            }
+        }).show();
+    }
 
 });

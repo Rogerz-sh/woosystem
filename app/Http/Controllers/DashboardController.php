@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 
+use App\Bd;
 use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
@@ -228,7 +229,7 @@ class DashboardController extends BaseController {
             array_push($uids, $u->id);
         }
         $person_hunts = Hunt::join('person', 'person.id', '=', 'hunt.person_id')
-            ->select('hunt.id', 'person.name', 'person.sex', 'person.tel', 'person.job', 'person.company', 'hunt.description', 'hunt.created_at')
+            ->select('hunt.id', 'person.name', 'person.sex', 'person.tel', 'person.job', 'person.company', 'hunt.job_name', 'hunt.company_name', 'hunt.description', 'hunt.created_at')
             ->where('hunt.created_by', $user)
             ->where('hunt.created_at', '>=', $sdate)
             ->where('hunt.created_at', '<=', $edate)
@@ -237,7 +238,7 @@ class DashboardController extends BaseController {
         if (sizeof($uids) > 0) {
             $uids = join(',', $uids);
             $team_hunts = Hunt::join('person', 'person.id', '=', 'hunt.person_id')
-                ->select('hunt.id', 'person.name', 'person.sex', 'person.tel', 'person.job', 'person.company', 'hunt.description', 'hunt.created_at')
+                ->select('hunt.id', 'person.name', 'person.sex', 'person.tel', 'person.job', 'person.company', 'hunt.job_name', 'hunt.company_name', 'hunt.description', 'hunt.created_at')
                 ->whereRaw('hunt.created_by in (' . $uids . ')')
                 ->where('hunt.created_at', '>=', $sdate)
                 ->where('hunt.created_at', '<=', $edate)
@@ -247,6 +248,124 @@ class DashboardController extends BaseController {
             $team_hunts = [];
         }
         return response(["person"=>$person_hunts, "team"=>$team_hunts]);
+    }
+
+    public function getKpiViewData() {
+        $user = Session::get('id');
+        $power = Session::get('power');
+        $field = request()->input('field');
+        $target = request()->input('target');
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+
+        if ($target == 'person') {
+            $uids = $user;
+        } else {
+            $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+            if ($power < 10) {
+                $belong = Belongs::where('user_id', $user)->first();
+                if ($belong) {
+                    $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                    if (sizeof($path) > 0) {
+                        $ids = '';
+                        foreach ($path as $p) {
+                            $ids = $ids . ',' . $p->user_id;
+                        }
+                        $ids = substr($ids, 1);
+                        $users = $users->whereRaw('id in (' . $ids . ')');
+                    } else {
+                        $users = $users->where('id', $user);
+                    }
+                } else {
+                    $users = $users->where('id', $user);
+                }
+            }
+            $users = $users->get();
+            $uids = array();
+            foreach($users as $u) {
+                array_push($uids, $u->id);
+            }
+            $uids = join(',', $uids);
+        }
+
+//        if (sizeof($uids) > 0) {
+//            $uids = join(',', $uids);
+//            $team_result = User::select(DB::raw('(select count(bd.id) from bd where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bd_count,
+//                (select count(jobs.id) from jobs where created_by in ('.$uids.') and deleted_at is null and created_at >= "'.$sdate.'" and created_at <= "'.$edate.'") as job_count,
+//                (select count(bd.id) from bd where user_id in ('.$uids.') and status = "签约合作" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as bds_count,
+//                (select count(distinct(hunt.job_id)) from hunt where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as hunt_count,
+//                (select count(hunt.person_id) from hunt where user_id in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as person_count,
+//                (select count(hunt_report.id) from hunt_report where created_by in ('.$uids.') and type = "report" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as report_count,
+//                (select count(hunt_face.id) from hunt_face where created_by in ('.$uids.') and type = "一面" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'" and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
+//                (select count(hunt_report.id) from hunt_report where created_by in ('.$uids.') and type = "offer" and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as offer_count,
+//                (select count(hunt_success.id) from hunt_success where created_by in ('.$uids.') and deleted_at is null and date >= "'.$sdate.'" and date <= "'.$edate.'") as success_count'))
+//                ->whereRaw('users.id in ('.$uids.')')->first();
+//        }
+
+        if ($field == 'bd') {
+            $result = Bd::select(DB::raw('company_name, user_name, date, created_at'))
+                ->whereRaw('user_id in ('.$uids.')')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->get();
+        } else if ($field == 'job') {
+            $result = Job::select(DB::raw('name as job_name, company_name, (select nickname from users where users.id = jobs.created_by) as user_name, created_at'))
+                ->whereRaw('created_by in ('.$uids.')')
+                ->where('created_at', '>=', $sdate)
+                ->where('created_at', '<=', $edate)
+                ->get();
+        } else if ($field == 'bds') {
+            $result = Bd::select(DB::raw('name as job_name, company_name, (select nickname from users where users.id = jobs.created_by) as user_name, created_at'))
+                ->whereRaw('user_id in ('.$uids.')')
+                ->where('status', '签约合作')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->get();
+        } else if ($field == 'hunt') {
+            $result = Hunt::select(DB::raw('max(job_name) as job_name, max(company_name) as company_name, min(date) as date, min(created_at) as created_at'))
+                ->whereRaw('user_id in ('.$uids.')')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->groupBy('job_id')
+                ->get();
+        } else if ($field == 'person') {
+            $result = Hunt::select(DB::raw('job_name, company_name, person_name, (select nickname from users where users.id = hunt.user_id) as user_name, date, created_at'))
+                ->whereRaw('user_id in ('.$uids.')')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->get();
+        } else if ($field == 'report') {
+            $result = HuntReport::select(DB::raw('job_name, company_name, person_name, (select nickname from users where users.id = hunt_report.created_by) as user_name, date, created_at'))
+                ->whereRaw('created_by in ('.$uids.')')
+                ->where('type', 'report')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->get();
+        } else if ($field == 'face') {
+            $result = HuntFace::select(DB::raw('job_name, (select company_name from jobs where jobs.id = hunt_face.job_id) as company_name, person_name, (select nickname from users where users.id = hunt_face.created_by) as user_name, date, created_at'))
+                ->whereRaw('created_by in ('.$uids.')')
+                ->where('type', '一面')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->get();
+        } else if ($field == 'offer') {
+            $result = HuntReport::select(DB::raw('job_name, company_name, person_name, (select nickname from users where users.id = hunt_report.created_by) as user_name, date, created_at'))
+                ->whereRaw('created_by in ('.$uids.')')
+                ->where('type', 'offer')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->get();
+        } else if ($field == 'success') {
+            $result = HuntSuccess::select(DB::raw('job_name, company_name, person_name, (select nickname from users where users.id = hunt_success.created_by) as user_name, date, created_at'))
+                ->whereRaw('created_by in ('.$uids.')')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->get();
+        } else {
+            $result = [];
+        }
+
+        return response($result);
     }
 
 }
