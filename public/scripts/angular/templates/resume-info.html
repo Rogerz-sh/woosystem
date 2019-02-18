@@ -1,13 +1,19 @@
 <div>
     <div class="row">
         <div class="col-xs-12">
-            ID: <span ng-bind="person.real_id"></span>
+            ID: <span ng-bind="person.real_id"></span> | {{session.id}}
         </div>
     </div>
     <div class="row margin-top-10">
         <div class="col-xs-12">
-            <ul class="list-group" style="margin-bottom:0;">
-                <li class="list-group-item list-group-item-warning"><b>寻访记录：</b>候选人暂时不考虑换工作</li>
+            <ul class="list-group pos-rel" style="margin-bottom:0;">
+                <a class="btn btn-xs btn-success" style="position:absolute;right:0;top:-30px;" ng-click="pushRecord()">添加共享信息</a>
+                <li class="list-group-item list-group-item-warning" ng-if="huntInfo.description.length > 0"><b>寻访记录：</b>{{huntInfo.description}}</li>
+                <li class="list-group-item text-center" ng-if="records.length == 0">暂时没有共享信息</li>
+                <li class="list-group-item list-group-item-info" ng-repeat="rec in records track by $index">
+                    <b>[共享信息] {{rec.user_name}}：</b>{{rec.content}}
+                    <i ng-click="removeRecord(rec.id, $index)" class="red fa fa-trash-o pull-right pointer" title="删除" ng-if="session.id==rec.user_id"></i>
+                </li>
             </ul>
         </div>
     </div>

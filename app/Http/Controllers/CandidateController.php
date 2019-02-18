@@ -15,6 +15,7 @@ use App\HuntReport;
 use App\HuntResult;
 use App\HuntSuccess;
 use App\PersonAddition;
+use App\PersonRecord;
 use App\PersonCompany;
 use App\PersonSchool;
 use App\PersonTraining;
@@ -269,7 +270,7 @@ class CandidateController extends BaseController {
 
     public function getHuntList() {
         $id = request()->input('id');
-        $hunt = DB::table('hunt')->select('id', 'job_name', 'company_name')->where('person_id', $id)->where('deleted_at', null)->get();
+        $hunt = Hunt::select('id', 'job_name', 'company_name', 'description')->where('person_id', $id)->get();
         return response($hunt);
     }
 
@@ -305,6 +306,31 @@ class CandidateController extends BaseController {
     public function postRemoveAddition() {
         $id = request()->input('id');
         $addition = PersonAddition::find($id);
+        $addition->delete();
+        return response(1);
+    }
+
+    public function getRecordList() {
+        $id = request()->input('id');
+        $list = PersonRecord::where('person_id', $id)->orderBy('created_at', 'desc')->get();
+        return response($list);
+    }
+
+    public function postPushRecord() {
+        $person_id = request()->input('person_id');
+        $content = request()->input('content');
+        $addition = new PersonRecord();
+        $addition->person_id = $person_id;
+        $addition->content = $content;
+        $addition->user_id = Session::get('id');
+        $addition->user_name = Session::get('nickname');
+        $addition->save();
+        return response($addition);
+    }
+
+    public function postRemoveRecord() {
+        $id = request()->input('id');
+        $addition = PersonRecord::find($id);
         $addition->delete();
         return response(1);
     }

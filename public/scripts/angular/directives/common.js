@@ -557,13 +557,18 @@
                     initAddtionInfo(id);
                 });
 
+                $scope.session = model.getUserSession();
+
                 $scope.hunts = [];
                 $scope.additions = [];
+                $scope.huntInfo = {};
+                $scope.records = [];
 
                 function initAddtionInfo(pid) {
                     if (~~pid) {
                         $http.get('/candidate/hunt-list', {params: {id: ~~pid}}).success(function (res) {
                             $scope.hunts = res;
+                            $scope.huntInfo = res[0] || {};
                             //$scope.$apply();
                         });
 
@@ -571,6 +576,67 @@
                             $scope.additions = res;
                             //$scope.$apply();
                         });
+
+                        $http.get('/candidate/record-list', {params: {id: ~~pid}}).success(function (res) {
+                            $scope.records = res;
+                            //$scope.$apply();
+                        });
+
+                        $scope.pushRecord = function () {
+                            $.$modal.dialog({
+                                title: '增加共享信息',
+                                destroy: true,
+                                content: '<textarea class="form-control" rows="5" style="resize: none;" placeholder="请填写共享信息"></textarea>',
+                                footer: {
+                                    buttons: [
+                                        {
+                                            name: 'ok',
+                                            handler: function () {
+                                                var self = this, dom = self.dom,
+                                                    text = dom.find('textarea').val().trim();
+                                                if (text == '') {
+                                                    $.$modal.alert('共享信息不能为空');
+                                                    return;
+                                                }
+                                                $.$ajax({
+                                                    url: '/candidate/push-record',
+                                                    type: 'POST',
+                                                    dataType: 'json',
+                                                    data: {person_id: ~~pid, content: text},
+                                                    success: function (res) {
+                                                        $scope.records.unshift(res);
+                                                        $scope.$apply();
+                                                        self.hide();
+                                                    }
+                                                })
+                                            }
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            handler: function () {
+                                                this.hide();
+                                            }
+                                        }
+                                    ]
+                                }
+                            }).show();
+                        }
+
+                        $scope.removeRecord = function (id, index) {
+                            $.$modal.confirm(['删除共享信息', '确定要删除吗？'], function (isOk) {
+                                if (!isOk) return;
+                                $.$ajax({
+                                    url: '/candidate/remove-record',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {id: id},
+                                    success: function (res) {
+                                        $scope.records.splice(index, 1);
+                                        $scope.$apply();
+                                    }
+                                });
+                            })
+                        }
 
                         $scope.pushAddition = function () {
                             $.$modal.dialog({
