@@ -563,6 +563,9 @@
                 $scope.additions = [];
                 $scope.huntInfo = {};
                 $scope.records = [];
+                $scope.fav_inited = false;
+                $scope.favorites = [];
+                $scope.favorited = false;
 
                 function initAddtionInfo(pid) {
                     if (~~pid) {
@@ -572,14 +575,70 @@
                             //$scope.$apply();
                         });
 
+                        //附加信息操作
                         $http.get('/candidate/addition-list', {params: {id: ~~pid}}).success(function (res) {
                             $scope.additions = res;
-                            //$scope.$apply();
                         });
 
+                        $scope.pushAddition = function () {
+                            $.$modal.dialog({
+                                title: '增加补充信息',
+                                destroy: true,
+                                content: '<textarea class="form-control" rows="5" style="resize: none;" placeholder="请填写补充信息"></textarea>',
+                                footer: {
+                                    buttons: [
+                                        {
+                                            name: 'ok',
+                                            handler: function () {
+                                                var self = this, dom = self.dom,
+                                                    text = dom.find('textarea').val().trim();
+                                                if (text == '') {
+                                                    $.$modal.alert('补充信息不能为空');
+                                                    return;
+                                                }
+                                                $.$ajax({
+                                                    url: '/candidate/push-addition',
+                                                    type: 'POST',
+                                                    dataType: 'json',
+                                                    data: {person_id: ~~pid, content: text},
+                                                    success: function (res) {
+                                                        $scope.additions.unshift(res);
+                                                        $scope.$apply();
+                                                        self.hide();
+                                                    }
+                                                })
+                                            }
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            handler: function () {
+                                                this.hide();
+                                            }
+                                        }
+                                    ]
+                                }
+                            }).show();
+                        }
+
+                        $scope.removeAddition = function (id, index) {
+                            $.$modal.confirm(['删除补充信息', '确定要删除吗？'], function (isOk) {
+                                if (!isOk) return;
+                                $.$ajax({
+                                    url: '/candidate/remove-addition',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {id: id},
+                                    success: function (res) {
+                                        $scope.additions.splice(index, 1);
+                                        $scope.$apply();
+                                    }
+                                });
+                            })
+                        }
+
+                        //共享信息操作
                         $http.get('/candidate/record-list', {params: {id: ~~pid}}).success(function (res) {
                             $scope.records = res;
-                            //$scope.$apply();
                         });
 
                         $scope.pushRecord = function () {
@@ -638,29 +697,58 @@
                             })
                         }
 
-                        $scope.pushAddition = function () {
+                        //收藏夹操作
+                        $http.get('/candidate/favorite-info', {params: {id: ~~pid}}).success(function (res) {
+                            res.favs.unshift({id: 0, name: '人才收藏夹', parent_id: null});
+                            $scope.fav_inited = true;
+                            $scope.favorites = res.favs;
+                            $scope.favorited = res.fav.length > 0 ? true : false;
+                        });
+
+                        $scope.addFavorite = function () {
+                            var favs = (function (items) {
+                                var favTree = [];
+                                var getChildren = function (id, depth) {
+                                    var children = [];
+                                    //debugger;
+                                    items.forEach(function (v) {
+                                        if (v.parent_id == id) {
+                                            v.depth = depth;
+                                            v.children = getChildren(v.id, v.depth + 1);
+                                            children.push(v);
+                                        }
+                                    });
+                                    return children.length > 0 ? children : null;
+                                }
+
+                                items.forEach(function (v) {
+                                    if (v.parent_id === null) {
+                                        v.depth = 0;
+                                        v.children = getChildren(v.id, v.depth + 1);
+                                        favTree.push(v);
+                                    }
+                                });
+
+                                return favTree;
+                            })($scope.favorites);
                             $.$modal.dialog({
-                                title: '增加补充信息',
+                                title: '选择要加入的收藏夹',
                                 destroy: true,
-                                content: '<textarea class="form-control" rows="5" style="resize: none;" placeholder="请填写补充信息"></textarea>',
+                                size: 'sm',
+                                content: '<ul class="list-group" id="favs"></ul>',
                                 footer: {
                                     buttons: [
                                         {
                                             name: 'ok',
                                             handler: function () {
-                                                var self = this, dom = self.dom,
-                                                    text = dom.find('textarea').val().trim();
-                                                if (text == '') {
-                                                    $.$modal.alert('补充信息不能为空');
-                                                    return;
-                                                }
+                                                var self = this, dom = self.dom, fav_id = ~~$('input:radio:checked', dom).val();
                                                 $.$ajax({
-                                                    url: '/candidate/push-addition',
+                                                    url: '/candidate/add-to-favorite',
                                                     type: 'POST',
                                                     dataType: 'json',
-                                                    data: {person_id: ~~pid, content: text},
+                                                    data: {person_id: ~~pid, fav_id: fav_id},
                                                     success: function (res) {
-                                                        $scope.additions.unshift(res);
+                                                        $scope.favorited = true;
                                                         $scope.$apply();
                                                         self.hide();
                                                     }
@@ -674,24 +762,48 @@
                                             }
                                         }
                                     ]
+                                },
+                                onLoaded: function () {
+                                    var dom = this.dom;
+                                    function buildSideMenu(dom, items) {
+                                        $(dom).empty();
+                                        items.forEach(function (item) {
+                                            var $li = $('<li class="flex flex-v-center line-height-5 margin-bottom-10"><label data-id="{0}" class="flex-1"><input type="radio" name="favid" value="{0}" /><span class="text">{1}</span></label></li>'.format(
+                                                item.id,
+                                                item.name,
+                                                item.depth < 2 ? '<i data-id="{0}" class="margin-right-5 pointer fa fa-plus-circle green _add" title="添加子收藏夹"></i>'.format(item.id) : '',
+                                                item.parent_id === null ? '' : '<i data-id="{0}" class="margin-right-5 pointer fa fa-pencil blue _edit" title="编辑名称"></i> <i data-id="{0}" class="margin-right-5 pointer fa fa-trash-o red _delete" title="删除"></i>'.format(item.id))
+                                            );
+                                            $li.appendTo($(dom));
+                                            if (item.children) {
+                                                var _ul = $('<ul class="padding-left-15"></ul>');
+                                                _ul.insertAfter($li);
+                                                buildSideMenu(_ul, item.children);
+                                            }
+                                        });
+                                    }
+                                    buildSideMenu($('#favs', dom), favs);
+                                    $('input:radio', dom).eq(0).prop('checked', true);
                                 }
                             }).show();
                         }
 
-                        $scope.removeAddition = function (id, index) {
-                            $.$modal.confirm(['删除补充信息', '确定要删除吗？'], function (isOk) {
+                        $scope.delFavorite = function () {
+                            $.$modal.confirm(['删除共享信息', '确定要删除吗？'], function (isOk) {
                                 if (!isOk) return;
                                 $.$ajax({
-                                    url: '/candidate/remove-addition',
+                                    url: '/candidate/del-from-favorite',
                                     type: 'POST',
                                     dataType: 'json',
-                                    data: {id: id},
+                                    data: {person_id: ~~pid},
                                     success: function (res) {
-                                        $scope.additions.splice(index, 1);
-                                        $scope.$apply();
+                                        if (res == 1) {
+                                            $scope.favorited = false;
+                                            $scope.$apply();
+                                        }
                                     }
                                 });
-                            })
+                            });
                         }
                     }
                 }

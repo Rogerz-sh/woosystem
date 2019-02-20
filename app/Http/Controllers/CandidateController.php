@@ -6,6 +6,8 @@
  * Time: 下午4:39
  */
 namespace App\Http\Controllers;
+use App\Favorite;
+use App\FavoriteTarget;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\Authenticate;
 use App\Candidate;
@@ -333,5 +335,43 @@ class CandidateController extends BaseController {
         $addition = PersonRecord::find($id);
         $addition->delete();
         return response(1);
+    }
+
+    public function getFavoriteInfo() {
+        $id = request()->input('id');
+        $user = Session::get('id');
+        $favs = Favorite::where('user_id', $user)->get();
+        $fav = FavoriteTarget::where('target_id', $id)->where('user_id', $user)->get();
+        return response(["favs"=>$favs, "fav"=>$fav]);
+    }
+
+    public function postAddToFavorite() {
+        $person_id = request()->input('person_id');
+        $fav_id = request()->input('fav_id');
+        $user = Session::get('id');
+        $exist = FavoriteTarget::where('target_id', $person_id)->where('user_id', $user)->first();
+        if ($exist) {
+            return response(0);
+        } else {
+            $ft = new FavoriteTarget();
+            $ft->target_id = $person_id;
+            $ft->user_id = $user;
+            $ft->favorite_id = $fav_id;
+            $ft->save();
+
+            return response($ft->id);
+        }
+    }
+
+    public function postDelFromFavorite() {
+        $person_id = request()->input('person_id');
+        $user = Session::get('id');
+        $exist = FavoriteTarget::where('target_id', $person_id)->where('user_id', $user)->first();
+        if ($exist) {
+            $exist->delete();
+            return response(1);
+        } else {
+            return response(0);
+        }
     }
 }
