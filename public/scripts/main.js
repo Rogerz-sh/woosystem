@@ -24,7 +24,7 @@ $(function () {
             var result = [];
             res[0].forEach(function (v) {
                 var diff = getDateDiff(new Date(v.protected).format());
-                if (diff == -7 || diff == -3 || diff == 0) {
+                if (diff == -30 || diff == -20 || diff == -10 || diff == -7 || diff == -3 || diff == 0) {
                     var info = {
                         text: '<b>{1}</b> <small><span class="dark-gray">[{2} - {3}]</span>，于<b>{4}</b>上岗，距离保证期截止日期<b>{5}</b>还有<b>{6}</b>天 <a class="pull-right" href="#/hunt/record/{0}" target="_blank">查看详情</a></small>'
                             .format(v.hunt_id, v.person_name, v.job_name, v.company_name, new Date(v.date).format(), new Date(v.protected).format(), Math.abs(diff)),
@@ -36,7 +36,7 @@ $(function () {
             });
             res[1].forEach(function (v) {
                 var diff = getDateDiff(new Date(v.estimate_date).format());
-                if (diff == -7 || diff == -3) {
+                if (diff == -10 || diff == -5 || diff == -3) {
                     var info = {
                         text: '<b>{0}</b> <small><span class="dark-gray">[{1} - {2}]</span> 的<b>{3}</b><b class="blue">{4}</b>元尚未支付，距离约定的付款日期<b>{5}</b>还有<b>{6}</b>天，请注意催收。</small>'
                             .format(v.person_name, v.job_name, v.company_name, v.type, v.amount, new Date(v.estimate_date).format(), Math.abs(diff)),
@@ -54,7 +54,7 @@ $(function () {
                     };
                     result.push(info);
                 }
-                if (diff == 7 || diff == 30) {
+                if (diff == 7 || diff == 15 || diff >= 30) {
                     var info = {
                         text: '<b>{0}</b> <small><span class="dark-gray">[{1} - {2}]</span> 的<b>{3}</b><b class="blue">{4}</b>元尚未支付，距离约定的付款日期<b>{5}</b>已超出<b class="red">{6}</b>天，请注意催收。</small>'
                             .format(v.person_name, v.job_name, v.company_name, v.type, v.amount, new Date(v.estimate_date).format(), Math.abs(diff)),

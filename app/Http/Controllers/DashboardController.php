@@ -128,8 +128,8 @@ class DashboardController extends BaseController {
 
     public function getNoticeJsonList() {
         $user_id = Session::get('id');
-        $hunt_success = HuntSuccess::where('created_by', $user_id)->whereRaw('datediff(now(), protected) >= -7 and datediff(now(), protected) <= 0')->get();
-        $invoice = Invoice::where('request_user', $user_id)->where('status', '未付')->whereRaw('datediff(now(), estimate_date) >= -7 and datediff(now(), estimate_date) <= 30')->get();
+        $hunt_success = HuntSuccess::where('created_by', $user_id)->whereRaw('datediff(now(), protected) >= -30 and datediff(now(), protected) <= 0')->get();
+        $invoice = Invoice::where('request_user', $user_id)->where('status', '未付')->whereRaw('datediff(now(), estimate_date) >= -10')->get();
         return response([$hunt_success, $invoice]);
     }
 
