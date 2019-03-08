@@ -390,12 +390,14 @@
                             dataTextField: 'name',
                             dataValueField: 'name',
                             optionLabel: '请选择',
+                            filter: 'contains',
                             change: $scope.locationData.change
                         },
                         c: {
                             dataSource: $scope.locationData.c,
                             dataTextField: 'name',
                             dataValueField: 'name',
+                            filter: 'contains',
                             optionLabel: '请选择'
                         }
                     },
@@ -404,6 +406,7 @@
                             dataSource: $scope.belongData.p,
                             dataTextField: 'name',
                             dataValueField: 'name',
+                            filter: 'contains',
                             optionLabel: '请选择',
                             change: $scope.belongData.change
                         },
@@ -411,6 +414,7 @@
                             dataSource: $scope.belongData.c,
                             dataTextField: 'name',
                             dataValueField: 'name',
+                            filter: 'contains',
                             optionLabel: '请选择'
                         }
                     }
@@ -914,12 +918,14 @@
                             dataTextField: 'name',
                             dataValueField: 'name',
                             optionLabel: '请选择',
+                            filter: 'contains',
                             change: $scope.locationData.change
                         },
                         c: {
                             dataSource: $scope.locationData.c,
                             dataTextField: 'name',
                             dataValueField: 'name',
+                            filter: 'contains',
                             optionLabel: '请选择'
                         }
                     },
