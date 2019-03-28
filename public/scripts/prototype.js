@@ -64,7 +64,7 @@
     try {
       var digit = getDigitLength([this, num]);
       var base = Math.pow(10, digit);
-      return (this * base + num * base) / base;
+      return Math.round(this * base + num * base) / base;
     } catch (e) {
       return this + num;
     }
@@ -74,7 +74,7 @@
     try {
       var digit = getDigitLength([this, num]);
       var base = Math.pow(10, digit);
-      return (this * base - num * base) / base;
+      return Math.round(this * base - num * base) / base;
     } catch (e) {
       return this - num;
     }
@@ -84,7 +84,7 @@
     try {
       var digit = getDigitLength([this, num]);
       var base = Math.pow(10, digit);
-      return ((this * base) * (num * base)) / (base * base);
+      return Math.round((this * base) * (num * base)) / Math.round(base * base);
     } catch (e) {
       return this * num;
     }
@@ -94,7 +94,7 @@
     try {
       var digit = getDigitLength([this, num]);
       var base = Math.pow(10, digit);
-      return (this * base) / (num * base);
+      return Math.round(this * base) / Math.round(num * base);
     } catch (e) {
       return this / num;
     }
