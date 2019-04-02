@@ -1419,6 +1419,11 @@
                 value: new Date(),
                 format: 'yyyy-MM-dd'
             },
+            date: {
+                culture: 'zh-CN',
+                value: new Date(),
+                format: 'yyyy-MM-dd'
+            },
             faceNum: {
                 spinners: false,
                 format: ''
