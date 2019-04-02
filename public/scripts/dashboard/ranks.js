@@ -268,6 +268,7 @@ $(function () {
         } else if (target == 'pre_month') {
             sdate = new Date(d.getFullYear(), d.getMonth()-1, 1).format();
             edate = new Date(d.getFullYear(), d.getMonth(), 0).format();
+            month = new Date(d.getFullYear(), d.getMonth()-1, 1).format('yyyy-mm');
         }
         globalData.sdate = sdate;
         globalData.edate = edate;
@@ -306,13 +307,14 @@ $(function () {
         var query = $('#kpi-ctn .tab-switcher-top').find('.tab-switcher-selector.active').data('target');
         var day_target = $('#kpi-selector .selector.active').data('target');
         var div_base = day_target == 'today' ? 20 : day_target == 'week' ? 4 : 1
-        var target = {bd: 0, job: 0, bds: 0, hunt: 0, person: 0, report: 0, face: 0, offer: 0, success: 0},
-            result = {bd: 0, job: 0, bds: 0, hunt: 0, person: 0, report: 0, face: 0, offer: 0, success: 0}
+        var target = {bd: 0, job: 0, bds: 0, hunt: 0, person: 0, report: 0, face: 0, faces: 0, offer: 0, success: 0},
+            result = {bd: 0, job: 0, bds: 0, hunt: 0, person: 0, report: 0, face: 0, faces: 0, offer: 0, success: 0}
         if (query == 'person') {
             if (kpi_json_data && kpi_json_data.person_target) {
                 kpi_json_data.person_target.hunt_target = 0;
                 kpi_json_data.person_target.job_target = 0;
                 kpi_json_data.person_target.bds_target = 0;
+                kpi_json_data.person_target.faces_target = 0;
                 for (var n in target) {
                     target[n] += +kpi_json_data.person_target[n+'_target'] / div_base;
                 }
@@ -327,6 +329,7 @@ $(function () {
                 kpi_json_data.team_target.hunt_target = 0;
                 kpi_json_data.team_target.job_target = 0;
                 kpi_json_data.team_target.bds_target = 0;
+                kpi_json_data.team_target.faces_target = 0;
                 for (var n in target) {
                     target[n] += +kpi_json_data.team_target[n+'_target'] / div_base;
                 }
@@ -443,6 +446,12 @@ $(function () {
                         </div>'.format(item.person_name, item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
                 break;
             case 'face':
+                return '<div class="flex">\
+                            <span class="flex-1"><b>{0}</b><small class="dark-gray"> {1} - {2}</small></span>\
+                            <span>at: <i class="dark-gray">{3}</i> by <i class="dark-gray">{4}</i></span>\
+                        </div>'.format(item.person_name, item.job_name, item.company_name, new Date(item.created_at).format('yyyy-mm-dd hh:MM'), item.user_name);
+                break;
+            case 'faces':
                 return '<div class="flex">\
                             <span class="flex-1"><b>{0}</b><small class="dark-gray"> {1} - {2}</small></span>\
                             <span>at: <i class="dark-gray">{3}</i> by <i class="dark-gray">{4}</i></span>\
