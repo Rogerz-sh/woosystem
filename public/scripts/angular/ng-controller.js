@@ -1900,6 +1900,7 @@
                                         person_count = getCountData(v, res.person),
                                         report_count = getCountData(v, res.report),
                                         face_count = getCountData(v, res.face),
+                                        faces_count = getCountData(v, res.faces),
                                         offer_count = getCountData(v, res.offer),
                                         success_count = getCountData(v, res.success),
                                         result_count = getCountData(v, res.result);
@@ -1913,6 +1914,7 @@
                                         person_count: person_count,
                                         report_count: report_count,
                                         face_count: face_count,
+                                        faces_count: faces_count,
                                         offer_count: offer_count,
                                         success_count: success_count,
                                         result_count: result_count
@@ -1980,7 +1982,8 @@
                     {field: 'bd_count', title: 'BD', template: getCountColor('bd')},
                     {field: 'person_count', title: '人选', template: getCountColor('person')},
                     {field: 'report_count', title: '报告', template: getCountColor('report')},
-                    {field: 'face_count', title: '面试', template: getCountColor('face')},
+                    {field: 'face_count', title: '面试(首轮)', template: getCountColor('face')},
+                    {field: 'faces_count', title: '面试(多轮)', template: getCountColor('faces')},
                     {field: 'offer_count', title: 'Offer', template: getCountColor('offer')},
                     {field: 'success_count', title: '上岗', template: getCountColor('success')},
                     {field: 'result_count', title: '业绩', template: getCountColor('result')},

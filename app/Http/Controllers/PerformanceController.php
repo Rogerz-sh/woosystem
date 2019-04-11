@@ -114,6 +114,11 @@ class PerformanceController extends BaseController {
             ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
             ->whereRaw('created_by in (' . $uids . ')')
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
+        $faces = HuntFace::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)->where('type', '!=', '一面')
+            ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
+            ->whereRaw('created_by in (' . $uids . ')')
+            ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
         $offer = HuntReport::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
             ->where('type', 'offer')->where('date', '>=', $sdate)->where('date', '<=', $edate)
             ->whereRaw('created_by in (' . $uids . ')')
@@ -126,7 +131,7 @@ class PerformanceController extends BaseController {
             ->where('date', '>=', $sdate)->where('date', '<=', $edate)
             ->whereRaw('user_id in (' . $uids . ')')
             ->groupBy(DB::raw('user_id, date_format(date, "%Y-%m")'))->get();
-        return response(["users"=>$users, "bd"=>$bd, "person"=>$person, "report"=>$report, "face"=>$face, "offer"=>$offer, "success"=>$success, "result"=>$result]);
+        return response(["users"=>$users, "bd"=>$bd, "person"=>$person, "report"=>$report, "face"=>$face, "faces"=>$faces, "offer"=>$offer, "success"=>$success, "result"=>$result]);
     }
 
     public function getJsonPerformanceRanks() {
