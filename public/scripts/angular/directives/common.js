@@ -544,6 +544,8 @@
                 function rebuild(res) {
                     $scope.person.location = res.location.p + '-' + res.location.c;
                     $scope.person.belong = res.belong.p + '-' + res.belong.c;
+                    var cdate = new Date($scope.person.created_at), cyear = cdate.getFullYear(), pyear = new Date().getFullYear() - cyear;
+                    $scope.person.age = $scope.person.age + pyear;
                 }
 
                 model.getPersonInfo(~~$scope.id, function (res) {
