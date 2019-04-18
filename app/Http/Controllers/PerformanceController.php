@@ -281,7 +281,7 @@ class PerformanceController extends BaseController {
             ->where('created_by', $user_id)
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
         $face = HuntFace::select(DB::raw('count(id) as count, max(created_by) as user_id, date_format(max(date), "%Y-%m") as month'))
-            ->where('date', '>=', $sdate)->where('date', '<=', $edate)
+            ->where('date', '>=', $sdate)->where('date', '<=', $edate)->where('type', '一面')
             ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
             ->where('created_by', $user_id)
             ->groupBy(DB::raw('created_by, date_format(date, "%Y-%m")'))->get();
