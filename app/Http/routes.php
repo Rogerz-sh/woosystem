@@ -50,4 +50,7 @@ Route::group(['middleware' => 'login'], function () {
 
     Route::controller('finance', 'FinanceController');
 
+    Route::group(['prefix' => 'v'], function () {
+        Route::controller('person', 'VPersonController');
+    });
 });

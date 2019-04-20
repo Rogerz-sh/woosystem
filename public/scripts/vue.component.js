@@ -1,47 +1,97 @@
 /**
  * Created by roger on 16/3/15.
  */
-Vue.component('nav-bar', {
-    template: '<ul class="nav-list">' +
-    '<li v-for="menu in menus" :class="{\'active\': navIndex == $index}" @mouseenter="changeSubNav($index)" @mouseleave="changeSubNav(-1)">' +
-    '<a href="{{menu.url}}">{{menu.label}} <span class="caret" v-if="menu.items.length > 0"></span></a>' +
-    '<ul class="sub-nav" v-if="menu.items.length > 0" v-show="$index == activeIndex">' +
-    '<li v-for="item in menu.items"><a href="{{item.url}}">{{item.label}}</a></li>' +
-    '</ul>' +
-    '</li>' +
-    '</ul>',
-    props: ['navIndex'],
+"use strict";
+window.$eventBus = new Vue({
+    methods: {
+        personSideClick: function (data) {
+            this.$emit('person.side.update', data);
+        }
+    },
+    created: function () {
+        this.$on('person.side.click', this.personSideClick);
+    }
+});
+
+Vue.component('view-header', {
+    data: function () {
+        return {
+
+        }
+    },
+    template: '<div class="view-header">\
+    <div class="column">Roger</div>\
+    </div>',
+    created: function () {
+
+    }
+});
+
+Vue.component('view-side-nav', {
+    props: ['actived'],
     data: function () {
         return {
             menus: [
-                {url: '/dashboard', label: '首页'},
-                {url: '#', label: '数据管理', items: [
-                    {url: '/company/list', label: '企业管理'},
-                    {url: '/job/list', label: '职位管理'},
-                    {url: '/resume/list', label: '简历管理'},
-                ]},
+                {title: '人选管理', icon: 'fa-user', link: ''},
+                {title: '职位管理', icon: 'fa-briefcase', link: ''},
+                {title: '客户管理', icon: 'fa-coffee', link: ''},
             ],
-            activeIndex: -1
+            actived: this.actived
         }
     },
     methods: {
-        changeSubNav: function (idx) {
-            this.$data.activeIndex = idx;
+        active: function (idx, data) {
+            this.actived = idx;
         }
     },
-    activate: function (done) {
-        var self = this;
-        //$(self.$el).children().bind('mouseenter', function () {
-        //    var li = $(this);
-        //    if (li.find('span.caret').length > 0) {
-        //        li.find('.sub-nav').show().css({'min-width': li.outerWidth(), 'top': li.outerHeight()});
-        //    }
-        //}).bind('mouseleave', function () {
-        //    var li = $(this);
-        //    if (li.find('span.caret').length > 0) {
-        //        li.find('.sub-nav').hide();
-        //    }
-        //});
-        done();
+    template: '<div class="view-side-nav">\
+    <ul>\
+    <li v-for="(idx, menu) in menus" :class="{\'actived\': actived == idx}"><a :title="menu.title" @click="active(idx, menu)"><i class="fa {{menu.icon}} fa-3x"></i></a></li>\
+    </ul>\
+    </div>',
+    created: function () {
+
     }
 });
+
+Vue.component('view-container-side-nav', {
+    props: [],
+    data: function () {
+        return {
+            items: [
+                {name: '近期人选'},
+                {name: '收藏夹'},
+                {name: '收藏-1'},
+            ]
+        }
+    },
+    methods: {
+        addFav: function (data) {
+            this.items.push({name: data.title});
+        }
+    },
+    template: '<div class="view-container-side-nav" v-on:test="changePersonList">\
+    <ul>\
+    <li v-for="item in items"><a v-on:click="$emit(\'test\', item.name)" v-text="item.name"></a></li>\
+    </ul>\
+    </div>',
+    created: function () {
+        var self = this;
+        setTimeout(function () {
+            self.items.push({name: '收藏-2'});
+        }, 1000);
+    }
+});
+
+Vue.component('view-person-list-item', {
+    props: ['person'],
+    data: function () {
+        return {
+
+        }
+    },
+    methods: {
+
+    },
+    template: '<li><b class="text-primary pointer" v-text="person.name"></b> <span v-text="person.tel"></span></li>'
+})
