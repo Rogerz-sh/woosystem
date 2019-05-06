@@ -884,7 +884,7 @@ class PerformanceController extends BaseController {
         $uids = join(',', $uids);
 
         $list = ResultTarget::select(DB::raw('result_target.id, result_target.user_id, result_target.year, result_target.area, result_target.target, result_target.start, result_target.end, users.nickname, users.group_name, users.area_name,
-        (select sum(result_users.user_result) from result_users where result_users.user_id = result_target.user_id and date >= result_target.start and date <= result_target.end) as result_count'))
+        (select sum(result_users.user_result) from result_users where result_users.user_id = result_target.user_id and date >= result_target.start and date <= result_target.end and deleted_at is null) as result_count'))
             ->join('users', 'users.id', '=', 'result_target.user_id')
             ->where('year', $year);
         if ($range == '上半年') {
