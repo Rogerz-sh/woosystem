@@ -337,6 +337,16 @@ class PerformanceController extends BaseController {
             $result = HuntFace::where('created_by', $id)
                 ->where('date', '>=', $sdate)
                 ->where('date', '<=', $edate)
+                ->where('type', '一面')
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'faces_count') {
+            $result = HuntFace::where('created_by', $id)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->where('type', '<>', '一面')
                 ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
                 ->orderBy('updated_at', 'desc')->get();
             return response($result);
