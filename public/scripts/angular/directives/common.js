@@ -38,6 +38,7 @@
                     {url: '#', label: '业绩管理', power: [3,6,7,8,9,10,99], items: [
                         {url: '/result/list', label: '业绩列表', power: [3,6,7,8,9,10,99]},    //367 see self
                         {url: '/result/count', label: '业绩统计', power: [1,5,2,3,6,7,8,9,10,99]},
+                        {url: '/result/company', label: '客户统计', power: [1,5,2,3,6,7,8,9,10,99]},
                     ]},
                     {url: '#', label: '用户管理', power: [2,10,99], items: [
                         {url: '/team/users', label: '用户管理', power: [2,10,99]},

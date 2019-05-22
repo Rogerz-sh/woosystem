@@ -7,6 +7,7 @@
  */
 namespace App\Http\Controllers;
 
+use App\Company;
 use App\User;
 use App\Groups;
 use App\Areas;
@@ -332,6 +333,59 @@ class ResultController extends BaseController {
             ->where('result_users.status', 1)->where('result_users.date', '>=', $y_sdate)->where('result_users.date', '<=', $y_edate)
             ->groupBy('result_users.user_id')->orderBy('total_result', 'desc')->get();
         return response(["month"=>$result_month, "season"=>$result_season, "halfyear"=>$result_halfyear, "fullyear"=>$result_fullyear]);
+    }
+
+    public function getJsonResultCompanySearch() {
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        $company_name = request()->input('company_name');
+        $power = Session::get('power');
+        $results = Company::join('users', 'company.created_by', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+            ->select(DB::raw('company.name,
+(select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "report" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
+(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
+(select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
+(select sum(amount) from results where results.company_id = company.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'));
+        if ($company_name) {
+            $results = $results->whereRaw('company.name like "%'.$company_name.'%"');
+        }
+        if ($power < 10) {
+            $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')')->get();
+                } else {
+                    $users = $users->where('id', Session::get('id'))->get();
+                }
+            } else {
+                $users = $users->where('id', Session::get('id'))->get();
+            }
+            $uids = array(); $gids = array(); $aids = array();
+            foreach($users as $u) {
+                array_push($uids, $u->id);
+                if (!in_array($u->group_id, $gids)) {
+                    array_push($gids, $u->group_id);
+                }
+                if (!in_array($u->area_id, $aids)) {
+                    array_push($aids, $u->area_id);
+                }
+            }
+            $uids = join(',', $uids);
+            $gids = join(',', $gids);
+            $aids = join(',', $aids);
+            $results = $results->whereRaw('users.id in (' . $uids . ') and groups.id in (' . $gids . ') and areas.id in (' . $aids . ')');
+        }
+        $results = $results->limit(10)->get();
+        return response($results);
     }
 
 }
