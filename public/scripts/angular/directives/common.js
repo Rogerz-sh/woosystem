@@ -39,6 +39,7 @@
                         {url: '/result/list', label: '业绩列表', power: [3,6,7,8,9,10,99]},    //367 see self
                         {url: '/result/count', label: '业绩统计', power: [1,5,2,3,6,7,8,9,10,99]},
                         {url: '/result/company', label: '客户统计', power: [1,5,2,3,6,7,8,9,10,99]},
+                        {url: '/result/job', label: '职位统计', power: [1,5,2,3,6,7,8,9,10,99]},
                     ]},
                     {url: '#', label: '用户管理', power: [2,10,99], items: [
                         {url: '/team/users', label: '用户管理', power: [2,10,99]},
@@ -511,6 +512,11 @@
                         person.location = location;
                         person.belong = belong;
                         console.log(person, company, school, training);
+                        var emailValid = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i
+                        if (!emailValid.test(person.email)) {
+                            $.$modal.alert('邮箱格式不正确！');
+                            return;
+                        }
                         var url = !$scope.person_id ? '/candidate/save-new' : '/candidate/save-edit';
                         $http.post(url, {person: person, company: company, school: school, training: training}).success(function (res) {
                             if (res == -1) {

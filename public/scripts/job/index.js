@@ -135,6 +135,7 @@ $(function () {
             {field: 'salary', title: '岗位薪资'},
             {field: 'sellpoint', title: '职位卖点', template: '<div style="width: 200px; overflow-x: hidden; text-overflow: ellipsis; "><span style="white-space: nowrap;" title="#:sellpoint#">#:sellpoint#</span></div>'},
             {field: 'created_at', title: '发布时间', template: getDate},
+            {field: 'nickname', title: '发布人'},
             {field: 'status', title: '职位状态', template: getStatus},
             {title: '操作', template: getButtons, width: 120}
         ],

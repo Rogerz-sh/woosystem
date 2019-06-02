@@ -134,6 +134,10 @@
                 templateUrl: '/scripts/angular/templates/result-company.html',
                 controller: 'routeTempController'
             })
+            .when('/result/job', {
+                templateUrl: '/scripts/angular/templates/result-job.html',
+                controller: 'routeTempController'
+            })
             .when('/target/list', {
                 templateUrl: '/scripts/angular/templates/target-list.html',
                 controller: 'routeTempController'

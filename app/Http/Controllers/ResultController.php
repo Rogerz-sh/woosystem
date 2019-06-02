@@ -8,6 +8,7 @@
 namespace App\Http\Controllers;
 
 use App\Company;
+use App\Job;
 use App\User;
 use App\Groups;
 use App\Areas;
@@ -15,6 +16,10 @@ use App\Hunt;
 use App\Result;
 use App\ResultUser;
 use App\Belongs;
+use App\HuntReport;
+use App\HuntFace;
+use App\HuntSuccess;
+use App\HuntResult;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -343,10 +348,12 @@ class ResultController extends BaseController {
         $results = Company::join('users', 'company.created_by', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
-            ->select(DB::raw('company.name,
+            ->select(DB::raw('company.id, company.name,
 (select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "report" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
-(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
+(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.type = "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
+(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.type <> "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
 (select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
+(select count(id) from hunt_success where hunt_success.company_id = company.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and hunt_success.deleted_at is null) as success_count,
 (select sum(amount) from results where results.company_id = company.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'));
         if ($company_name) {
             $results = $results->whereRaw('company.name like "%'.$company_name.'%"');
@@ -386,6 +393,179 @@ class ResultController extends BaseController {
         }
         $results = $results->limit(10)->get();
         return response($results);
+    }
+
+    public function getJsonResultJobSearch() {
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        $job_name = request()->input('job_name');
+        $type = request()->input('type');
+        $power = Session::get('power');
+        $results = Job::join('users', 'jobs.created_by', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->join('areas', 'users.area_id', '=', 'areas.id')
+            ->select(DB::raw('jobs.id, jobs.name, jobs.company_name,
+(select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "report" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
+(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type = "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
+(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type <> "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
+(select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
+(select count(id) from hunt_success where hunt_success.job_id = jobs.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and hunt_success.deleted_at is null) as success_count,
+(select sum(amount) from results where results.job_id = jobs.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'));
+        if ($type) {
+            $results = $results->where('jobs.type_id', $type);
+        }
+        if ($job_name) {
+            $results = $results->whereRaw('jobs.name like "%'.$job_name.'%"');
+        }
+        if ($power < 10) {
+            $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
+            $belong = Belongs::where('user_id', Session::get('id'))->first();
+            if ($belong) {
+                $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
+                if (sizeof($path) > 0) {
+                    $ids = '';
+                    foreach ($path as $p) {
+                        $ids = $ids . ',' . $p->user_id;
+                    }
+                    $ids = substr($ids, 1);
+                    $users = $users->whereRaw('id in (' . $ids . ')')->get();
+                } else {
+                    $users = $users->where('id', Session::get('id'))->get();
+                }
+            } else {
+                $users = $users->where('id', Session::get('id'))->get();
+            }
+            $uids = array(); $gids = array(); $aids = array();
+            foreach($users as $u) {
+                array_push($uids, $u->id);
+                if (!in_array($u->group_id, $gids)) {
+                    array_push($gids, $u->group_id);
+                }
+                if (!in_array($u->area_id, $aids)) {
+                    array_push($aids, $u->area_id);
+                }
+            }
+            $uids = join(',', $uids);
+            $gids = join(',', $gids);
+            $aids = join(',', $aids);
+            $results = $results->whereRaw('users.id in (' . $uids . ') and groups.id in (' . $gids . ') and areas.id in (' . $aids . ')');
+        }
+        $results = $results->limit(10)->get();
+        return response($results);
+    }
+
+    public function getJsonCompanyDetailList() {
+        $id = request()->input('id');
+        $field = request()->input('field');
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        if ($field == 'report_count') {
+            $result = HuntReport::where('company_id', $id)
+                ->where('type', 'report')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'face_count') {
+            $result = HuntFace::join('jobs', 'jobs.id', '=', 'hunt_face.job_id')
+                ->where('jobs.company_id', $id)
+                ->where('hunt_face.date', '>=', $sdate)
+                ->where('hunt_face.date', '<=', $edate)
+                ->where('hunt_face.type', '一面')
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
+                ->orderBy('hunt_face.updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'faces_count') {
+            $result = HuntFace::join('jobs', 'jobs.id', '=', 'hunt_face.job_id')
+                ->where('jobs.company_id', $id)
+                ->where('hunt_face.date', '>=', $sdate)
+                ->where('hunt_face.date', '<=', $edate)
+                ->where('hunt_face.type', '<>', '一面')
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
+                ->orderBy('hunt_face.updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'offer_count') {
+            $result = HuntReport::where('company_id', $id)
+                ->where('type', 'offer')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'success_count') {
+            $result = HuntSuccess::where('company_id', $id)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'result_count') {
+            $result = Result::where('company_id', $id)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        return response([]);
+    }
+
+    public function getJsonJobDetailList() {
+        $id = request()->input('id');
+        $field = request()->input('field');
+        $sdate = request()->input('sdate').' 00:00:00';
+        $edate = request()->input('edate').' 23:59:59';
+        if ($field == 'report_count') {
+            $result = HuntReport::where('job_id', $id)
+                ->where('type', 'report')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'face_count') {
+            $result = HuntFace::where('job_id', $id)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->where('type', '一面')
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
+                ->orderBy('hunt_face.updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'faces_count') {
+            $result = HuntFace::where('job_id', $id)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->where('type', '<>', '一面')
+                ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
+                ->orderBy('hunt_face.updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'offer_count') {
+            $result = HuntReport::where('job_id', $id)
+                ->where('type', 'offer')
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'success_count') {
+            $result = HuntSuccess::where('job_id', $id)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        if ($field == 'result_count') {
+            $result = Result::where('job_id', $id)
+                ->where('date', '>=', $sdate)
+                ->where('date', '<=', $edate)
+                ->orderBy('updated_at', 'desc')->get();
+            return response($result);
+        }
+        return response([]);
     }
 
 }

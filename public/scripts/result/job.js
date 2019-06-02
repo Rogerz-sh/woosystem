@@ -30,6 +30,47 @@ $(function () {
         }
     }).data('kendoDatePicker');
 
+    $('#type_parent').kendoDropDownList({
+        dataSource: [],
+        dataTextField: 'name',
+        dataValueField: 'id',
+        optionLabel: '全部',
+        change: function () {
+            var item = this.dataItem();
+            if (item.id) {
+                bData.filter({field: 'parentid', operator: 'eq', value: item.id});
+                $('#type_id').data('kendoDropDownList').dataSource.data(bData.view().toJSON());
+            } else {
+                $('#type_id').data('kendoDropDownList').dataSource.data([]);
+            }
+        }
+    });
+    $('#type_id').kendoDropDownList({
+        dataSource: [],
+        dataTextField: 'name',
+        dataValueField: 'id',
+        optionLabel: '全部'
+    });
+
+    var bData = new kendo.data.DataSource();
+    $.$ajax({
+        url: '/job/json-types-list',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            var a = [], b = [];
+            res.forEach(function (v) {
+                if (v.parentid == 0) {
+                    a.push(v);
+                } else {
+                    b.push(v);
+                }
+            });
+            $('#type_parent').data('kendoDropDownList').dataSource.data(a);
+            bData.data(b);
+        }
+    });
+
     $('div.btn-group').delegate('button[data-range]', 'click', function () {
         var range = $(this).data('range');
         $(this).addClass('active').siblings().removeClass('active');
@@ -115,7 +156,8 @@ $(function () {
             pageSize: 10
         },
         columns: [
-            {field: 'name', title: '客户名称'},
+            {field: 'name', title: '职位名称'},
+            {field: 'company_name', title: '客户名称'},
             {field: 'report_count', title: '推荐数', template: getCountColor('report_count')},
             {field: 'face_count', title: '初试数', template: getCountColor('face_count')},
             {field: 'faces_count', title: '复试数', template: getCountColor('faces_count')},
@@ -140,8 +182,8 @@ $(function () {
 
     $('#search').click(function () {
         var range = $('button[data-range].active').data('range'), data = {};
-        var company_name = $('#company_name').val(),
-            industry = $('#industry').val();
+        var job_name = $('#job_name').val(),
+            type = $('#type_id').val();
         if (range == '自定义') {
             data.sdate = $('#sdate').val();
             data.edate = $('#edate').val();
@@ -150,15 +192,15 @@ $(function () {
             data.sdate = date.sdate;
             data.edate = date.edate;
         }
-        data.company_name = company_name;
-        data.industry = industry;
+        data.job_name = job_name;
+        data.type = type;
         console.log(data);
-        if (!data.company_name || data.company_name.length < 2) {
-            $.$modal.alert('必须输入2个字以上客户名称关键词');
-            return;
-        }
+        //if ((!data.job_name || data.job_name.length < 2) && !data.type) {
+        //    $.$modal.alert('必须输入2个字以上客户名称关键词');
+        //    return;
+        //}
         $.$ajax({
-            url: '/result/json-result-company-search',
+            url: '/result/json-result-job-search',
             type: 'GET',
             dataType: 'json',
             data: data,
@@ -210,7 +252,7 @@ $(function () {
     function showDetailList (id, field) {
         localData.detailField = field;
         $.$ajax({
-            url: '/result/json-company-detail-list',
+            url: '/result/json-job-detail-list',
             type: 'GET',
             dataType: 'json',
             data: {id: id, field: field, sdate: localData.startTime, edate: localData.endTime},

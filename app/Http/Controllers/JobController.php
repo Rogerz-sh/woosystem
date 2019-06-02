@@ -26,9 +26,10 @@ class JobController extends BaseController {
 
     public function getJsonJobListData () {
         $data = Job::join('company', 'jobs.company_id', '=', 'company.id')
+            ->join('users', 'users.id', '=', 'jobs.created_by')
             ->leftJoin('job_types', 'jobs.type_id', '=', 'job_types.id')
             ->leftJoin('hunt_select', 'jobs.id', '=', 'hunt_select.job_id')
-            ->select('jobs.id', 'jobs.name', 'jobs.type_id', 'job_types.name as type_name', 'job_types.parentid as type_parent', 'jobs.company_id', 'jobs.company_name', 'company.industry', 'jobs.salary', 'jobs.area', 'jobs.sellpoint', 'jobs.created_at', 'jobs.updated_at', 'jobs.created_by', 'hunt_select.user_names', 'hunt_select.user_ids', 'hunt_select.status')
+            ->select('jobs.id', 'jobs.name', 'users.nickname', 'jobs.type_id', 'job_types.name as type_name', 'job_types.parentid as type_parent', 'jobs.company_id', 'jobs.company_name', 'company.industry', 'jobs.salary', 'jobs.area', 'jobs.sellpoint', 'jobs.created_at', 'jobs.updated_at', 'jobs.created_by', 'hunt_select.user_names', 'hunt_select.user_ids', 'hunt_select.status')
             //->whereNotNull('hunt_select.status')
             ->orderBy('jobs.created_at', 'desc')->get();
         return response($data);
