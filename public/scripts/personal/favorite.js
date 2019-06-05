@@ -718,7 +718,7 @@ $(function () {
             title: '转入到其它收藏夹',
             size: 'sm',
             destroy: true,
-            content: '<div><select id="favorite_id"></select></div>',
+            content: '<div class="pos-rel"><select id="favorite_id"></select></div>',
             footer: {
                 buttons: [
                     {
@@ -762,7 +762,11 @@ $(function () {
                     dataSource: favData,
                     dataTextField: 'name',
                     dataValueField: 'id',
-                    optionLabel: '请选择要转入的收藏夹'
+                    optionLabel: '请选择要转入的收藏夹',
+                    filter: 'contains',
+                    popup: {
+                        appendTo: $('#favorite_id', dom).closest('div.pos-rel')
+                    }
                 });
             }
         }).show();
