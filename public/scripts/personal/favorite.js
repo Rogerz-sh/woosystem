@@ -82,7 +82,7 @@ $(function () {
 
     //change right side content
     $('#contentMenu').delegate('span._name', 'click', function () {
-        var id = $(this).data('id');
+        var id = $(this).closest('span[data-id]').data('id');
         $('#contentMenu').find('span[data-id]').removeClass('active');
         $(this).closest('span[data-id]').addClass('active');
         selectedFavId = id;
