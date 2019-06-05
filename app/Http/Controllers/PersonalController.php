@@ -218,4 +218,11 @@ class PersonalController extends BaseController {
         return response($dynamic->id);
     }
 
+    public function postResetFavorites() {
+        $fav_id = request()->input('fav_id');
+        $list = request()->input('list');
+        FavoriteTarget::where('user_id', Session::get('id'))->whereIn('id', $list)->update(['favorite_id'=>$fav_id]);
+        return response(1);
+    }
+
 }

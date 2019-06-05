@@ -65,19 +65,23 @@ $(function () {
         $('#contentMenu').find('span[data-id]').eq(0).addClass('active');
     }
 
-    $.$ajax({
-        url: '/personal/json-favorite-list',
-        type: 'GET',
-        data: { type: 'person' },
-        success: function (res) {
-            res.total.forEach(function (v) {
-                total[v.favorite_id] = v.count;
-            });
-            favorites = res.favorites;
-            favorites.unshift({id: 0, name: '人才收藏夹', parent_id: null});
-            initMenu();
-        }
-    });
+    function refreshMenu() {
+        $.$ajax({
+            url: '/personal/json-favorite-list',
+            type: 'GET',
+            data: { type: 'person' },
+            success: function (res) {
+                res.total.forEach(function (v) {
+                    total[v.favorite_id] = v.count;
+                });
+                favorites = res.favorites;
+                favorites.unshift({id: 0, name: '人才收藏夹', parent_id: null});
+                initMenu();
+            }
+        });
+    }
+
+    refreshMenu();
 
 
     //change right side content
@@ -259,7 +263,7 @@ $(function () {
             filter: {field: 'deleted', operator: 'neq', value: true}
         },
         columns: [
-            //{field: 'real_id', title: 'ID', width: 200, filterable: false},
+            {field: 'id', title: '<label><input type=\'checkbox\' id=\'selAll\'><span class=\'text\'></span></label>', template: '<label><input type="checkbox" name="fav_id" value="#:id#"/><span class="text"></span></label>', width: 40},
             {field: 'name', title: '姓名', template: getName},
             {field: 'job', title: '目前职位'},
             {field: 'company', title: '所在公司'},
@@ -302,6 +306,7 @@ $(function () {
             $.$ajax.post('/personal/delete-favorite-target', {id: id}, function (res) {
                 if (res) {
                     grid.dataSource.read();
+                    refreshMenu();
                 } else {
                     $.$modal.alert('删除失败！');
                 }
@@ -584,6 +589,7 @@ $(function () {
                                     success: function (res) {
                                         if (res) {
                                             grid.dataSource.read();
+                                            refreshMenu();
                                             self.hide();
                                         } else {
                                             $.$modal.alert('添加失败！');
@@ -685,4 +691,80 @@ $(function () {
         }).show();
     });
 
+    $('#grid').delegate('#selAll', 'click', function () {
+        var checked = $(this).prop('checked');
+        $('#grid').find('input[name="fav_id"]').prop('checked', checked);
+    });
+
+    $('#grid').delegate('input[name="fav_id"]', 'click', function () {
+        var total = $('#grid').find('input[name="fav_id"]').length, checked = $('#grid').find('input[name="fav_id"]:checked').length;
+        if (total == checked) {
+            $('#grid').find('#selAll').prop('checked', true);
+        } else {
+            $('#grid').find('#selAll').prop('checked', false);
+        }
+    });
+
+    $('#replace').click(function () {
+        var checked = $('#grid').find('input[name="fav_id"]:checked'), ids = [];
+        if (checked.length == 0) {
+            $.$modal.alert('请选择要转入的人才简历');
+            return;
+        }
+        checked.each(function (i, ipt) {
+            ids.push($(ipt).val());
+        });
+        $.$modal.dialog({
+            title: '转入到其它收藏夹',
+            size: 'sm',
+            destroy: true,
+            content: '<div><select id="favorite_id"></select></div>',
+            footer: {
+                buttons: [
+                    {
+                        name: 'ok',
+                        handler: function () {
+                            var self = this, dom = self.dom, fav_id = $('#favorite_id', dom).val();
+                            if (fav_id !== '') {
+                                $.$ajax({
+                                    url: '/personal/reset-favorites',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {fav_id: fav_id, list: ids},
+                                    success: function (res) {
+                                        if (res) {
+                                            grid.dataSource.read();
+                                            refreshMenu();
+                                            self.hide();
+                                        } else {
+                                            $.$modal.alert('保存失败');
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    {
+                        name: 'cancel',
+                        handler: function () {
+                            this.hide();
+                        }
+                    }
+                ]
+            },
+            onLoaded: function () {
+                var dom = this.dom, favData = [];
+                $('span[data-id]', '#contentMenu').each(function (i, ipt) {
+                    var id = $(this).data('id'), name = $(this).find('span._name').text().split('(')[0]
+                    favData.push({'id': id, 'name': name});
+                });
+                $('#favorite_id', dom).kendoDropDownList({
+                    dataSource: favData,
+                    dataTextField: 'name',
+                    dataValueField: 'id',
+                    optionLabel: '请选择要转入的收藏夹'
+                });
+            }
+        }).show();
+    });
 });
