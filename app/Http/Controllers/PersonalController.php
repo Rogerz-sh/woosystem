@@ -22,8 +22,8 @@ class PersonalController extends BaseController {
     public function getJsonFavoriteList() {
         $type = request()->input('type');
         $favorites = Favorite::where('user_id', Session::get('id'))->where('type', $type)->get();
-
-        return response($favorites);
+        $total = FavoriteTarget::select(DB::raw('count(*) as count, max(favorite_id) as favorite_id'))->where('user_id', Session::get('id'))->groupBy('favorite_id')->get();
+        return response(["favorites"=>$favorites, "total"=>$total]);
     }
 
     public function postAddFavorite() {

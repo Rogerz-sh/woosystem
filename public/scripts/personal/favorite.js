@@ -1,5 +1,5 @@
 $(function () {
-    var favorites = [];
+    var favorites = [], total = {};
 
     var selectedFavId = 0;
 
@@ -33,13 +33,25 @@ $(function () {
         $(dom).empty();
         console.log(items);
         items.forEach(function (item) {
+            var count = total[item.id] || 0;
             var $li = $('<li class="flex flex-v-center"><span data-id="{0}" class="flex-1">{1}</span> {2} {3}</li>'.format(
                 item.id,
-                '<span class="fa fa-caret-right"></span>' + ' ' + item.name,
+                '<span class="fa fa-caret-down _handler"></span>' + ' <span class="_name">' + item.name + '(<span class="_count">'+count+'</span>)</span>',
                 item.depth < 2 ? '<i data-id="{0}" class="margin-right-5 fa fa-plus-circle green _add" title="添加子收藏夹"></i>'.format(item.id) : '',
                 item.parent_id === null ? '' : '<i data-id="{0}" class="margin-right-5 fa fa-pencil blue _edit" title="编辑名称"></i> <i data-id="{0}" class="margin-right-5 fa fa-trash-o red _delete" title="删除"></i>'.format(item.id))
             );
             $li.appendTo($(dom));
+            var $count = $li.parent().prev().find('._count');
+            while ($count && $count.length > 0) {
+                var p_count = $count.text() - 0;
+                p_count += count;
+                $count.text(p_count);
+                try {
+                    $count = $count.closest('ul').prev('li').find('._count');
+                } catch (e) {
+                    $count = null;
+                }
+            }
             if (item.children) {
                 var _ul = $('<ul></ul>');
                 _ul.insertAfter($li);
@@ -58,7 +70,10 @@ $(function () {
         type: 'GET',
         data: { type: 'person' },
         success: function (res) {
-            favorites = res;
+            res.total.forEach(function (v) {
+                total[v.favorite_id] = v.count;
+            });
+            favorites = res.favorites;
             favorites.unshift({id: 0, name: '人才收藏夹', parent_id: null});
             initMenu();
         }
@@ -66,12 +81,17 @@ $(function () {
 
 
     //change right side content
-    $('#contentMenu').delegate('span[data-id]', 'click', function () {
+    $('#contentMenu').delegate('span._name', 'click', function () {
         var id = $(this).data('id');
         $('#contentMenu').find('span[data-id]').removeClass('active');
-        $(this).addClass('active');
+        $(this).closest('span[data-id]').addClass('active');
         selectedFavId = id;
         grid.dataSource.read();
+    });
+
+    $('#contentMenu').delegate('span._handler', 'click', function () {
+        $(this).closest('li').next('ul').toggle('slow');
+        $(this).toggleClass('fa-caret-down fa-caret-right');
     });
 
     //show icons of operator
