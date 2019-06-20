@@ -351,7 +351,7 @@ class ResultController extends BaseController {
             ->select(DB::raw('company.id, company.name,
 (select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "report" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
 (select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.type = "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
-(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.type <> "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
+(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.type = "二面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
 (select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
 (select count(id) from hunt_success where hunt_success.company_id = company.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and hunt_success.deleted_at is null) as success_count,
 (select sum(amount) from results where results.company_id = company.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'));
@@ -407,7 +407,7 @@ class ResultController extends BaseController {
             ->select(DB::raw('jobs.id, jobs.name, jobs.company_name,
 (select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "report" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
 (select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type = "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
-(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type <> "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
+(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type = "二面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
 (select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
 (select count(id) from hunt_success where hunt_success.job_id = jobs.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and hunt_success.deleted_at is null) as success_count,
 (select sum(amount) from results where results.job_id = jobs.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'));
@@ -482,7 +482,7 @@ class ResultController extends BaseController {
                 ->where('jobs.company_id', $id)
                 ->where('hunt_face.date', '>=', $sdate)
                 ->where('hunt_face.date', '<=', $edate)
-                ->where('hunt_face.type', '<>', '一面')
+                ->where('hunt_face.type', '二面')
                 ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
                 ->orderBy('hunt_face.updated_at', 'desc')->get();
             return response($result);
@@ -538,7 +538,7 @@ class ResultController extends BaseController {
             $result = HuntFace::where('job_id', $id)
                 ->where('date', '>=', $sdate)
                 ->where('date', '<=', $edate)
-                ->where('type', '<>', '一面')
+                ->where('type', '二面')
                 ->whereRaw('(select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0')
                 ->orderBy('hunt_face.updated_at', 'desc')->get();
             return response($result);
