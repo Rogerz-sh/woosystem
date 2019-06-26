@@ -90,6 +90,15 @@ $(function () {
         $('#contentMenu').find('span[data-id]').removeClass('active');
         $(this).closest('span[data-id]').addClass('active');
         selectedFavId = id;
+        var li = $(this).closest('li'), nextNode = li.next();
+        if (nextNode.is('ul')) {
+            var ids = [];
+            ids.push(id);
+            nextNode.find('span[data-id]').each(function (i, span) {
+                ids.push($(span).data('id'));
+            });
+            selectedFavId = ids.join(',');
+        }
         grid.dataSource.read();
     });
 

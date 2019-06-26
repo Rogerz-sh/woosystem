@@ -80,7 +80,7 @@ class PersonalController extends BaseController {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'));
         } else {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'))
-                ->whereRaw('favorite_targets.favorite_id in (select favorites.id from favorites where favorites.id = ' . $favorite_id . ' or favorites.parent_id = ' . $favorite_id . ')');
+                ->whereRaw('favorite_targets.favorite_id in (' . $favorite_id . ')');
         }
         $favorite_targets = $favorite_targets->select(DB::raw('favorite_targets.id,
         person.id as person_id,
