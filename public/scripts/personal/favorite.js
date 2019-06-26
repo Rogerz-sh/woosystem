@@ -37,7 +37,7 @@ $(function () {
             var $li = $('<li class="flex flex-v-center"><span data-id="{0}" class="flex-1">{1}</span> {2} {3}</li>'.format(
                 item.id,
                 '<span class="fa fa-caret-down _handler"></span>' + ' <span class="_name">' + item.name + '(<span class="_count">'+count+'</span>)</span>',
-                item.depth < 2 ? '<i data-id="{0}" class="margin-right-5 fa fa-plus-circle green _add" title="添加子收藏夹"></i>'.format(item.id) : '',
+                item.depth < 4 ? '<i data-id="{0}" class="margin-right-5 fa fa-plus-circle green _add" title="添加子收藏夹"></i>'.format(item.id) : '',
                 item.parent_id === null ? '' : '<i data-id="{0}" class="margin-right-5 fa fa-pencil blue _edit" title="编辑名称"></i> <i data-id="{0}" class="margin-right-5 fa fa-trash-o red _delete" title="删除"></i>'.format(item.id))
             );
             $li.appendTo($(dom));

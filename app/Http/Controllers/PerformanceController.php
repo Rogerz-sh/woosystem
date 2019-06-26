@@ -54,7 +54,7 @@ class PerformanceController extends BaseController {
         $power = Session::get('power');
         $sid = Session::get('id');
         $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
-        if ($power < 10 && $sid != 85) {
+        if ($power < 10 && $sid != 121) {
             $belong = Belongs::where('user_id', $sid)->first();
             if ($belong) {
                 $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
@@ -734,7 +734,7 @@ class PerformanceController extends BaseController {
         $power = Session::get('power');
         $sid = Session::get('id');
         $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
-        if ($power < 10 && $sid != 85) {
+        if ($power < 10 && $sid != 121) {
             $belong = Belongs::where('user_id', $sid)->first();
             if ($belong) {
                 $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
@@ -813,7 +813,7 @@ class PerformanceController extends BaseController {
 
     public function getJsonAreaGroupUserData() {
         $power = Session::get('power');
-        if ($power >= 10 || Session::get('id') == 85) {
+        if ($power >= 10 || Session::get('id') == 121) {
             $area = Areas::select('id', 'a_name')->get();
             $group = Groups::select('id', 'g_name', 'area_id', 'area_name')->get();
             $user = User::select('id', 'nickname', 'area_id', 'group_id')->where('status', '1')->orderBy('id', 'desc')->get();
@@ -860,7 +860,7 @@ class PerformanceController extends BaseController {
         $power = Session::get('power');
         $sid = Session::get('id');
         $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
-        if ($power < 10 && $sid != 85) {
+        if ($power < 10 && $sid != 121) {
             $belong = Belongs::where('user_id', $sid)->first();
             if ($belong) {
                 $path = Belongs::whereRaw('root_path like "' . $belong->root_path . '%"')->select('user_id')->get();
