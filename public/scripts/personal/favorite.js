@@ -204,9 +204,37 @@ $(function () {
         optionLabel: '全部'
     });
 
-    $('#source', '#searchCtn').kendoDropDownList({
-        dataSource: search_options.source,
+    var province = $('#province', '#searchCtn').kendoDropDownList({
+        dataSource: [],
+        dataValueField: 'id',
+        dataTextField: 'name',
+        optionLabel: '全部',
+        change: function () {
+            var p = +this.value();
+            city.dataSource.filter({field: 'provinceId', operator: 'eq', value: p});
+        }
+    }).data('kendoDropDownList');
+
+    var city = $('#city', '#searchCtn').kendoDropDownList({
+        dataSource: [],
+        dataValueField: 'id',
+        dataTextField: 'name',
         optionLabel: '全部'
+    }).data('kendoDropDownList');
+
+    $.$ajax({
+        url: '/data/location.json',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            province.dataSource.data(res.province);
+            var citys = [];
+            for (c in res.citys) {
+                citys.push(res.citys[c]);
+            }
+            city.dataSource.data(citys);
+            province.trigger('change');
+        }
     });
 
     $('#degree', '#searchCtn').kendoDropDownList({
@@ -215,20 +243,37 @@ $(function () {
     });
 
     $('#search', '#searchCtn').click(function () {
+        var location = {p: province.dataItem(), c: city.dataItem()}, location1 = '', location2 = '';
+        if (location.p.id) {
+            location1 = location.p.name;
+            location2 = location.p.name.replace('省', '');
+            if (location.c.id) {
+                location1 = location1 + '-' + location.c.name;
+                location2 = location2 + '-' + location.c.name.replace('市', '');
+            }
+        }
         var searchs = {
             'name': $('#name', '#searchCtn').val().trim(),
             'sage': ~~$('#age_begin', '#searchCtn').val().trim(),
             'eage': ~~$('#age_end', '#searchCtn').val().trim(),
             'sex': $('#sex', '#searchCtn').val(),
-            'source': $('#source', '#searchCtn').val(),
+            'location': [location1, location2],
             'degree': $('#degree', '#searchCtn').val(),
             'job': $('#job', '#searchCtn').val(),
             'company': $('#company', '#searchCtn').val(),
             'tel': $('#tel', '#searchCtn').val()
-        }, filter = [], containsField = ['name', 'job', 'company', 'tel'];
+        }, filter = [], containsField = ['name', 'job', 'company', 'tel', 'location'];
         for (var n in searchs) {
             if (searchs[n]) {
-                if (n != 'sage' && n != 'eage') {
+                if (n == 'location') {
+                    filter.push({
+                        logic: 'or',
+                        filters: [
+                            {field: n, operator: 'contains', value: searchs[n][0]},
+                            {field: n, operator: 'contains', value: searchs[n][1]}
+                        ]
+                    });
+                } else if (n != 'sage' && n != 'eage') {
                     var operator = containsField.indexOf(n) > -1 ? 'contains' : 'eq';
                     filter.push({field: n, operator: operator, value: searchs[n]});
                 } else {
@@ -627,9 +672,37 @@ $(function () {
                     optionLabel: '全部'
                 });
 
-                $('#source', dom).kendoDropDownList({
-                    dataSource: search_options.source,
+                var province = $('#province', dom).kendoDropDownList({
+                    dataSource: [],
+                    dataValueField: 'id',
+                    dataTextField: 'name',
+                    optionLabel: '全部',
+                    change: function () {
+                        var p = +this.value();
+                        city.dataSource.filter({field: 'provinceId', operator: 'eq', value: p});
+                    }
+                }).data('kendoDropDownList');
+
+                var city = $('#city', dom).kendoDropDownList({
+                    dataSource: [],
+                    dataValueField: 'id',
+                    dataTextField: 'name',
                     optionLabel: '全部'
+                }).data('kendoDropDownList');
+
+                $.$ajax({
+                    url: '/data/location.json',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (res) {
+                        province.dataSource.data(res.province);
+                        var citys = [];
+                        for (c in res.citys) {
+                            citys.push(res.citys[c]);
+                        }
+                        city.dataSource.data(citys);
+                        province.trigger('change');
+                    }
                 });
 
                 $('#degree', dom).kendoDropDownList({
@@ -638,19 +711,30 @@ $(function () {
                 });
 
                 $('#search', dom).click(function () {
+                    var location = {p: province.dataItem(), c: city.dataItem()}, location1 = '', location2 = '';
+                    if (location.p.id) {
+                        location1 = location.p.name;
+                        location2 = location.p.name.replace('省', '');
+                        if (location.c.id) {
+                            location1 = location1 + '-' + location.c.name;
+                            location2 = location2 + '-' + location.c.name.replace('市', '');
+                        }
+                    }
                     var searchs = {
                         'name': $('#name', dom).val().trim(),
                         'sage': ~~$('#age_begin', dom).val().trim(),
                         'eage': ~~$('#age_end', dom).val().trim(),
                         'sex': $('#sex', dom).val(),
-                        'source': $('#source', dom).val(),
+                        'location': [location1,location2],
                         'degree': $('#degree', dom).val(),
                         'job': $('#job', dom).val(),
                         'company': $('#company', dom).val(),
                         'tel': $('#tel', dom).val()
                     }, filter = {};
                     for (var n in searchs) {
-                        if (searchs[n]) filter[n] = searchs[n];
+                        if (searchs[n]) {
+                            filter[n] = searchs[n];
+                        }
                     }
                     $.$ajax.get('/personal/json-person-non-favorite-data', {filter: filter, favorite_id: selectedFavId}, function (res) {
                         console.log(res[1]);
@@ -681,7 +765,7 @@ $(function () {
                         {field: 'name', title: '姓名', template: getName},
                         {field: 'job', title: '目前职位'},
                         {field: 'company', title: '所在公司'},
-                        {field: 'source', title: '简历来源'},
+                        {field: 'location', title: '居住地'},
                         {field: 'tel', title: '电话'},
                         {field: 'user_name', title: '录入人'},
                         {field: 'created_at', title: '录入时间', template: getDate, width: 150}

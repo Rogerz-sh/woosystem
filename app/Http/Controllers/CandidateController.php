@@ -48,8 +48,8 @@ class CandidateController extends BaseController {
             if (isset($filter['sex'])) {
                 $whereStr = $whereStr.' and sex = "'.$filter['sex'].'"';
             }
-            if (isset($filter['source'])) {
-                $whereStr = $whereStr.' and source = "'.$filter['source'].'"';
+            if (isset($filter['location'])) {
+                $whereStr = $whereStr.' and (location like "'.$filter['location'][0].'%" or location like "'.$filter['location'][1].'%")';
             }
             if (isset($filter['degree'])) {
                 $whereStr = $whereStr.' and degree = "'.$filter['degree'].'"';

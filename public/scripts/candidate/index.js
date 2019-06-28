@@ -15,9 +15,37 @@ $(function () {
         optionLabel: '全部'
     });
 
-    $('#source').kendoDropDownList({
-        dataSource: search_options.source,
+    var province = $('#province').kendoDropDownList({
+        dataSource: [],
+        dataValueField: 'id',
+        dataTextField: 'name',
+        optionLabel: '全部',
+        change: function () {
+            var p = +this.value();
+            city.dataSource.filter({field: 'provinceId', operator: 'eq', value: p});
+        }
+    }).data('kendoDropDownList');
+
+    var city = $('#city').kendoDropDownList({
+        dataSource: [],
+        dataValueField: 'id',
+        dataTextField: 'name',
         optionLabel: '全部'
+    }).data('kendoDropDownList');
+
+    $.$ajax({
+        url: '/data/location.json',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            province.dataSource.data(res.province);
+            var citys = [];
+            for (c in res.citys) {
+                citys.push(res.citys[c]);
+            }
+            city.dataSource.data(citys);
+            province.trigger('change');
+        }
     });
 
     $('#degree').kendoDropDownList({
@@ -26,12 +54,21 @@ $(function () {
     });
 
     $('#search').click(function () {
+        var location = {p: province.dataItem(), c: city.dataItem()}, location1 = '', location2 = '';
+        if (location.p.id) {
+            location1 = location.p.name;
+            location2 = location.p.name.replace('省', '');
+            if (location.c.id) {
+                location1 = location1 + '-' + location.c.name;
+                location2 = location2 + '-' + location.c.name.replace('市', '');
+            }
+        }
         var searchs = {
             'name': $('#name').val().trim(),
             'sage': ~~$('#age_begin').val().trim(),
             'eage': ~~$('#age_end').val().trim(),
             'sex': $('#sex').val(),
-            'source': $('#source').val(),
+            'location': [location1, location2],
             'degree': $('#degree').val(),
             'job': $('#job').val(),
             'company': $('#company').val(),
