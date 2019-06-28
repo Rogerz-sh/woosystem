@@ -23,7 +23,8 @@ class PersonalController extends BaseController {
         $type = request()->input('type');
         $favorites = Favorite::where('user_id', Session::get('id'))->where('type', $type)->get();
         $total = FavoriteTarget::select(DB::raw('count(*) as count, max(favorite_id) as favorite_id'))->where('user_id', Session::get('id'))->groupBy('favorite_id')->get();
-        return response(["favorites"=>$favorites, "total"=>$total]);
+        $month = FavoriteTarget::where('user_id', Session::get('id'))->whereRaw('datediff(now(), created_at) <= 30')->count();
+        return response(["favorites"=>$favorites, "total"=>$total, "month"=>$month]);
     }
 
     public function postAddFavorite() {
@@ -78,6 +79,9 @@ class PersonalController extends BaseController {
 
         if ($favorite_id == 0) {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'));
+        } else if ($favorite_id == -1) {
+            $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'))
+                ->whereRaw('datediff(now(), favorite_targets.created_at) <= 30');
         } else {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'))
                 ->whereRaw('favorite_targets.favorite_id in (' . $favorite_id . ')');

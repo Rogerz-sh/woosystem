@@ -36,7 +36,7 @@ $(function () {
             var count = total[item.id] || 0;
             var $li = $('<li class="flex flex-v-center"><span data-id="{0}" class="flex-1">{1}</span> {2} {3}</li>'.format(
                 item.id,
-                '<span class="fa fa-caret-down _handler"></span>' + ' <span class="_name">' + item.name + '(<span class="_count">'+count+'</span>)</span>',
+                '<span class="fa fa-caret-right _handler"></span>' + ' <span class="_name">' + item.name + '(<span class="_count">'+count+'</span>)</span>',
                 item.depth < 4 ? '<i data-id="{0}" class="margin-right-5 fa fa-plus-circle green _add" title="添加子收藏夹"></i>'.format(item.id) : '',
                 item.parent_id === null ? '' : '<i data-id="{0}" class="margin-right-5 fa fa-pencil blue _edit" title="编辑名称"></i> <i data-id="{0}" class="margin-right-5 fa fa-trash-o red _delete" title="删除"></i>'.format(item.id))
             );
@@ -53,7 +53,7 @@ $(function () {
                 }
             }
             if (item.children) {
-                var _ul = $('<ul></ul>');
+                var _ul = $('<ul style="display:none;"></ul>');
                 _ul.insertAfter($li);
                 buildSideMenu(_ul, item.children);
             }
@@ -74,8 +74,10 @@ $(function () {
                 res.total.forEach(function (v) {
                     total[v.favorite_id] = v.count;
                 });
+                total['-1'] = res.month
                 favorites = res.favorites;
                 favorites.unshift({id: 0, name: '人才收藏夹', parent_id: null});
+                favorites.unshift({id: -1, name: '近一个月收藏', parent_id: null});
                 initMenu();
             }
         });
