@@ -631,7 +631,7 @@ $(function () {
 
     function getButtons(item) {
         var now = new Date(), year = now.getFullYear(), area = now.getMonth() < 6 ? 1 : 2, disabled = '';
-        if (+item.year < year || (+item.year == year && +item.area <= area)) {
+        if (+item.year < year || (+item.year == year && +item.area < area)) {
             disabled = 'disabled';
         }
         return '<a class="btn btn-xs btn-default _edit" data-id="{0}" {1}>编辑</a>\
