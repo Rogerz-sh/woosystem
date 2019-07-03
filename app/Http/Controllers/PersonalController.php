@@ -21,10 +21,13 @@ class PersonalController extends BaseController {
 
     public function getJsonFavoriteList() {
         $type = request()->input('type');
+        $month = request()->input('month');
+        $week = request()->input('week');
         $favorites = Favorite::where('user_id', Session::get('id'))->where('type', $type)->get();
         $total = FavoriteTarget::select(DB::raw('count(*) as count, max(favorite_id) as favorite_id'))->where('user_id', Session::get('id'))->groupBy('favorite_id')->get();
-        $month = FavoriteTarget::where('user_id', Session::get('id'))->whereRaw('datediff(now(), created_at) <= 30')->count();
-        return response(["favorites"=>$favorites, "total"=>$total, "month"=>$month]);
+        $month = FavoriteTarget::where('user_id', Session::get('id'))->where('created_at', '>=', $month['start'])->where('created_at', '<=', $month['end'])->count();
+        $week = FavoriteTarget::where('user_id', Session::get('id'))->where('created_at', '>=', $week['start'])->where('created_at', '<=', $week['end'])->count();
+        return response(["favorites"=>$favorites, "total"=>$total, "month"=>$month, "week"=>$week]);
     }
 
     public function postAddFavorite() {
@@ -76,12 +79,17 @@ class PersonalController extends BaseController {
 
     public function getJsonPersonFavoriteData() {
         $favorite_id = request()->input('favorite_id');
+        $month = request()->input('month');
+        $week = request()->input('week');
 
         if ($favorite_id == 0) {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'));
         } else if ($favorite_id == -1) {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'))
-                ->whereRaw('datediff(now(), favorite_targets.created_at) <= 30');
+                ->where('favorite_targets.created_at', '>=', $week['start'])->where('favorite_targets.created_at', '<=', $week['end']);
+        } else if ($favorite_id == -2) {
+            $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'))
+                ->where('favorite_targets.created_at', '>=', $month['start'])->where('favorite_targets.created_at', '<=', $month['end']);
         } else {
             $favorite_targets = FavoriteTarget::join('person', 'favorite_targets.target_id', '=', 'person.id')->where('user_id', Session::get('id'))
                 ->whereRaw('favorite_targets.favorite_id in (' . $favorite_id . ')');

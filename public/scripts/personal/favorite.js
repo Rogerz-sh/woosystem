@@ -3,6 +3,12 @@ $(function () {
 
     var selectedFavId = 0;
 
+    var d = new Date(), day = d.getDay(), week = {}, month = {};
+    week.start = Date.translate('now-'+(day - 1)).format() + ' 00:00:00';
+    week.end = Date.translate('now+'+(7 - day)).format() + ' 23:59:59';
+    month.start = new Date(d.getFullYear(), d.getMonth(), 1).format() + ' 00:00:00';
+    month.end = new Date(d.getFullYear(), d.getMonth()+1, 0).format() + ' 23:59:59';
+
     function buildFavTree(items) {
         var favTree = [];
         var getChildren = function (id, depth) {
@@ -62,22 +68,24 @@ $(function () {
 
     function initMenu() {
         buildSideMenu('#contentMenu', buildFavTree(favorites));
-        $('#contentMenu').find('span[data-id]').eq(0).addClass('active');
+        $('#contentMenu').find('span[data-id]').eq(2).addClass('active');
     }
 
     function refreshMenu() {
         $.$ajax({
             url: '/personal/json-favorite-list',
             type: 'GET',
-            data: { type: 'person' },
+            data: { type: 'person', month: month, week: week },
             success: function (res) {
                 res.total.forEach(function (v) {
                     total[v.favorite_id] = v.count;
                 });
-                total['-1'] = res.month
+                total['-2'] = res.month;
+                total['-1'] = res.week;
                 favorites = res.favorites;
                 favorites.unshift({id: 0, name: '人才收藏夹', parent_id: null});
-                favorites.unshift({id: -1, name: '近一个月收藏', parent_id: null});
+                favorites.unshift({id: -1, name: '本周收藏', parent_id: null});
+                favorites.unshift({id: -2, name: '本月收藏', parent_id: null});
                 initMenu();
             }
         });
@@ -303,7 +311,7 @@ $(function () {
                         url: '/personal/json-person-favorite-data',
                         type: 'GET',
                         dataType: 'json',
-                        data: {favorite_id: selectedFavId},
+                        data: {favorite_id: selectedFavId, month: month, week: week},
                         success: function (res) {
                             option.success(res);
                         }
