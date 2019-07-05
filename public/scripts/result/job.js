@@ -3,33 +3,6 @@
  */
 $(function () {
 
-    var sdate = $('#sdate').kendoDatePicker({
-        culture: 'zh-CN',
-        format: 'yyyy-MM-dd',
-        change: function () {
-            edate.min(this.value());
-            edate.max(this.value().translate('now+365'));
-            if (!edate.value()) {
-                sdate.max(this.value());
-                sdate.min(this.value().translate('now-365'));
-                edate.value(this.value());
-            }
-        }
-    }).data('kendoDatePicker');
-    var edate = $('#edate').kendoDatePicker({
-        culture: 'zh-CN',
-        format: 'yyyy-MM-dd',
-        change: function () {
-            sdate.max(this.value());
-            sdate.min(this.value().translate('now-365'));
-            if (!sdate.value()) {
-                edate.min(this.value());
-                edate.max(this.value().translate('now+365'));
-                sdate.value(this.value());
-            }
-        }
-    }).data('kendoDatePicker');
-
     $('#type_parent').kendoDropDownList({
         dataSource: [],
         dataTextField: 'name',
@@ -74,11 +47,7 @@ $(function () {
     $('div.btn-group').delegate('button[data-range]', 'click', function () {
         var range = $(this).data('range');
         $(this).addClass('active').siblings().removeClass('active');
-        if (range == '自定义') {
-            $('#range_date_box').show();
-        } else {
-            $('#range_date_box').hide();
-        }
+        grid.dataSource.read();
     });
 
     function getQuickSearchDates(range) {
@@ -136,6 +105,8 @@ $(function () {
                 return;
                 break;
         }
+        localData.startTime = date.sdate;
+        localData.endTime = date.edate;
         return date;
     }
 
@@ -147,13 +118,31 @@ $(function () {
 
     var grid = $('#grid').kendoGrid({
         dataSource: {
-            data: [],
+            transport: {
+                read: function (options) {
+                    var data = getQuickSearchDates($('button[data-range].active').data('range')), job_name = $('#job_name').val(), type = $('#type_id').val();
+                    if (job_name) data.job_name = job_name;
+                    if (type) data.type = type;
+                    $.$ajax({
+                        url: '/result/json-result-job-search',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: Object.assign(data, options.data),
+                        success: function (res) {
+                            options.success(res);
+                        }
+                    });
+                }
+            },
             schema: {
                 model: {
                     id: 'id'
-                }
+                },
+                data: 'results',
+                total: 'total'
             },
-            pageSize: 10
+            pageSize: 10,
+            serverPaging: true
         },
         columns: [
             {field: 'name', title: '职位名称'},
@@ -166,7 +155,7 @@ $(function () {
             {field: 'result_count', title: '回款数', template: getCountColor('result_count')},
         ],
         scrollable: false,
-        pageable: false,
+        pageable: true,
     }).data('kendoGrid');
 
     function getCountColor(field) {
@@ -181,35 +170,7 @@ $(function () {
     });
 
     $('#search').click(function () {
-        var range = $('button[data-range].active').data('range'), data = {};
-        var job_name = $('#job_name').val(),
-            type = $('#type_id').val();
-        if (range == '自定义') {
-            data.sdate = $('#sdate').val();
-            data.edate = $('#edate').val();
-        } else {
-            var date = getQuickSearchDates(range);
-            data.sdate = date.sdate;
-            data.edate = date.edate;
-        }
-        data.job_name = job_name;
-        data.type = type;
-        console.log(data);
-        //if ((!data.job_name || data.job_name.length < 2) && !data.type) {
-        //    $.$modal.alert('必须输入2个字以上客户名称关键词');
-        //    return;
-        //}
-        $.$ajax({
-            url: '/result/json-result-job-search',
-            type: 'GET',
-            dataType: 'json',
-            data: data,
-            success: function (res) {
-                grid.dataSource.data(res);
-                localData.startTime = data.sdate;
-                localData.endTime = data.edate;
-            }
-        })
+        grid.dataSource.read();
     });
 
     function getDetailText(item) {

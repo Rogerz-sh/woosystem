@@ -7,12 +7,14 @@
  */
 namespace App\Http\Controllers;
 use App\Candidate;
+use App\Company;
 use App\Hunt;
 use App\HuntFace;
 use App\HuntReport;
 use App\HuntResult;
 use App\HuntSelect;
 use App\HuntSuccess;
+use App\Job;
 use App\User;
 use App\Belongs;
 use Illuminate\Support\Facades\Storage;
@@ -234,7 +236,22 @@ class HuntController extends BaseController {
     private function updateHuntTime($id) {
         $hs = HuntSelect::where('job_id', $id)->first();
         if ($hs) {
+            $hs->last_update = time() % 100000000;
             $hs->save();
+            $this->updateJobAndCompanyTime($id);
+        }
+    }
+
+    private function updateJobAndCompanyTime($job_id) {
+        $job = Job::where('id', $job_id)->first();
+        if ($job) {
+            $job->last_update = time() % 100000000;
+            $job->save();
+            $company = Company::where('id', $job->company_id)->first();
+            if ($company) {
+                $company->last_update = time() % 100000000;
+                $company->save();
+            }
         }
     }
 
@@ -603,7 +620,6 @@ class HuntController extends BaseController {
             $hs->type = '一级';
             $hs->status = '进行中';
             $hs->save();
-
             return response($hs);
         }
     }

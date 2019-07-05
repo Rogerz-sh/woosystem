@@ -3,41 +3,10 @@
  */
 $(function () {
 
-    var sdate = $('#sdate').kendoDatePicker({
-        culture: 'zh-CN',
-        format: 'yyyy-MM-dd',
-        change: function () {
-            edate.min(this.value());
-            edate.max(this.value().translate('now+365'));
-            if (!edate.value()) {
-                sdate.max(this.value());
-                sdate.min(this.value().translate('now-365'));
-                edate.value(this.value());
-            }
-        }
-    }).data('kendoDatePicker');
-    var edate = $('#edate').kendoDatePicker({
-        culture: 'zh-CN',
-        format: 'yyyy-MM-dd',
-        change: function () {
-            sdate.max(this.value());
-            sdate.min(this.value().translate('now-365'));
-            if (!sdate.value()) {
-                edate.min(this.value());
-                edate.max(this.value().translate('now+365'));
-                sdate.value(this.value());
-            }
-        }
-    }).data('kendoDatePicker');
-
     $('div.btn-group').delegate('button[data-range]', 'click', function () {
         var range = $(this).data('range');
         $(this).addClass('active').siblings().removeClass('active');
-        if (range == '自定义') {
-            $('#range_date_box').show();
-        } else {
-            $('#range_date_box').hide();
-        }
+        grid.dataSource.read();
     });
 
     function getQuickSearchDates(range) {
@@ -91,10 +60,16 @@ $(function () {
                 date.sdate = new Date(d.getFullYear() - 1, 0, 1).format();
                 date.edate = new Date(d.getFullYear(), 0, 0).format();
                 break;
+            case '自定义':
+                date.sdate = $('#sdate').val();
+                date.edate = $('#edate').val();
+                break;
             default:
                 return;
                 break;
         }
+        localData.startTime = date.sdate;
+        localData.endTime = date.edate;
         return date;
     }
 
@@ -106,13 +81,30 @@ $(function () {
 
     var grid = $('#grid').kendoGrid({
         dataSource: {
-            data: [],
+            transport: {
+                read: function (options) {
+                    var data = getQuickSearchDates($('button[data-range].active').data('range')), company_name = $('#company_name').val();
+                    if (company_name) data.company_name = company_name;
+                    $.$ajax({
+                        url: '/result/json-result-company-search',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: Object.assign(data, options.data),
+                        success: function (res) {
+                            options.success(res);
+                        }
+                    });
+                }
+            },
             schema: {
                 model: {
                     id: 'id'
-                }
+                },
+                data: 'results',
+                total: 'total'
             },
-            pageSize: 10
+            pageSize: 10,
+            serverPaging: true
         },
         columns: [
             {field: 'name', title: '客户名称'},
@@ -124,7 +116,7 @@ $(function () {
             {field: 'result_count', title: '回款数', template: getCountColor('result_count')},
         ],
         scrollable: false,
-        pageable: false,
+        pageable: true,
     }).data('kendoGrid');
 
     function getCountColor(field) {
@@ -139,35 +131,12 @@ $(function () {
     });
 
     $('#search').click(function () {
-        var range = $('button[data-range].active').data('range'), data = {};
-        var company_name = $('#company_name').val(),
-            industry = $('#industry').val();
-        if (range == '自定义') {
-            data.sdate = $('#sdate').val();
-            data.edate = $('#edate').val();
-        } else {
-            var date = getQuickSearchDates(range);
-            data.sdate = date.sdate;
-            data.edate = date.edate;
-        }
-        data.company_name = company_name;
-        data.industry = industry;
-        console.log(data);
-        if (!data.company_name || data.company_name.length < 2) {
+        var company_name = $('#company_name').val();
+        if (!company_name || company_name.length < 2) {
             $.$modal.alert('必须输入2个字以上客户名称关键词');
             return;
         }
-        $.$ajax({
-            url: '/result/json-result-company-search',
-            type: 'GET',
-            dataType: 'json',
-            data: data,
-            success: function (res) {
-                grid.dataSource.data(res);
-                localData.startTime = data.sdate;
-                localData.endTime = data.edate;
-            }
-        })
+        grid.dataSource.read();
     });
 
     function getDetailText(item) {
