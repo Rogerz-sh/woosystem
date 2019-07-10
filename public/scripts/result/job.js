@@ -3,6 +3,27 @@
  */
 $(function () {
 
+    var dsUser = new kendo.data.DataSource({
+        dataSource: []
+    });
+
+
+    var ddl_user;
+    $.$ajax({
+        url: '/result/json-area-group-user-data',
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            dsUser.data(res.users);
+            ddl_user = $('#search_user').kendoDropDownList({
+                dataSource: dsUser,
+                dataTextField: 'nickname',
+                dataValueField: 'id',
+                optionLabel: '全体成员'
+            }).data('kendoDropDownList');
+        }
+    });
+
     $('#type_parent').kendoDropDownList({
         dataSource: [],
         dataTextField: 'name',
@@ -113,16 +134,21 @@ $(function () {
     var localData = {
         detailField: '',
         startTime: null,
-        endTime: null
+        endTime: null,
+        uid: '',
     };
 
     var grid = $('#grid').kendoGrid({
         dataSource: {
             transport: {
                 read: function (options) {
-                    var data = getQuickSearchDates($('button[data-range].active').data('range')), job_name = $('#job_name').val(), type = $('#type_id').val();
+                    var data = getQuickSearchDates($('button[data-range].active').data('range')),
+                        job_name = $('#job_name').val(),
+                        type = $('#type_id').val(),
+                        uid = $('#search_user').val();
                     if (job_name) data.job_name = job_name;
                     if (type) data.type = type;
+                    if (uid) data.uid = uid;
                     $.$ajax({
                         url: '/result/json-result-job-search',
                         type: 'GET',
@@ -170,6 +196,7 @@ $(function () {
     });
 
     $('#search').click(function () {
+        localData.uid = $('#search_user').val();
         grid.dataSource.read();
     });
 
@@ -216,7 +243,7 @@ $(function () {
             url: '/result/json-job-detail-list',
             type: 'GET',
             dataType: 'json',
-            data: {id: id, field: field, sdate: localData.startTime, edate: localData.endTime},
+            data: {id: id, field: field, sdate: localData.startTime, edate: localData.endTime, uid: localData.uid},
             success: function (res) {
                 $.$modal.dialog({
                     title: '查看详情',
