@@ -65,6 +65,22 @@ class FileController extends BaseController {
         return response('"/'.$path.'/'.$saveName.'"');
     }
 
+    public function postUploadBdFile() {
+        $file = request()->file('file');
+        $filename = date('Y-m-d-H-i-s');
+        $extension = $file->getClientOriginalExtension();
+        $saveName = $filename.'.'.$extension;
+
+        $user = Session::get('name');
+        if (!isset($user)) {
+            $user = 'guest';
+        }
+        $path = 'upload/bd/'.date('Y').'/'.date('m').'/'.Session::get('id');
+        $file->move($path, $saveName);
+
+        return response('"/'.$path.'/'.$saveName.'"');
+    }
+
     public function postUploadUserSnap() {
         $file = request()->file('file');
         $sid = Session::get('id');

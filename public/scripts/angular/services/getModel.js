@@ -202,7 +202,10 @@
                 status: '',
                 source: '',
                 belong: '',
-                description: ''
+                description: '',
+                file_path: '',
+                file_name: '',
+                file_coded: 0
             }
         };
 

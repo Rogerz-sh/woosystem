@@ -615,6 +615,7 @@
                     {field: 'date', title: '联系日期', template: getDate},
                     {field: 'status', title: '状态'},
                     {field: 'description', title: '沟通记录', template: '<div style="max-width:300px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap;" title="#:description#"><span>#:description#</span></div>'},
+                    {field: 'file_path', title: '合同附件', template: getFile},
                     {title: '操作', template: '<a href="\\#/bd/edit/#:id#" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a> ' +
                     '<a href="\\#/bd/record/#:id#" class="btn btn-info btn-sm"><i class="fa fa-list"></i></a> ' +
                     '<a data-id="#:id#" class="btn btn-danger btn-sm" ng-click="bdDelete(#:id#)"><i class="fa fa-trash-o"></i></a>', width: 140}
@@ -659,6 +660,14 @@
                 scrollable: false,
                 pageable: true,
 
+            }
+        }
+
+        function getFile(item) {
+            if (item.file_path) {
+                return '<a href="/file/download-file?path={0}&name={1}&coded={2}" class="text-info">下载</a>'.format(item.file_path, item.file_name, item.file_coded);
+            } else {
+                return '无';
             }
         }
 
@@ -2066,9 +2075,10 @@
             var kpi = { person: 0, report: 0, face: 0, offer: 0}, result = 0;
             kpi.person = item.person_count > 100 ? 20 : item.person_count * 0.2;
             kpi.report = item.report_count > 40 ? 40 : item.report_count * 1;
-            kpi.face = item.face_count > 18 ? 36 : item.face_count * 2;
+            kpi.face = item.face_count > 16 ? 16 : item.face_count * 1;
+            kpi.faces = item.faces_count > 7 ? 14 : item.faces_count * 2;
             kpi.offer = item.offer_count * 5;
-            result = kpi.person.plus(kpi.report).plus(kpi.face).plus(kpi.offer);
+            result = kpi.person.plus(kpi.report).plus(kpi.face).plus(kpi.faces).plus(kpi.offer);
             result = kendo.toString(result, 'n1');
             if (result < 60) {
                 return '<span class="bold red">{0}</span>'.format(result);

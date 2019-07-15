@@ -1143,7 +1143,7 @@
             replace: true,
             scope: {},
             templateUrl: '/scripts/angular/templates/bd-form.html',
-            controller: ['$scope', '$http', 'model', '$routeParams', function ($scope, $http, model, $routeParams) {
+            controller: ['$scope', '$http', 'model', 'token', '$routeParams', function ($scope, $http, model, token, $routeParams) {
                 var dataSource = new kendo.data.DataSource({
                     transport: {
                         read: {
@@ -1194,7 +1194,23 @@
                             $scope.bd.user_names = names;
                             $scope.$apply();
                         }
-                    }
+                    },
+                    fileUpload: {
+                        async: {
+                            saveUrl: '/file/upload-bd-file?_token='+token.getCsrfToken(),
+                            saveField: 'file',
+                        },
+                        success: function (e) {
+                            $scope.bd.file_path = e.response;
+                            $scope.bd.file_name = e.files[0].name;
+                            $scope.bd.file_coded = 1;
+                            console.log($scope.bd);
+                            $scope.$apply();
+                        },
+                        complete: function (e) {
+                            console.log('complete');
+                        }
+                    },
                 };
 
                 $scope.data = {
