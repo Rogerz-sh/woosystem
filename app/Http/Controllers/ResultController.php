@@ -9,6 +9,7 @@ namespace App\Http\Controllers;
 
 use App\Company;
 use App\Job;
+use App\Performance;
 use App\User;
 use App\Groups;
 use App\Areas;
@@ -347,22 +348,22 @@ class ResultController extends BaseController {
         $power = Session::get('power');
         $take = request()->input('take');
         $skip = request()->input('skip');
-        $count = Company::join('users', 'company.created_by', '=', 'users.id')
-            ->join('groups', 'users.group_id', '=', 'groups.id')
-            ->join('areas', 'users.area_id', '=', 'areas.id');
-        $results = Company::join('users', 'company.created_by', '=', 'users.id')
+        $results = Performance::join('company', 'company.id', '=', 'performance.company_id')
+            ->join('users', 'performance.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
-            ->select(DB::raw('company.id, company.name, company.updated_at,
-(select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "report" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
-(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.type = "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
-(select count(hunt_face.id) from hunt_face inner join jobs on jobs.id = hunt_face.job_id where jobs.company_id = company.id and hunt_face.type = "二面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
-(select count(id) from hunt_report where hunt_report.company_id = company.id and hunt_report.type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
-(select count(id) from hunt_success where hunt_success.company_id = company.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and hunt_success.deleted_at is null) as success_count,
-(select sum(amount) from results where results.company_id = company.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'));
+            ->select(DB::raw('max(company.id) as id,
+            max(company.name) as name,
+            max(performance.date) as date,
+            sum(performance.report) as report_count,
+            sum(performance.face) as face_count,
+            sum(performance.faces) as faces_count,
+            sum(performance.offer) as offer_count,
+            sum(performance.success) as success_count,
+            (select sum(amount) from results where results.company_id = company.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'))
+            ->where('performance.date', '>=', $sdate)->where('performance.date', '<=', $edate);
         if ($company_name) {
             $results = $results->whereRaw('company.name like "%'.$company_name.'%"');
-            $count = $count->whereRaw('company.name like "%'.$company_name.'%"');
         }
         if ($power < 10) {
             $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
@@ -396,11 +397,9 @@ class ResultController extends BaseController {
             $gids = join(',', $gids);
             $aids = join(',', $aids);
             $results = $results->whereRaw('users.id in (' . $uids . ') and groups.id in (' . $gids . ') and areas.id in (' . $aids . ')');
-            $count = $count->whereRaw('users.id in (' . $uids . ') and groups.id in (' . $gids . ') and areas.id in (' . $aids . ')');
         }
-        $results = $results->orderBy('company.updated_at', 'desc')->skip($skip)->limit($take)->get();
-        $count = $count->count();
-        return response(["results"=>$results, "total"=>$count]);
+        $results = $results->groupBy('company.id')->orderBy('date', 'desc')->get();
+        return response($results);
     }
 
     public function getJsonResultJobSearch() {
@@ -412,36 +411,31 @@ class ResultController extends BaseController {
         $power = Session::get('power');
         $take = request()->input('take');
         $skip = request()->input('skip');
-        $select_raw = 'jobs.id, jobs.name, jobs.company_name, jobs.updated_at,
-(select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "report" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
-(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type = "一面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
-(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type = "二面" and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
-(select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "offer" and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
-(select count(id) from hunt_success where hunt_success.job_id = jobs.id and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and hunt_success.deleted_at is null) as success_count,
-(select sum(amount) from results where results.job_id = jobs.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count';
-        if ($uid) {
-            $select_raw = 'jobs.id, jobs.name, jobs.company_name, jobs.updated_at,
-(select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "report" and hunt_report.created_by = '.$uid.' and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as report_count,
-(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type = "一面" and hunt_face.created_by = '.$uid.' and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as face_count,
-(select count(hunt_face.id) from hunt_face where hunt_face.job_id = jobs.id and hunt_face.type = "二面" and hunt_face.created_by = '.$uid.' and hunt_face.date >= "'.$sdate.'" and hunt_face.date <= "'.$edate.'" and hunt_face.deleted_at is null and (select count(hunt_records.id) from hunt_records where hunt_records.hunt_id = hunt_face.hunt_id) > 0) as faces_count,
-(select count(id) from hunt_report where hunt_report.job_id = jobs.id and hunt_report.type = "offer" and hunt_report.created_by = '.$uid.' and hunt_report.date >= "'.$sdate.'" and hunt_report.date <= "'.$edate.'" and hunt_report.deleted_at is null) as offer_count,
-(select count(id) from hunt_success where hunt_success.job_id = jobs.id and hunt_success.created_by = '.$uid.' and hunt_success.date >= "'.$sdate.'" and hunt_success.date <= "'.$edate.'" and hunt_success.deleted_at is null) as success_count,
-(select sum(amount) from results where results.job_id = jobs.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count';
-        }
-        $count = Job::join('users', 'jobs.created_by', '=', 'users.id')
-            ->join('groups', 'users.group_id', '=', 'groups.id')
-            ->join('areas', 'users.area_id', '=', 'areas.id');
-        $results = Job::join('users', 'jobs.created_by', '=', 'users.id')
+        $results = Performance::join('company', 'company.id', '=', 'performance.company_id')
+            ->join('jobs', 'jobs.id', '=', 'performance.job_id')
+            ->join('users', 'performance.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->join('areas', 'users.area_id', '=', 'areas.id')
-            ->select(DB::raw($select_raw));
+            ->select(DB::raw('max(jobs.id) as id,
+            max(jobs.name) as name,
+            max(company.id) as company_id,
+            max(company.name) as company_name,
+            max(performance.date) as date,
+            sum(performance.report) as report_count,
+            sum(performance.face) as face_count,
+            sum(performance.faces) as faces_count,
+            sum(performance.offer) as offer_count,
+            sum(performance.success) as success_count,
+            (select sum(amount) from results where results.job_id = jobs.id and results.date >= "'.$sdate.'" and results.date <= "'.$edate.'" and results.deleted_at is null) as result_count'))
+            ->where('performance.date', '>=', $sdate)->where('performance.date', '<=', $edate);
+        if ($uid) {
+            $results = $results->where('users.id', $uid);
+        }
         if ($type) {
             $results = $results->where('jobs.type_id', $type);
-            $count = $count->where('jobs.type_id', $type);
         }
         if ($job_name) {
             $results = $results->whereRaw('jobs.name like "%'.$job_name.'%"');
-            $count = $count->whereRaw('jobs.name like "%'.$job_name.'%"');
         }
         if ($power < 10) {
             $users = User::select('id', 'group_id', 'area_id')->where('status', 1);
@@ -475,11 +469,9 @@ class ResultController extends BaseController {
             $gids = join(',', $gids);
             $aids = join(',', $aids);
             $results = $results->whereRaw('users.id in (' . $uids . ') and groups.id in (' . $gids . ') and areas.id in (' . $aids . ')');
-            $count = $count->whereRaw('users.id in (' . $uids . ') and groups.id in (' . $gids . ') and areas.id in (' . $aids . ')');
         }
-        $results = $results->orderBy('jobs.updated_at', 'desc')->skip($skip)->limit($take)->get();
-        $count = $count->count();
-        return response(["results"=>$results, "total"=>$count]);
+        $results = $results->groupBy('jobs.id')->orderBy('date', 'desc')->get();
+        return response($results);
     }
 
     public function getJsonCompanyDetailList() {

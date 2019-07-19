@@ -153,8 +153,13 @@ $(function () {
                         url: '/result/json-result-job-search',
                         type: 'GET',
                         dataType: 'json',
-                        data: Object.assign(data, options.data),
+                        data: data,
                         success: function (res) {
+                            res.forEach(function (v) {
+                                for (var n in v) {
+                                    if (n.indexOf('_count') > 0) v[n] = +v[n];
+                                }
+                            });
                             options.success(res);
                         }
                     });
@@ -164,24 +169,25 @@ $(function () {
                 model: {
                     id: 'id'
                 },
-                data: 'results',
-                total: 'total'
+                //data: 'results',
+                //total: 'total'
             },
             pageSize: 10,
-            serverPaging: true
+            //serverPaging: true
         },
         columns: [
-            {field: 'name', title: '职位名称'},
-            {field: 'company_name', title: '客户名称'},
-            {field: 'report_count', title: '推荐数', template: getCountColor('report_count')},
-            {field: 'face_count', title: '初试数', template: getCountColor('face_count')},
-            {field: 'faces_count', title: '复试数', template: getCountColor('faces_count')},
-            {field: 'offer_count', title: 'Offer数', template: getCountColor('offer_count')},
-            {field: 'success_count', title: '上岗数', template: getCountColor('success_count')},
-            {field: 'result_count', title: '回款数', template: getCountColor('result_count')},
+            {field: 'name', title: '职位名称', width: 200},
+            {field: 'company_name', title: '客户名称', width: 200},
+            {field: 'report_count', title: '推荐数', template: getCountColor('report_count'), width: 80},
+            {field: 'face_count', title: '初试数', template: getCountColor('face_count'), width: 80},
+            {field: 'faces_count', title: '复试数', template: getCountColor('faces_count'), width: 80},
+            {field: 'offer_count', title: 'Offer数', template: getCountColor('offer_count'), width: 80},
+            {field: 'success_count', title: '上岗数', template: getCountColor('success_count'), width: 80},
+            {field: 'result_count', title: '回款数', template: getCountColor('result_count'), width: 80},
         ],
         scrollable: false,
         pageable: true,
+        sortable: true
     }).data('kendoGrid');
 
     function getCountColor(field) {

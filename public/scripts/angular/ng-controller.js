@@ -1623,6 +1623,8 @@
             $scope.face.hunt_id = $routeParams.hunt_id;
             $scope.face.person_id = $scope.hunt.person_id;
             $scope.face.person_name = $scope.hunt.person_name;
+            $scope.face.company_id = $scope.hunt.company_id;
+            $scope.face.company_name = $scope.hunt.company_name;
             $scope.face.job_id = $scope.hunt.job_id;
             $scope.face.job_name = $scope.hunt.job_name;
             $scope.face.tel = $scope.personInfo.tel;
@@ -1655,6 +1657,8 @@
             $scope.face.hunt_id = $routeParams.hunt_id;
             $scope.face.person_id = $scope.hunt.person_id;
             $scope.face.person_name = $scope.hunt.person_name;
+            $scope.face.company_id = $scope.hunt.company_id;
+            $scope.face.company_name = $scope.hunt.company_name;
             $scope.face.job_id = $scope.hunt.job_id;
             $scope.face.job_name = $scope.hunt.job_name;
             console.log($scope.face);
