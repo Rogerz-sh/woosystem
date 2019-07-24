@@ -1348,7 +1348,7 @@
                     {field: 'date', title: '面试日期'},
                     {field: 'tel', title: '手机号'},
                     {field: 'desc', title: '备注'},
-                    {title: '操作', template: '<a ng-click="editFace(#:id#)"><i class="fa fa-pencil"></i></a><a ng-click="deleteFace(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
+                    {title: '操作', template: '<a ng-click="deleteFace(#:id#)"><i class="fa fa-times margin-left-5"></i></a>'}
                 ],
                 scrollable: false,
                 pageable: true,
